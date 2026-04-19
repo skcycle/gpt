@@ -6,6 +6,7 @@ using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Device.Zmc.Config;
 using MotionControl.Device.Zmc.Controllers;
 using MotionControl.Device.Zmc.Translators;
+using MotionControl.Diagnostics.Services;
 using MotionControl.Domain.Entities;
 using MotionControl.Domain.ValueObjects;
 using MotionControl.Presentation.ViewModels;
@@ -29,6 +30,7 @@ public static class ServiceRegistration
         IAxisControlService axisControlService = new AxisControlService(motionController);
         IHomingService homingService = new HomingService(motionController);
         var pollingService = new ControllerPollingService(motionController, machine);
+        _ = new SafetyInterlockService();
         IMotionAppService motionAppService = new MotionAppService(axisControlService, homingService, machine);
         ISystemAppService systemAppService = new SystemAppService(machine, pollingService);
 

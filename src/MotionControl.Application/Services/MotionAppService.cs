@@ -29,6 +29,20 @@ public sealed class MotionAppService(
         await axisControlService.MoveAbsoluteAsync(axis, command.Position, command.Velocity, command.Acceleration, command.Deceleration, cancellationToken);
     }
 
+    public async Task StopAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default)
+    {
+        var axis = FindAxis(command.AxisNo);
+        await axisControlService.StopAsync(axis, cancellationToken);
+    }
+
+    public async Task JogAxisAsync(JogAxisCommandDto command, CancellationToken cancellationToken = default)
+    {
+        var axis = FindAxis(command.AxisNo);
+        var direction = command.PositiveDirection ? 1 : -1;
+        var nextPosition = axis.CurrentPosition + direction * 10.0;
+        await axisControlService.MoveAbsoluteAsync(axis, nextPosition, command.Velocity, command.Velocity, command.Velocity, cancellationToken);
+    }
+
     private Axis FindAxis(int axisNo)
     {
         return machine.Axes.FirstOrDefault(a => a.ControllerAxisNo == axisNo)
