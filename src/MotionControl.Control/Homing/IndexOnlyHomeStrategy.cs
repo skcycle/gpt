@@ -9,6 +9,7 @@ public sealed class IndexOnlyHomeStrategy : IHomeStrategy
 
     public HomeExecutionPlan BuildPlan(Axis axis) => new()
     {
+        Title = "Index Only",
         Steps = new[]
         {
             $"Axis {axis.ControllerAxisNo}: search index pulse only",

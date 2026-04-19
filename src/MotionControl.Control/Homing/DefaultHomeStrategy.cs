@@ -9,6 +9,7 @@ public sealed class DefaultHomeStrategy : IHomeStrategy
 
     public HomeExecutionPlan BuildPlan(Axis axis) => new()
     {
+        Title = "Default Homing",
         Steps = new[] { $"Axis {axis.ControllerAxisNo}: reset homed state", "Use default homing behavior placeholder" }
     };
 

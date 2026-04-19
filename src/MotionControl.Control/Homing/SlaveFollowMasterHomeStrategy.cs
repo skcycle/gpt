@@ -9,6 +9,7 @@ public sealed class SlaveFollowMasterHomeStrategy : IHomeStrategy
 
     public HomeExecutionPlan BuildPlan(Axis axis) => new()
     {
+        Title = "Slave Follow Master",
         Steps = new[]
         {
             $"Axis {axis.ControllerAxisNo}: wait for master axis homing completion",

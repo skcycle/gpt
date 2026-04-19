@@ -9,6 +9,7 @@ public sealed class LimitThenIndexHomeStrategy : IHomeStrategy
 
     public HomeExecutionPlan BuildPlan(Axis axis) => new()
     {
+        Title = "Limit Then Index",
         Steps = new[]
         {
             $"Axis {axis.ControllerAxisNo}: move toward hardware limit",

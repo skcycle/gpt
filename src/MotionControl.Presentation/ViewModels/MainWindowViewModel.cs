@@ -13,14 +13,15 @@ public sealed class MainWindowViewModel
         Machine machine,
         ISystemAppService systemAppService,
         IMotionAppService motionAppService,
-        ControllerRuntimeState controllerRuntimeState)
+        ControllerRuntimeState controllerRuntimeState,
+        HomePlanRuntimeState homePlanRuntimeState)
     {
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine);
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
         AxisMonitor = new AxisMonitorViewModel(machine);
-        AxisDebug = new AxisDebugViewModel(motionAppService, machine);
+        AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState);
         Alarm = new AlarmViewModel(machine);
     }
 

@@ -63,6 +63,8 @@ public sealed class ZmcMotionController(
                     SlaveNo = index,
                     Name = $"Servo-{index:00}",
                     State = _isConnected ? "OP" : "INIT",
+                    ModuleType = index == 1 ? "Coupler" : "Servo",
+                    FaultText = _isConnected ? string.Empty : "Controller offline",
                     IsOnline = _isConnected,
                     HasAlarm = false
                 })
