@@ -51,6 +51,11 @@ public sealed class Axis
         MotionMode = motionMode;
     }
 
+    public void ApplyState(AxisState state)
+    {
+        State = state;
+    }
+
     public void MarkHomed() => IsHomed = true;
     public void ClearHomed() => IsHomed = false;
     public void SetAlarm() => HasAlarm = true;

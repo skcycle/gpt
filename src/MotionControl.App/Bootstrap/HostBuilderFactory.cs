@@ -47,6 +47,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<IoPollingService>();
                 services.AddSingleton<AlarmPollingService>();
                 services.AddSingleton<AxisStateMachine>();
+                services.AddSingleton<SystemStateMachine>();
                 services.AddSingleton<ControllerPollingService>();
                 services.AddSingleton<IUiRefreshNotifier>(_ => new DispatcherUiRefreshNotifier(Application.Current.Dispatcher));
                 services.AddHostedService<PollingHostedService>();

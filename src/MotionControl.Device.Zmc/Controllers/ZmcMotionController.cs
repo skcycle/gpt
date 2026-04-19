@@ -12,11 +12,19 @@ public sealed class ZmcMotionController(
     ZmcStatusTranslator statusTranslator,
     ZmcAxisNativeFacade axisNativeFacade) : IMotionController
 {
+    private bool _isConnected;
+
     public Task<DeviceResult> ConnectAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(DeviceResult.Ok());
+    {
+        _isConnected = true;
+        return Task.FromResult(DeviceResult.Ok());
+    }
 
     public Task<DeviceResult> DisconnectAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(DeviceResult.Ok());
+    {
+        _isConnected = false;
+        return Task.FromResult(DeviceResult.Ok());
+    }
 
     public Task<AxisFeedback> GetAxisFeedbackAsync(int axisNo, CancellationToken cancellationToken = default)
         => Task.FromResult(statusTranslator.Translate(axisNo));
@@ -40,4 +48,14 @@ public sealed class ZmcMotionController(
 
     public Task<DeviceResult> ResetAxisAlarmAsync(int axisNo, CancellationToken cancellationToken = default)
         => Task.FromResult(DeviceResult.Ok());
+
+    public Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(new EtherCatControllerStatus
+        {
+            IsConnected = _isConnected,
+            IsOperational = _isConnected,
+            OnlineSlaveCount = options.AxisCount,
+            NetworkState = _isConnected ? "Operational" : "Disconnected",
+            ControllerModel = "ZMC432EtherCAT"
+        });
 }

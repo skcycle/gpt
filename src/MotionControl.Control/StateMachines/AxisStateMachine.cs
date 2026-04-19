@@ -12,11 +12,21 @@ public sealed class AxisStateMachine
             return AxisState.Alarm;
         }
 
+        if (axis.ServoState == ServoState.Off)
+        {
+            return AxisState.Disabled;
+        }
+
+        if (Math.Abs(axis.CurrentVelocity) > 0.001d)
+        {
+            return AxisState.Moving;
+        }
+
         if (!axis.IsHomed && axis.ServoState == ServoState.On)
         {
             return AxisState.Standstill;
         }
 
-        return axis.State;
+        return AxisState.Standstill;
     }
 }

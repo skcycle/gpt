@@ -1,9 +1,13 @@
+using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Control.Services;
 
-public sealed class AxisPollingService(IMotionController motionController, Machine machine)
+public sealed class AxisPollingService(
+    IMotionController motionController,
+    Machine machine,
+    AxisStateMachine axisStateMachine)
 {
     public async Task PollAsync(CancellationToken cancellationToken = default)
     {
@@ -18,6 +22,9 @@ public sealed class AxisPollingService(IMotionController motionController, Machi
                 feedback.HasAlarm,
                 feedback.PositiveLimitTriggered,
                 feedback.NegativeLimitTriggered);
+
+            var nextState = axisStateMachine.GetNextState(axis);
+            axis.ApplyState(nextState);
         }
     }
 }

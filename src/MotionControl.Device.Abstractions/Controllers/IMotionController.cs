@@ -14,4 +14,5 @@ public interface IMotionController
     Task<DeviceResult> MoveAbsoluteAsync(int axisNo, AxisMoveCommand command, CancellationToken cancellationToken = default);
     Task<DeviceResult> StopAxisAsync(int axisNo, CancellationToken cancellationToken = default);
     Task<DeviceResult> ResetAxisAlarmAsync(int axisNo, CancellationToken cancellationToken = default);
+    Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default);
 }

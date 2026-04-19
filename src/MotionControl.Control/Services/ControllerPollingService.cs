@@ -1,12 +1,16 @@
+using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
+using MotionControl.Domain.Entities;
 
 namespace MotionControl.Control.Services;
 
 public sealed class ControllerPollingService(
     IMotionController motionController,
+    Machine machine,
     AxisPollingService axisPollingService,
     IoPollingService ioPollingService,
-    AlarmPollingService alarmPollingService)
+    AlarmPollingService alarmPollingService,
+    SystemStateMachine systemStateMachine)
 {
     private bool _isRunning;
 
@@ -43,5 +47,9 @@ public sealed class ControllerPollingService(
         await axisPollingService.PollAsync(cancellationToken);
         await ioPollingService.PollAsync(cancellationToken);
         await alarmPollingService.PollAsync(cancellationToken);
+
+        var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
+        var nextSystemState = systemStateMachine.GetNextState(machine, controllerStatus);
+        machine.SetSystemState(nextSystemState);
     }
 }
