@@ -6,15 +6,58 @@
     <Grid Margin="12">
         <TabControl>
             <TabItem Header="Dashboard">
-                <StackPanel Margin="12">
-                    <TextBlock Text="System Overview" FontSize="22" FontWeight="Bold" Margin="0,0,0,12" />
-                    <TextBlock Text="系统状态" FontWeight="Bold" />
-                    <TextBlock Text="{Binding Dashboard.SystemState}" Margin="0,0,0,8" />
-                    <TextBlock Text="轴数量" FontWeight="Bold" />
-                    <TextBlock Text="{Binding Dashboard.AxisCount}" Margin="0,0,0,8" />
-                    <TextBlock Text="报警数量" FontWeight="Bold" />
-                    <TextBlock Text="{Binding Dashboard.AlarmCount}" />
-                </StackPanel>
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="System Overview" FontSize="22" FontWeight="Bold" Margin="0,0,0,12" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="220" />
+                            <ColumnDefinition Width="220" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="系统状态" FontWeight="Bold" />
+                            <TextBlock Text="{Binding Dashboard.SystemState}" Margin="0,0,0,8" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="EtherCAT 网络状态" FontWeight="Bold" />
+                            <TextBlock Text="{Binding Dashboard.EtherCatNetworkState}" Margin="0,0,0,8" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="EtherCAT 已连接" FontWeight="Bold" />
+                            <TextBlock Text="{Binding Dashboard.EtherCatConnected}" Margin="0,0,0,8" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="3">
+                            <TextBlock Text="在线从站数" FontWeight="Bold" />
+                            <TextBlock Text="{Binding Dashboard.EtherCatOnlineSlaveCount}" Margin="0,0,0,8" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Text="报警数量" FontWeight="Bold" />
+                            <TextBlock Text="{Binding Dashboard.AlarmCount}" Margin="0,0,0,8" />
+                        </StackPanel>
+                    </Grid>
+
+                    <DataGrid Grid.Row="2" ItemsSource="{Binding Dashboard.EtherCatSlaves}" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="SlaveNo" Binding="{Binding SlaveNo}" Width="100" />
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="180" />
+                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120" />
+                            <DataGridCheckBoxColumn Header="Online" Binding="{Binding IsOnline}" Width="100" />
+                            <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding HasAlarm}" Width="100" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </TabItem>
 
             <TabItem Header="Axis Monitor">
@@ -24,6 +67,9 @@
                         <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="160" />
                         <DataGridTextColumn Header="Position" Binding="{Binding CurrentPosition}" Width="120" />
                         <DataGridTextColumn Header="Velocity" Binding="{Binding CurrentVelocity}" Width="120" />
+                        <DataGridTextColumn Header="HomeMode" Binding="{Binding HomeMode}" Width="140" />
+                        <DataGridTextColumn Header="ServoBinding" Binding="{Binding ServoBinding}" Width="140" />
+                        <DataGridTextColumn Header="SoftLimit" Binding="{Binding SoftLimitDisplay}" Width="180" />
                         <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed}" Width="80" />
                         <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding HasAlarm}" Width="80" />
                     </DataGrid.Columns>

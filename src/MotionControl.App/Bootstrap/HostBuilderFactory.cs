@@ -4,6 +4,7 @@ using MotionControl.Application.Interfaces;
 using MotionControl.Application.Services;
 using MotionControl.Control.Interfaces;
 using System.Windows;
+using MotionControl.Control.Homing;
 using MotionControl.Control.Services;
 using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
@@ -38,6 +39,10 @@ public static class HostBuilderFactory
 
                 services.AddSingleton<IMotionController, ZmcMotionController>();
                 services.AddSingleton<IAxisControlService, AxisControlService>();
+                services.AddSingleton<IHomeStrategy, DefaultHomeStrategy>();
+                services.AddSingleton<IHomeStrategy, LimitThenIndexHomeStrategy>();
+                services.AddSingleton<IHomeStrategy, IndexOnlyHomeStrategy>();
+                services.AddSingleton<IHomeStrategy, SlaveFollowMasterHomeStrategy>();
                 services.AddSingleton<IHomingService, HomingService>();
                 services.AddSingleton<ISystemAppService, SystemAppService>();
                 services.AddSingleton<IMotionAppService, MotionAppService>();
