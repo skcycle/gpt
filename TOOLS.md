@@ -1,40 +1,57 @@
 # TOOLS.md - Local Notes
 
-Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
+这个文件记录 32 轴运动控制项目里的环境细节、接口约定和现场知识。
 
-## What Goes Here
+## 建议记录在这里的信息
 
-Things like:
+### Project
+- 代码仓库路径
+- 主构建命令
+- 主运行命令
+- 仿真启动方式
+- 联调/发布脚本位置
 
-- Camera names and locations
-- SSH hosts and aliases
-- Preferred voices for TTS
-- Speaker/room names
-- Device nicknames
-- Anything environment-specific
+### Hardware
+- 控制器型号
+- 驱动器型号
+- 电机型号
+- 编码器类型
+- IO 模块信息
+- 总线类型（EtherCAT/CAN/串口/自定义）
+- 实机 / 仿真 环境区分
 
-## Examples
+### Axis Mapping
+- 轴号和名称映射
+- 轴分组规则
+- 主从轴关系
+- 龙门轴 / 镜像轴 / 电子齿轮关系
+- 每根轴的软限位 / 硬限位 / 回零方式
 
-```markdown
-### Cameras
+### Safety
+- 急停链路说明
+- 使能条件
+- 上电顺序
+- 下电顺序
+- 抱闸控制逻辑
+- 故障复位前置条件
+- 禁止直接操作的危险命令
 
-- living-room → Main area, 180° wide angle
-- front-door → Entrance, motion-triggered
+### Debug
+- 常见报警码
+- 日志位置
+- 抓包方式
+- 关键状态字说明
+- 调试时推荐观察的变量
+- 常见故障及处理经验
 
-### SSH
+## Working Notes
 
-- home-server → 192.168.1.100, user: admin
-
-### TTS
-
-- Preferred voice: "Nova" (warm, slightly British)
-- Default speaker: Kitchen HomePod
-```
-
-## Why Separate?
-
-Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
-
----
-
-Add whatever helps you do your job. This is your cheat sheet.
+如果后续知道这些信息，优先补在这里：
+- 32 轴命名表
+- 通信周期
+- 控制周期
+- 插补周期
+- 轨迹规划模块位置
+- 运动状态机文件位置
+- 设备抽象层文件位置
+- 配置文件路径

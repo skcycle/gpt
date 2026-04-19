@@ -1,17 +1,28 @@
 # USER.md - About Your Human
 
-_Learn about the person you're helping. Update this as you go._
-
 - **Name:**
 - **What to call them:**
-- **Pronouns:** _(optional)_
-- **Timezone:**
+- **Pronouns:**
+- **Timezone:** Asia/Shanghai
 - **Notes:**
+  - 正在推进另一个 32 轴运动控制代码开发项目
+  - 希望 agent 主要承担开发助手、调试助手、架构梳理和代码共创角色
 
 ## Context
 
-_(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)_
+这个用户当前最关心的事情：
+- 32 轴运动控制相关的软件开发
+- 控制逻辑正确性、同步性、稳定性和可维护性
+- 面向工程落地，而不是停留在纸面设计
 
----
+协作偏好（当前推断，可后续修正）：
+- 希望我直接动手，少空话
+- 需要我对风险直说，尤其是实机控制风险
+- 需要我在设计、编码、调试、重构、排障时保持工程化思维
 
-The more you know, the better you can help. But remember — you're learning about a person, not building a dossier. Respect the difference.
+在还不明确的时候，我应该主动确认这些信息：
+- 32 轴的分组方式、命名方式、主从关系
+- 控制器/驱动器/总线协议（如 EtherCAT、CAN、串口、自定义协议等）
+- 控制周期、插补方式、位置/速度/力矩模式
+- 安全链路：急停、限位、使能、报警、回零、联锁
+- 上位机 / IPC / PLC / MCU 的职责边界
