@@ -3,7 +3,9 @@ using Microsoft.Extensions.Hosting;
 using MotionControl.Application.Interfaces;
 using MotionControl.Application.Services;
 using MotionControl.Control.Interfaces;
+using System.Windows;
 using MotionControl.Control.Services;
+using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Device.Zmc.Config;
 using MotionControl.Device.Zmc.Controllers;
@@ -41,8 +43,12 @@ public static class HostBuilderFactory
                 services.AddSingleton<IMotionAppService, MotionAppService>();
 
                 services.AddSingleton<SafetyInterlockService>();
+                services.AddSingleton<AxisPollingService>();
+                services.AddSingleton<IoPollingService>();
+                services.AddSingleton<AlarmPollingService>();
+                services.AddSingleton<AxisStateMachine>();
                 services.AddSingleton<ControllerPollingService>();
-                services.AddSingleton<IUiRefreshNotifier, ImmediateUiRefreshNotifier>();
+                services.AddSingleton<IUiRefreshNotifier>(_ => new DispatcherUiRefreshNotifier(Application.Current.Dispatcher));
                 services.AddHostedService<PollingHostedService>();
 
                 services.AddSingleton<MainWindowViewModel>();
