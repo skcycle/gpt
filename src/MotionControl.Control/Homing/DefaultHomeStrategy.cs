@@ -7,6 +7,11 @@ public sealed class DefaultHomeStrategy : IHomeStrategy
 {
     public HomeMode HomeMode => HomeMode.Default;
 
+    public HomeExecutionPlan BuildPlan(Axis axis) => new()
+    {
+        Steps = new[] { $"Axis {axis.ControllerAxisNo}: reset homed state", "Use default homing behavior placeholder" }
+    };
+
     public Task ExecuteAsync(Axis axis, CancellationToken cancellationToken = default)
     {
         axis.ClearHomed();

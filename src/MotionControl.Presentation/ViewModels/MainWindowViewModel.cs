@@ -18,12 +18,14 @@ public sealed class MainWindowViewModel
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine);
+        EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
         AxisMonitor = new AxisMonitorViewModel(machine);
-        AxisDebug = new AxisDebugViewModel(motionAppService);
+        AxisDebug = new AxisDebugViewModel(motionAppService, machine);
         Alarm = new AlarmViewModel(machine);
     }
 
     public DashboardViewModel Dashboard { get; }
+    public EtherCatMonitorViewModel EtherCatMonitor { get; }
     public AxisMonitorViewModel AxisMonitor { get; }
     public AxisDebugViewModel AxisDebug { get; }
     public AlarmViewModel Alarm { get; }

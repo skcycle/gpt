@@ -1,5 +1,6 @@
 using MotionControl.Application.DTOs;
 using MotionControl.Application.Interfaces;
+using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
 
 namespace MotionControl.Presentation.ViewModels;
@@ -7,10 +8,12 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class AxisDebugViewModel
 {
     private readonly IMotionAppService _motionAppService;
+    private readonly Machine _machine;
 
-    public AxisDebugViewModel(IMotionAppService motionAppService)
+    public AxisDebugViewModel(IMotionAppService motionAppService, Machine machine)
     {
         _motionAppService = motionAppService;
+        _machine = machine;
 
         EnableAxisCommand = new RelayCommand(async () => await EnableSelectedAxisAsync(), () => SelectedAxisNo > 0);
         HomeAxisCommand = new RelayCommand(async () => await HomeSelectedAxisAsync(), () => SelectedAxisNo > 0);
@@ -25,12 +28,17 @@ public sealed class AxisDebugViewModel
     public double Velocity { get; set; } = 100;
     public double Acceleration { get; set; } = 100;
     public double Deceleration { get; set; } = 100;
+    public string SelectedAxisHomeMode => SelectedAxis?.HomeMode.ToString() ?? "N/A";
+    public string SelectedAxisServoBinding => SelectedAxis?.ServoBinding ?? "N/A";
+    public string SelectedAxisSoftLimit => SelectedAxis?.SoftLimit is null ? "N/A" : $"{SelectedAxis.SoftLimit.Negative} ~ {SelectedAxis.SoftLimit.Positive}";
     public RelayCommand EnableAxisCommand { get; }
     public RelayCommand HomeAxisCommand { get; }
     public RelayCommand MoveAxisCommand { get; }
     public RelayCommand StopAxisCommand { get; }
     public RelayCommand JogPositiveCommand { get; }
     public RelayCommand JogNegativeCommand { get; }
+
+    private Axis? SelectedAxis => _machine.Axes.FirstOrDefault(axis => axis.ControllerAxisNo == SelectedAxisNo);
 
     public async Task EnableSelectedAxisAsync()
     {

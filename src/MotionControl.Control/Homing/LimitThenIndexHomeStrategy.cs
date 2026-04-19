@@ -7,6 +7,16 @@ public sealed class LimitThenIndexHomeStrategy : IHomeStrategy
 {
     public HomeMode HomeMode => HomeMode.LimitThenIndex;
 
+    public HomeExecutionPlan BuildPlan(Axis axis) => new()
+    {
+        Steps = new[]
+        {
+            $"Axis {axis.ControllerAxisNo}: move toward hardware limit",
+            "Detect index pulse",
+            "Latch home position and mark homed"
+        }
+    };
+
     public Task ExecuteAsync(Axis axis, CancellationToken cancellationToken = default)
     {
         axis.MarkHomed();

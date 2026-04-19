@@ -7,6 +7,16 @@ public sealed class SlaveFollowMasterHomeStrategy : IHomeStrategy
 {
     public HomeMode HomeMode => HomeMode.SlaveFollowMaster;
 
+    public HomeExecutionPlan BuildPlan(Axis axis) => new()
+    {
+        Steps = new[]
+        {
+            $"Axis {axis.ControllerAxisNo}: wait for master axis homing completion",
+            "Apply master/slave alignment offset",
+            "Mark slave axis homed"
+        }
+    };
+
     public Task ExecuteAsync(Axis axis, CancellationToken cancellationToken = default)
     {
         axis.MarkHomed();
