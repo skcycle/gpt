@@ -1,3 +1,4 @@
+using MotionControl.Device.Abstractions.Models;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Presentation.ViewModels;
@@ -5,6 +6,7 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class DashboardViewModel
 {
     private readonly Machine _machine;
+    private EtherCatControllerStatus? _controllerStatus;
 
     public DashboardViewModel(Machine machine)
     {
@@ -14,9 +16,12 @@ public sealed class DashboardViewModel
     public string SystemState => _machine.CurrentState.ToString();
     public int AxisCount => _machine.Axes.Count;
     public int AlarmCount => _machine.Axes.Count(axis => axis.HasAlarm);
+    public string EtherCatNetworkState => _controllerStatus?.NetworkState ?? "Unknown";
+    public bool EtherCatConnected => _controllerStatus?.IsConnected ?? false;
+    public int EtherCatOnlineSlaveCount => _controllerStatus?.OnlineSlaveCount ?? 0;
 
-    public void Refresh()
+    public void Refresh(EtherCatControllerStatus? controllerStatus = null)
     {
-        // 当前骨架阶段通过属性实时读取 Machine 聚合状态。
+        _controllerStatus = controllerStatus ?? _controllerStatus;
     }
 }

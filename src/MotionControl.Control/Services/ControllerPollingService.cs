@@ -7,6 +7,7 @@ namespace MotionControl.Control.Services;
 public sealed class ControllerPollingService(
     IMotionController motionController,
     Machine machine,
+    ControllerRuntimeState controllerRuntimeState,
     AxisPollingService axisPollingService,
     IoPollingService ioPollingService,
     AlarmPollingService alarmPollingService,
@@ -49,6 +50,7 @@ public sealed class ControllerPollingService(
         await alarmPollingService.PollAsync(cancellationToken);
 
         var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
+        controllerRuntimeState.Update(controllerStatus);
         var nextSystemState = systemStateMachine.GetNextState(machine, controllerStatus);
         machine.SetSystemState(nextSystemState);
     }

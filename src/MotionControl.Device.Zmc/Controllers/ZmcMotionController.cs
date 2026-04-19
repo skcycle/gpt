@@ -56,6 +56,16 @@ public sealed class ZmcMotionController(
             IsOperational = _isConnected,
             OnlineSlaveCount = options.AxisCount,
             NetworkState = _isConnected ? "Operational" : "Disconnected",
-            ControllerModel = "ZMC432EtherCAT"
+            ControllerModel = "ZMC432EtherCAT",
+            Slaves = Enumerable.Range(1, Math.Min(options.AxisCount, 4))
+                .Select(index => new EtherCatSlaveStatus
+                {
+                    SlaveNo = index,
+                    Name = $"Servo-{index:00}",
+                    State = _isConnected ? "OP" : "INIT",
+                    IsOnline = _isConnected,
+                    HasAlarm = false
+                })
+                .ToArray()
         });
 }

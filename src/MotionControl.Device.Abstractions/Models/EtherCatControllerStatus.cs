@@ -7,5 +7,6 @@ public sealed class EtherCatControllerStatus
     public int OnlineSlaveCount { get; init; }
     public string NetworkState { get; init; } = "Unknown";
     public string ControllerModel { get; init; } = "ZMC432EtherCAT";
+    public IReadOnlyCollection<EtherCatSlaveStatus> Slaves { get; init; } = Array.Empty<EtherCatSlaveStatus>();
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;
 }

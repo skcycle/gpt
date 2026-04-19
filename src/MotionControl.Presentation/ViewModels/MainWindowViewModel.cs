@@ -1,4 +1,5 @@
 using MotionControl.Application.Interfaces;
+using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Presentation.ViewModels;
@@ -6,13 +7,16 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class MainWindowViewModel
 {
     private readonly ISystemAppService _systemAppService;
+    private readonly ControllerRuntimeState _controllerRuntimeState;
 
     public MainWindowViewModel(
         Machine machine,
         ISystemAppService systemAppService,
-        IMotionAppService motionAppService)
+        IMotionAppService motionAppService,
+        ControllerRuntimeState controllerRuntimeState)
     {
         _systemAppService = systemAppService;
+        _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine);
         AxisMonitor = new AxisMonitorViewModel(machine);
         AxisDebug = new AxisDebugViewModel(motionAppService);
@@ -38,7 +42,7 @@ public sealed class MainWindowViewModel
 
     public void RefreshViewModels()
     {
-        Dashboard.Refresh();
+        Dashboard.Refresh(_controllerRuntimeState.LastControllerStatus);
         AxisMonitor.RefreshAll();
         Alarm.Refresh();
     }

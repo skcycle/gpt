@@ -1,3 +1,5 @@
+using MotionControl.Domain.Enums;
+
 namespace MotionControl.Infrastructure.Configuration;
 
 public sealed class AxisMappingItem
@@ -9,6 +11,6 @@ public sealed class AxisMappingItem
     public string? MasterAxisName { get; set; }
     public double? SoftLimitPositive { get; set; }
     public double? SoftLimitNegative { get; set; }
-    public string HomeMode { get; set; } = "Default";
+    public HomeMode HomeMode { get; set; } = HomeMode.Default;
     public string ServoBinding { get; set; } = string.Empty;
 }

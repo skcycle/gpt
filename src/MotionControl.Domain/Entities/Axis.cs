@@ -26,6 +26,8 @@ public sealed class Axis
     public bool PositiveLimitTriggered { get; private set; }
     public bool NegativeLimitTriggered { get; private set; }
     public SoftLimit? SoftLimit { get; private set; }
+    public HomeMode HomeMode { get; private set; } = HomeMode.Default;
+    public string ServoBinding { get; private set; } = string.Empty;
 
     public void UpdateFeedback(
         double currentPosition,
@@ -61,4 +63,6 @@ public sealed class Axis
     public void SetAlarm() => HasAlarm = true;
     public void ClearAlarm() => HasAlarm = false;
     public void SetSoftLimit(SoftLimit softLimit) => SoftLimit = softLimit;
+    public void SetHomeMode(HomeMode homeMode) => HomeMode = homeMode;
+    public void SetServoBinding(string servoBinding) => ServoBinding = servoBinding;
 }

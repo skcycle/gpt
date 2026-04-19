@@ -43,6 +43,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<IMotionAppService, MotionAppService>();
 
                 services.AddSingleton<SafetyInterlockService>();
+                services.AddSingleton<ControllerRuntimeState>();
                 services.AddSingleton<AxisPollingService>();
                 services.AddSingleton<IoPollingService>();
                 services.AddSingleton<AlarmPollingService>();
