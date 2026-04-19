@@ -1,5 +1,5 @@
 using System.Windows;
-using MotionControl.App.Bootstrap;
+using MotionControl.Control.Services;
 using MotionControl.Presentation.ViewModels;
 
 namespace MotionControl.App;
@@ -7,13 +7,13 @@ namespace MotionControl.App;
 public partial class MainWindow : Window
 {
     private readonly MainWindowViewModel _viewModel;
-    private readonly Bootstrap.ApplicationContext _applicationContext;
+    private readonly PollingHostedService _pollingHostedService;
 
-    public MainWindow()
+    public MainWindow(MainWindowViewModel viewModel, PollingHostedService pollingHostedService)
     {
         InitializeComponent();
-        _applicationContext = ServiceRegistration.BuildApplicationContext();
-        _viewModel = _applicationContext.MainWindowViewModel;
+        _viewModel = viewModel;
+        _pollingHostedService = pollingHostedService;
         DataContext = _viewModel;
         Loaded += MainWindow_Loaded;
         Closed += MainWindow_Closed;
@@ -22,11 +22,11 @@ public partial class MainWindow : Window
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         await _viewModel.InitializeAsync();
-        _applicationContext.PollingHostedService.Start(TimeSpan.FromMilliseconds(200));
+        _pollingHostedService.Start(TimeSpan.FromMilliseconds(200));
     }
 
     private async void MainWindow_Closed(object? sender, EventArgs e)
     {
-        await _applicationContext.PollingHostedService.StopAsync();
+        await _pollingHostedService.StopAsync();
     }
 }
