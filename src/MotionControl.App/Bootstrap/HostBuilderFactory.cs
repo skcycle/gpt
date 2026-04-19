@@ -50,6 +50,8 @@ public static class HostBuilderFactory
                 services.AddSingleton<SafetyInterlockService>();
                 services.AddSingleton<ControllerRuntimeState>();
                 services.AddSingleton<HomePlanRuntimeState>();
+                services.AddSingleton<CommandFeedbackRuntimeState>();
+                services.AddSingleton<FaultRecoveryService>();
                 services.AddSingleton<AxisPollingService>();
                 services.AddSingleton<IoPollingService>();
                 services.AddSingleton<AlarmPollingService>();
