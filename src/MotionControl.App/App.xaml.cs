@@ -1,10 +1,11 @@
 using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MotionControl.App.Bootstrap;
 
 namespace MotionControl.App;
 
-public partial class App : Application
+public partial class App : System.Windows.Application
 {
     private IHost? _host;
 

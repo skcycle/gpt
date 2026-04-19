@@ -21,7 +21,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public bool IsHomed => _axis.IsHomed;
     public string HomeMode => _axis.HomeMode.ToString();
     public string ServoBinding => _axis.ServoBinding;
-    public string SoftLimitDisplay => _axis.SoftLimit is null ? "N/A" : $"{_axis.SoftLimit.Negative} ~ {_axis.SoftLimit.Positive}";
+    public string SoftLimitDisplay => _axis.SoftLimit is null ? "N/A" : $"{_axis.SoftLimit.Minimum} ~ {_axis.SoftLimit.Maximum}";
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

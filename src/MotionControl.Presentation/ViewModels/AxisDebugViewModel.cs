@@ -96,7 +96,7 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
 
     public string SelectedAxisHomeMode => SelectedAxis?.HomeMode.ToString() ?? "N/A";
     public string SelectedAxisServoBinding => SelectedAxis?.ServoBinding ?? "N/A";
-    public string SelectedAxisSoftLimit => SelectedAxis?.SoftLimit is null ? "N/A" : $"{SelectedAxis.SoftLimit.Negative} ~ {SelectedAxis.SoftLimit.Positive}";
+    public string SelectedAxisSoftLimit => SelectedAxis?.SoftLimit is null ? "N/A" : $"{SelectedAxis.SoftLimit.Minimum} ~ {SelectedAxis.SoftLimit.Maximum}";
     public string SelectedHomePlanTitle => _homePlanRuntimeState.CurrentPlan?.Title ?? "No plan generated";
     public IReadOnlyList<string> SelectedHomePlanSteps => _homePlanRuntimeState.CurrentPlan?.Steps ?? Array.Empty<string>();
     public RelayCommand EnableAxisCommand { get; }
