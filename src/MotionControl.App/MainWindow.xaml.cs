@@ -5,11 +5,16 @@ namespace MotionControl.App;
 
 public partial class MainWindow : Window
 {
-    private readonly MainWindowViewModel _viewModel;
+    private readonly MainWindowViewModel? _viewModel;
+    private bool _initialized;
 
-    public MainWindow(MainWindowViewModel viewModel)
+    public MainWindow()
     {
         InitializeComponent();
+    }
+
+    public MainWindow(MainWindowViewModel viewModel) : this()
+    {
         _viewModel = viewModel;
         DataContext = _viewModel;
         Loaded += MainWindow_Loaded;
@@ -17,6 +22,12 @@ public partial class MainWindow : Window
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        if (_initialized || _viewModel is null)
+        {
+            return;
+        }
+
+        _initialized = true;
         await _viewModel.InitializeAsync();
     }
 }

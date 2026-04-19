@@ -1,9 +1,9 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MotionControl.Application.Interfaces;
 using MotionControl.Application.Services;
 using MotionControl.Control.Interfaces;
-using System.Windows;
 using MotionControl.Control.Homing;
 using MotionControl.Control.Services;
 using MotionControl.Control.StateMachines;
@@ -29,10 +29,12 @@ public static class HostBuilderFactory
                 services.Configure<ZmcControllerOptions>(context.Configuration.GetSection("ZmcController"));
                 services.Configure<AxisMappingOptions>(context.Configuration.GetSection("AxisMapping"));
 
-                var axisMappingOptions = context.Configuration.GetSection("AxisMapping").Get<AxisMappingOptions>() ?? new AxisMappingOptions();
+                var axisMappingOptions = new AxisMappingOptions();
+                context.Configuration.GetSection("AxisMapping").Bind(axisMappingOptions);
                 services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions));
 
-                var zmcControllerOptions = context.Configuration.GetSection("ZmcController").Get<ZmcControllerOptions>() ?? new ZmcControllerOptions();
+                var zmcControllerOptions = new ZmcControllerOptions();
+                context.Configuration.GetSection("ZmcController").Bind(zmcControllerOptions);
                 services.AddSingleton(zmcControllerOptions);
                 services.AddSingleton<ZmcStatusTranslator>();
                 services.AddSingleton<ZmcAxisNativeFacade>();
@@ -58,7 +60,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<AxisStateMachine>();
                 services.AddSingleton<SystemStateMachine>();
                 services.AddSingleton<ControllerPollingService>();
-                services.AddSingleton<IUiRefreshNotifier>(_ => new DispatcherUiRefreshNotifier(Application.Current.Dispatcher));
+                services.AddSingleton<IUiRefreshNotifier, DispatcherUiRefreshNotifier>();
                 services.AddHostedService<PollingHostedService>();
 
                 services.AddSingleton<MainWindowViewModel>();
