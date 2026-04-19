@@ -24,7 +24,7 @@ public sealed class ZmcMotionController(
     public Task<DeviceResult> DisconnectAsync(CancellationToken cancellationToken = default)
     {
         var result = axisNativeFacade.Disconnect();
-        _isConnected = result == 0 ? false : _isConnected;
+        _isConnected = false;
         return Task.FromResult(result == 0 ? DeviceResult.Ok() : DeviceResult.Fail($"ZMC disconnect failed: {result}"));
     }
 
