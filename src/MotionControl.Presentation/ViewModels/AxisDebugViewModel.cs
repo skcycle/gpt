@@ -51,6 +51,12 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             OnPropertyChanged(nameof(SelectedAxisSoftLimit));
             OnPropertyChanged(nameof(SelectedHomePlanTitle));
             OnPropertyChanged(nameof(SelectedHomePlanSteps));
+            EnableAxisCommand.RaiseCanExecuteChanged();
+            HomeAxisCommand.RaiseCanExecuteChanged();
+            MoveAxisCommand.RaiseCanExecuteChanged();
+            StopAxisCommand.RaiseCanExecuteChanged();
+            JogPositiveCommand.RaiseCanExecuteChanged();
+            JogNegativeCommand.RaiseCanExecuteChanged();
         }
     }
 

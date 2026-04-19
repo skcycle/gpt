@@ -60,10 +60,10 @@ public static class HostBuilderFactory
                 services.AddSingleton<AxisStateMachine>();
                 services.AddSingleton<SystemStateMachine>();
                 services.AddSingleton<ControllerPollingService>();
-                services.AddSingleton<IUiRefreshNotifier, DispatcherUiRefreshNotifier>();
-                services.AddHostedService<PollingHostedService>();
-
                 services.AddSingleton<MainWindowViewModel>();
+                services.AddSingleton<MotionControl.Control.Interfaces.IUiRefreshNotifier>(serviceProvider =>
+                    new DispatcherUiRefreshNotifier(serviceProvider.GetRequiredService<MainWindowViewModel>().RefreshViewModels));
+                services.AddHostedService<PollingHostedService>();
                 services.AddSingleton<MainWindow>();
             })
             .Build();

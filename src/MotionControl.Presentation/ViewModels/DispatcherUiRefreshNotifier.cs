@@ -1,8 +1,10 @@
+using System;
+
 namespace MotionControl.Presentation.ViewModels;
 
-public sealed class DispatcherUiRefreshNotifier : IUiRefreshNotifier
+public sealed class DispatcherUiRefreshNotifier(Action refreshAction) : IUiRefreshNotifier
 {
-    public void RequestRefresh(Action refreshAction)
+    public void RequestRefresh()
     {
         refreshAction();
     }
