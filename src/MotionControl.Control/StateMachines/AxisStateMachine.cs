@@ -17,14 +17,14 @@ public sealed class AxisStateMachine
             return AxisState.Disabled;
         }
 
+        if (!axis.IsHomed && axis.ServoState == ServoState.On)
+        {
+            return AxisState.Homing;
+        }
+
         if (Math.Abs(axis.CurrentVelocity) > 0.001d)
         {
             return AxisState.Moving;
-        }
-
-        if (!axis.IsHomed && axis.ServoState == ServoState.On)
-        {
-            return AxisState.Standstill;
         }
 
         return AxisState.Standstill;

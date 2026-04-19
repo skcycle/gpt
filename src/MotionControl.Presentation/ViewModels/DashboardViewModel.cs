@@ -19,9 +19,12 @@ public sealed class DashboardViewModel
     public string EtherCatNetworkState => _controllerStatus?.NetworkState ?? "Unknown";
     public bool EtherCatConnected => _controllerStatus?.IsConnected ?? false;
     public int EtherCatOnlineSlaveCount => _controllerStatus?.OnlineSlaveCount ?? 0;
+    public IReadOnlyList<EtherCatSlaveViewModel> EtherCatSlaves { get; private set; } = Array.Empty<EtherCatSlaveViewModel>();
 
     public void Refresh(EtherCatControllerStatus? controllerStatus = null)
     {
         _controllerStatus = controllerStatus ?? _controllerStatus;
+        EtherCatSlaves = _controllerStatus?.Slaves.Select(slave => new EtherCatSlaveViewModel(slave)).ToArray()
+            ?? Array.Empty<EtherCatSlaveViewModel>();
     }
 }

@@ -13,7 +13,7 @@ public sealed class SystemStateMachine
             return SystemState.Fault;
         }
 
-        if (machine.Axes.Any(axis => axis.HasAlarm) || machine.Alarms.Any(alarm => alarm.IsActive))
+        if (machine.Axes.Any(axis => axis.HasAlarm) || machine.Alarms.Any(alarm => alarm.IsActive) || controllerStatus.Slaves.Any(slave => slave.HasAlarm))
         {
             return SystemState.Alarm;
         }
@@ -21,6 +21,11 @@ public sealed class SystemStateMachine
         if (!controllerStatus.IsOperational)
         {
             return SystemState.Initializing;
+        }
+
+        if (machine.Axes.Any(axis => axis.State == AxisState.Homing))
+        {
+            return SystemState.Manual;
         }
 
         if (machine.Axes.Any(axis => axis.ServoState == ServoState.On))
