@@ -156,10 +156,31 @@
             </TabItem>
 
             <TabItem Header="Alarm">
-                <StackPanel Margin="12">
-                    <TextBlock Text="Active Alarm Axes" FontSize="22" FontWeight="Bold" Margin="0,0,0,12" />
-                    <ListBox ItemsSource="{Binding Alarm.ActiveAlarmAxes}" Height="400" />
-                </StackPanel>
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="220" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Alarm Center" FontSize="22" FontWeight="Bold" Margin="0,0,0,12" />
+
+                    <GroupBox Grid.Row="1" Header="Active Alarm Axes" Margin="0,8,0,12">
+                        <ListBox ItemsSource="{Binding Alarm.ActiveAlarmAxes}" />
+                    </GroupBox>
+
+                    <DataGrid Grid.Row="2" ItemsSource="{Binding Alarm.ActiveAlarms}" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="120" />
+                            <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="220" />
+                            <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="120" />
+                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120" />
+                            <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="100" />
+                            <DataGridTextColumn Header="OccurredAt" Binding="{Binding OccurredAt}" Width="180" />
+                            <DataGridCheckBoxColumn Header="Active" Binding="{Binding IsActive}" Width="80" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </TabItem>
         </TabControl>
     </Grid>

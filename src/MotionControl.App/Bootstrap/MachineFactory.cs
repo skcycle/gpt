@@ -39,6 +39,15 @@ public static class MachineFactory
             .Concat(Enumerable.Range(0, 16).Select(index => new IoPoint($"DO_{index}", index, true)))
             .ToArray();
 
-        return new Machine(axes, Array.Empty<AxisGroup>(), ioPoints, Array.Empty<Alarm>());
+        var alarms = new[]
+        {
+            new Alarm("SYS-001", "EtherCAT controller not connected", DateTime.Now, "System", "Communication", "Warning"),
+            new Alarm("AXIS-001", "Axis 1 follow error placeholder", DateTime.Now, "Axis 1", "Motion", "Error")
+        };
+
+        alarms[0].Clear();
+        alarms[1].Clear();
+
+        return new Machine(axes, Array.Empty<AxisGroup>(), ioPoints, alarms);
     }
 }
