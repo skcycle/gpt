@@ -16,18 +16,32 @@ public sealed class ZmcMotionController(
 
     public Task<DeviceResult> ConnectAsync(CancellationToken cancellationToken = default)
     {
-        _isConnected = true;
-        return Task.FromResult(DeviceResult.Ok());
+        var result = axisNativeFacade.Connect(options.IpAddress);
+        _isConnected = result == 0;
+        return Task.FromResult(_isConnected ? DeviceResult.Ok() : DeviceResult.Fail($"ZMC connect failed: {result}"));
     }
 
     public Task<DeviceResult> DisconnectAsync(CancellationToken cancellationToken = default)
     {
-        _isConnected = false;
-        return Task.FromResult(DeviceResult.Ok());
+        var result = axisNativeFacade.Disconnect();
+        _isConnected = result == 0 ? false : _isConnected;
+        return Task.FromResult(result == 0 ? DeviceResult.Ok() : DeviceResult.Fail($"ZMC disconnect failed: {result}"));
     }
 
     public Task<AxisFeedback> GetAxisFeedbackAsync(int axisNo, CancellationToken cancellationToken = default)
-        => Task.FromResult(statusTranslator.Translate(axisNo));
+    {
+        float dpos = 0;
+        float speed = 0;
+        var idle = 1;
+        var axisStatus = 0;
+
+        axisNativeFacade.GetAxisDpos(axisNo, ref dpos);
+        axisNativeFacade.GetAxisSpeed(axisNo, ref speed);
+        axisNativeFacade.GetAxisIdle(axisNo, ref idle);
+        axisNativeFacade.GetAxisStatus(axisNo, ref axisStatus);
+
+        return Task.FromResult(statusTranslator.Translate(axisNo, dpos, speed, idle, axisStatus));
+    }
 
     public Task<DeviceResult> EnableAxisAsync(int axisNo, CancellationToken cancellationToken = default)
         => Task.FromResult(axisNativeFacade.EnableAxis(axisNo) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC enable axis failed."));
@@ -36,7 +50,7 @@ public sealed class ZmcMotionController(
         => Task.FromResult(axisNativeFacade.DisableAxis(axisNo) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC disable axis failed."));
 
     public Task<DeviceResult> HomeAxisAsync(int axisNo, CancellationToken cancellationToken = default)
-        => Task.FromResult(DeviceResult.Ok());
+        => Task.FromResult(axisNativeFacade.HomeAxis(axisNo) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC home axis failed."));
 
     public Task<DeviceResult> MoveAbsoluteAsync(int axisNo, AxisMoveCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult(axisNativeFacade.MoveAbsolute(axisNo, command.Position, command.Velocity, command.Acceleration, command.Deceleration) == 0
