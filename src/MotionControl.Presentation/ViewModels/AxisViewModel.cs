@@ -1,0 +1,37 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using MotionControl.Domain.Entities;
+
+namespace MotionControl.Presentation.ViewModels;
+
+public sealed class AxisViewModel : INotifyPropertyChanged
+{
+    private readonly Axis _axis;
+
+    public AxisViewModel(Axis axis)
+    {
+        _axis = axis;
+    }
+
+    public string Name => _axis.Name;
+    public int AxisNo => _axis.ControllerAxisNo;
+    public double CurrentPosition => _axis.CurrentPosition;
+    public double CurrentVelocity => _axis.CurrentVelocity;
+    public bool HasAlarm => _axis.HasAlarm;
+    public bool IsHomed => _axis.IsHomed;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void Refresh()
+    {
+        OnPropertyChanged(nameof(CurrentPosition));
+        OnPropertyChanged(nameof(CurrentVelocity));
+        OnPropertyChanged(nameof(HasAlarm));
+        OnPropertyChanged(nameof(IsHomed));
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+}

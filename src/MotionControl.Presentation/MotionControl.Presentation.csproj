@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../MotionControl.Application/MotionControl.Application.csproj" />
+    <ProjectReference Include="../MotionControl.Contracts/MotionControl.Contracts.csproj" />
+  </ItemGroup>
+</Project>
