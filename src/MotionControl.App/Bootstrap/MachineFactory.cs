@@ -1,14 +1,19 @@
 using MotionControl.Domain.Entities;
 using MotionControl.Domain.ValueObjects;
+using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.App.Bootstrap;
 
 public static class MachineFactory
 {
-    public static Machine CreateDefaultMachine()
+    public static Machine CreateDefaultMachine(AxisMappingOptions axisMappingOptions)
     {
+        var axisNames = axisMappingOptions.AxisNames;
         var axes = Enumerable.Range(1, 32)
-            .Select(axisNo => new Axis(new AxisId(axisNo), $"Axis {axisNo}", axisNo))
+            .Select(axisNo => new Axis(
+                new AxisId(axisNo),
+                axisNames.Count >= axisNo ? axisNames[axisNo - 1] : $"Axis {axisNo}",
+                axisNo))
             .ToArray();
 
         var ioPoints = Enumerable.Range(0, 16)

@@ -11,6 +11,7 @@ using MotionControl.Device.Zmc.Native;
 using MotionControl.Device.Zmc.Translators;
 using MotionControl.Diagnostics.Services;
 using MotionControl.Domain.Entities;
+using MotionControl.Infrastructure.Configuration;
 using MotionControl.Presentation.ViewModels;
 
 namespace MotionControl.App.Bootstrap;
@@ -20,10 +21,16 @@ public static class HostBuilderFactory
     public static IHost BuildHost()
     {
         return Host.CreateDefaultBuilder()
-            .ConfigureServices(services =>
+            .ConfigureServices((context, services) =>
             {
-                services.AddSingleton(MachineFactory.CreateDefaultMachine());
-                services.AddSingleton<ZmcControllerOptions>();
+                services.Configure<ZmcControllerOptions>(context.Configuration.GetSection("ZmcController"));
+                services.Configure<AxisMappingOptions>(context.Configuration.GetSection("AxisMapping"));
+
+                var axisMappingOptions = context.Configuration.GetSection("AxisMapping").Get<AxisMappingOptions>() ?? new AxisMappingOptions();
+                services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions));
+
+                var zmcControllerOptions = context.Configuration.GetSection("ZmcController").Get<ZmcControllerOptions>() ?? new ZmcControllerOptions();
+                services.AddSingleton(zmcControllerOptions);
                 services.AddSingleton<ZmcStatusTranslator>();
                 services.AddSingleton<ZmcAxisNativeFacade>();
 
@@ -35,7 +42,8 @@ public static class HostBuilderFactory
 
                 services.AddSingleton<SafetyInterlockService>();
                 services.AddSingleton<ControllerPollingService>();
-                services.AddSingleton<PollingHostedService>();
+                services.AddSingleton<IUiRefreshNotifier, ImmediateUiRefreshNotifier>();
+                services.AddHostedService<PollingHostedService>();
 
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<MainWindow>();
