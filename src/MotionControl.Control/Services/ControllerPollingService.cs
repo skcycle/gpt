@@ -82,6 +82,7 @@ public sealed class ControllerPollingService(
             return;
         }
 
+        var innerLockAcquired = false;
         try
         {
             _pollLock.Release();
@@ -98,6 +99,7 @@ public sealed class ControllerPollingService(
                 return;
             }
 
+            innerLockAcquired = true;
             try
             {
                 var previousSystemState = machine.CurrentState;
@@ -114,6 +116,13 @@ public sealed class ControllerPollingService(
                 }
             }
             finally
+            {
+                _pollLock.Release();
+            }
+        }
+        finally
+        {
+            if (innerLockAcquired)
             {
                 _pollLock.Release();
             }
