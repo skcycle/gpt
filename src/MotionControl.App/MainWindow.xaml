@@ -6,7 +6,7 @@
         Height="760"
         Width="1280"
         MinHeight="680"
-        MinWidth="1180">
+        MinWidth="980">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -100,16 +100,18 @@
             </TabItem>
 
             <TabItem Header="Axis Console">
-                <Grid Margin="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="420" />
-                        <ColumnDefinition Width="18" />
-                        <ColumnDefinition Width="360" />
-                        <ColumnDefinition Width="18" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled">
+                    <Grid Margin="12" MinWidth="1180">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="380" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="320" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="420" />
+                        </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
+                        <Border Grid.Column="0" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -134,7 +136,7 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="16">
+                        <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="16">
                         <StackPanel>
                             <TextBlock Text="Axis Manual Operation" FontSize="22" FontWeight="Bold" Margin="0,0,0,14" />
 
@@ -164,7 +166,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
+                        <Border Grid.Column="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
                         <ScrollViewer VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled">
                             <StackPanel>
@@ -260,8 +262,9 @@
                                 </GroupBox>
                             </StackPanel>
                         </ScrollViewer>
-                    </Border>
-                </Grid>
+                        </Border>
+                    </Grid>
+                </ScrollViewer>
             </TabItem>
 
             <TabItem Header="EtherCAT Monitor">
