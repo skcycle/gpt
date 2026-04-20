@@ -1,17 +1,18 @@
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
+using MotionControl.Control.StateMachines;
 using MotionControl.Domain.Entities;
-using MotionControl.Domain.Enums;
 
 namespace MotionControl.Application.Services;
 
 public sealed class SystemAppService(
     Machine machine,
-    ControllerPollingService controllerPollingService) : ISystemAppService
+    ControllerPollingService controllerPollingService,
+    SystemStateMachine systemStateMachine) : ISystemAppService
 {
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
-        machine.SetSystemState(SystemState.Initializing);
+        machine.SetSystemState(systemStateMachine.OnInitializeRequested());
         await controllerPollingService.StartAsync(cancellationToken);
     }
 

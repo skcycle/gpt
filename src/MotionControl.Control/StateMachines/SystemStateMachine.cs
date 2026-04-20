@@ -6,6 +6,15 @@ namespace MotionControl.Control.StateMachines;
 
 public sealed class SystemStateMachine
 {
+    public SystemState OnInitializeRequested() => SystemState.Initializing;
+
+    public SystemState OnRecoveryStarted() => SystemState.FaultRecovering;
+
+    public SystemState OnRecoveryCompleted() => SystemState.Standby;
+
+    public SystemState OnPolling(Machine machine, EtherCatControllerStatus controllerStatus)
+        => GetNextState(machine, controllerStatus);
+
     public SystemState GetNextState(Machine machine, EtherCatControllerStatus controllerStatus)
     {
         var hasAxisAlarm = machine.Axes.Any(axis => axis.HasAlarm);

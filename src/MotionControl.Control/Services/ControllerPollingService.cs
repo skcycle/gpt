@@ -59,7 +59,7 @@ public sealed class ControllerPollingService(
 
             var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
             controllerRuntimeState.Update(controllerStatus);
-            var nextSystemState = systemStateMachine.GetNextState(machine, controllerStatus);
+            var nextSystemState = systemStateMachine.OnPolling(machine, controllerStatus);
             machine.SetSystemState(nextSystemState);
         }
         finally

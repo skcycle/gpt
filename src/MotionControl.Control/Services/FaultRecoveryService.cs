@@ -1,13 +1,15 @@
+using MotionControl.Control.StateMachines;
 using MotionControl.Domain.Entities;
-using MotionControl.Domain.Enums;
 
 namespace MotionControl.Control.Services;
 
-public sealed class FaultRecoveryService(CommandFeedbackRuntimeState commandFeedbackRuntimeState)
+public sealed class FaultRecoveryService(
+    CommandFeedbackRuntimeState commandFeedbackRuntimeState,
+    SystemStateMachine systemStateMachine)
 {
     public void BeginRecovery(Machine machine)
     {
-        machine.SetSystemState(SystemState.FaultRecovering);
+        machine.SetSystemState(systemStateMachine.OnRecoveryStarted());
         commandFeedbackRuntimeState.Add(new CommandFeedback
         {
             CommandName = "FaultRecovery",
@@ -18,7 +20,7 @@ public sealed class FaultRecoveryService(CommandFeedbackRuntimeState commandFeed
 
     public void CompleteRecovery(Machine machine)
     {
-        machine.SetSystemState(SystemState.Standby);
+        machine.SetSystemState(systemStateMachine.OnRecoveryCompleted());
         commandFeedbackRuntimeState.Add(new CommandFeedback
         {
             CommandName = "FaultRecovery",
