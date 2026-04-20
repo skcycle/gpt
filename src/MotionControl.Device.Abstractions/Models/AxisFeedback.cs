@@ -4,7 +4,8 @@ namespace MotionControl.Device.Abstractions.Models;
 
 public sealed record AxisFeedback(
     int AxisNo,
-    double CurrentPosition,
+    double CommandPosition,
+    double EncoderPosition,
     double CurrentVelocity,
     AxisState AxisState,
     ServoState ServoState,

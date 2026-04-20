@@ -19,6 +19,7 @@ public sealed class Axis
     public ServoState ServoState { get; private set; } = ServoState.Off;
     public MotionMode MotionMode { get; private set; } = MotionMode.None;
     public double CurrentPosition { get; private set; }
+    public double EncoderPosition { get; private set; }
     public double CurrentVelocity { get; private set; }
     public double TargetPosition { get; private set; }
     public bool IsHomed { get; private set; }
@@ -36,6 +37,7 @@ public sealed class Axis
 
     public void UpdateFeedback(
         double currentPosition,
+        double encoderPosition,
         double currentVelocity,
         AxisState state,
         ServoState servoState,
@@ -47,6 +49,7 @@ public sealed class Axis
         bool negativeSoftLimitTriggered)
     {
         CurrentPosition = currentPosition;
+        EncoderPosition = encoderPosition;
         CurrentVelocity = currentVelocity;
         State = state;
         ServoState = servoState;

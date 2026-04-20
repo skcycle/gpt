@@ -16,6 +16,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public string Name => _axis.Name;
     public int AxisNo => _axis.Id.Value;
     public double CurrentPosition => _axis.CurrentPosition;
+    public double EncoderPosition => _axis.EncoderPosition;
     public double CurrentVelocity => _axis.CurrentVelocity;
     public bool HasAlarm => _axis.HasAlarm;
     public bool IsHomed => _axis.IsHomed;
@@ -29,6 +30,8 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public double WorkVelocity => _axis.WorkVelocity;
     public double SetupVelocity => _axis.SetupVelocity;
     public double PulseEquivalent => _axis.PulseEquivalent;
+    public double CommandPositionMm => PulseEquivalent <= 0 ? 0 : CurrentPosition / PulseEquivalent;
+    public double EncoderPositionMm => PulseEquivalent <= 0 ? 0 : EncoderPosition / PulseEquivalent;
     public string SoftLimitDisplay => _axis.SoftLimit is null ? "N/A" : $"{_axis.SoftLimit.Minimum} ~ {_axis.SoftLimit.Maximum}";
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -36,6 +39,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public void Refresh()
     {
         OnPropertyChanged(nameof(CurrentPosition));
+        OnPropertyChanged(nameof(EncoderPosition));
         OnPropertyChanged(nameof(CurrentVelocity));
         OnPropertyChanged(nameof(HasAlarm));
         OnPropertyChanged(nameof(IsHomed));
@@ -47,6 +51,8 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(WorkVelocity));
         OnPropertyChanged(nameof(SetupVelocity));
         OnPropertyChanged(nameof(PulseEquivalent));
+        OnPropertyChanged(nameof(CommandPositionMm));
+        OnPropertyChanged(nameof(EncoderPositionMm));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

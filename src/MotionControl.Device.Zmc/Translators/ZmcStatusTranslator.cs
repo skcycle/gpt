@@ -17,7 +17,7 @@ public sealed class ZmcStatusTranslator
     private const int AxisWarningInputBit = 1 << 22; // 400000h
     private const int AxisInAlarmStateBit = 1 << 23; // 800000h
 
-    public AxisFeedback Translate(int axisNo, float dpos, float speed, int idle, int axisStatus, int homeStatus, int busEnableStatus)
+    public AxisFeedback Translate(int axisNo, float dpos, float mpos, float speed, int idle, int axisStatus, int homeStatus, int busEnableStatus)
     {
         var axisState = idle == 0 ? AxisState.Moving : AxisState.Standstill;
         var servoState = busEnableStatus != 0 ? ServoState.On : ServoState.Off;
@@ -37,6 +37,7 @@ public sealed class ZmcStatusTranslator
         return new AxisFeedback(
             axisNo,
             dpos,
+            mpos,
             speed,
             axisState,
             servoState,

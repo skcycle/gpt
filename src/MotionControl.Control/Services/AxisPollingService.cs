@@ -16,7 +16,8 @@ public sealed class AxisPollingService(
         {
             var feedback = await motionController.GetAxisFeedbackAsync(axis.ControllerAxisNo, cancellationToken);
             axis.UpdateFeedback(
-                feedback.CurrentPosition,
+                feedback.CommandPosition,
+                feedback.EncoderPosition,
                 feedback.CurrentVelocity,
                 feedback.AxisState,
                 feedback.ServoState,
