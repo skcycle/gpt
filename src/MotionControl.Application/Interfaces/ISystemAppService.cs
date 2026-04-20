@@ -6,4 +6,5 @@ public interface ISystemAppService
     Task RefreshAsync(CancellationToken cancellationToken = default);
     Task EmergencyStopAsync(CancellationToken cancellationToken = default);
     Task ClearEmergencyStopAsync(CancellationToken cancellationToken = default);
+    Task ReconnectAsync(CancellationToken cancellationToken = default);
 }

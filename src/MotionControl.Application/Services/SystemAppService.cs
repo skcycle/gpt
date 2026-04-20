@@ -32,4 +32,9 @@ public sealed class SystemAppService(
         machine.SetSystemState(systemStateMachine.OnEmergencyStopCleared(machine, null));
         await controllerPollingService.PollOnceAsync(cancellationToken);
     }
+
+    public async Task ReconnectAsync(CancellationToken cancellationToken = default)
+    {
+        await controllerPollingService.ReconnectAsync(cancellationToken);
+    }
 }

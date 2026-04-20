@@ -31,6 +31,7 @@
                         <TextBlock Text="Industrial Runtime Online" FontWeight="SemiBold" />
                         <Button Content="E-STOP" Command="{Binding EmergencyStopCommand}" Margin="20,0,0,0" Padding="10,4" FontWeight="Bold" Background="#8B0000" Foreground="White" />
                         <Button Content="CLR ESTOP" Command="{Binding ClearEmergencyStopCommand}" Margin="6,0,0,0" Padding="10,4" FontWeight="Bold" Background="#1A5C1A" Foreground="White" />
+                        <Button Content="Reconnect" Command="{Binding ReconnectCommand}" Margin="6,0,0,0" Padding="10,4" FontWeight="Bold" Background="#1A4A8B" Foreground="White" />
                     </StackPanel>
                 </Border>
             </Grid>

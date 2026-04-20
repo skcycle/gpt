@@ -23,8 +23,11 @@ public sealed class Machine
     public IReadOnlyCollection<IoPoint> IoPoints { get; }
     public IReadOnlyCollection<Alarm> Alarms => _alarms;
     public SystemState CurrentState { get; private set; } = SystemState.Initializing;
+    public bool IsConnected { get; private set; }
 
     public void SetSystemState(SystemState state) => CurrentState = state;
+
+    public void SetConnected(bool connected) => IsConnected = connected;
 
     public bool UpsertAlarm(string code, string message, string source = "System", string category = "General", string severity = "Error")
     {

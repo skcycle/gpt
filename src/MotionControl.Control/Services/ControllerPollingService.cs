@@ -1,6 +1,7 @@
 using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Domain.Entities;
+using MotionControl.Domain.Enums;
 
 namespace MotionControl.Control.Services;
 
@@ -33,9 +34,15 @@ public sealed class ControllerPollingService(
         var result = await motionController.ConnectAsync(cancellationToken);
         if (!result.Success)
         {
-            throw new InvalidOperationException($"Controller connect failed: {result.ErrorMessage}");
+            machine.SetConnected(false);
+            machine.UpsertAlarm("SYS-CONTROLLER-DISCONNECTED", $"Controller connect failed: {result.ErrorMessage}", "System", "Communication", "Error");
+            commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Connect", Status = "Failed", Message = result.ErrorMessage ?? "Unknown error" });
+            machine.SetSystemState(SystemState.Fault);
+            _isRunning = false;
+            return;
         }
 
+        machine.SetConnected(true);
         _isRunning = true;
         var syncingState = systemStateMachine.OnSyncingRequested();
         if (machine.CurrentState != syncingState)
@@ -54,7 +61,14 @@ public sealed class ControllerPollingService(
         }
 
         await motionController.DisconnectAsync(cancellationToken);
+        machine.SetConnected(false);
         _isRunning = false;
+    }
+
+    public async Task ReconnectAsync(CancellationToken cancellationToken = default)
+    {
+        await StopAsync(cancellationToken);
+        await StartAsync(cancellationToken);
     }
 
     public async Task PollOnceAsync(CancellationToken cancellationToken = default)
