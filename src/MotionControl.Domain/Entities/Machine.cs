@@ -5,6 +5,7 @@ namespace MotionControl.Domain.Entities;
 public sealed class Machine
 {
     private readonly List<Axis> _axes;
+    private readonly List<IoPoint> _ioPoints;
     private readonly List<Alarm> _alarms;
 
     public Machine(
@@ -15,13 +16,13 @@ public sealed class Machine
     {
         _axes = axes.ToList();
         Groups = groups;
-        IoPoints = ioPoints ?? Array.Empty<IoPoint>();
+        _ioPoints = ioPoints?.ToList() ?? new List<IoPoint>();
         _alarms = alarms?.ToList() ?? new List<Alarm>();
     }
 
     public IReadOnlyCollection<Axis> Axes => _axes;
     public IReadOnlyCollection<AxisGroup> Groups { get; }
-    public IReadOnlyCollection<IoPoint> IoPoints { get; }
+    public IReadOnlyCollection<IoPoint> IoPoints => _ioPoints;
     public IReadOnlyCollection<Alarm> Alarms => _alarms;
     public SystemState CurrentState { get; private set; } = SystemState.Initializing;
     public bool IsConnected { get; private set; }
@@ -49,6 +50,28 @@ public sealed class Machine
         }
 
         _axes.Remove(axis);
+        return true;
+    }
+
+    public void AddIoPoint(IoPoint ioPoint)
+    {
+        if (_ioPoints.Any(existing => existing.IsOutput == ioPoint.IsOutput && existing.Address == ioPoint.Address))
+        {
+            return;
+        }
+
+        _ioPoints.Add(ioPoint);
+    }
+
+    public bool RemoveIoPoint(bool isOutput, int address)
+    {
+        var ioPoint = _ioPoints.FirstOrDefault(item => item.IsOutput == isOutput && item.Address == address);
+        if (ioPoint is null)
+        {
+            return false;
+        }
+
+        _ioPoints.Remove(ioPoint);
         return true;
     }
 

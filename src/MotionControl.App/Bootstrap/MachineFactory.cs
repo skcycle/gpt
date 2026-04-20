@@ -6,7 +6,7 @@ namespace MotionControl.App.Bootstrap;
 
 public static class MachineFactory
 {
-    public static Machine CreateDefaultMachine(AxisMappingOptions axisMappingOptions)
+    public static Machine CreateDefaultMachine(AxisMappingOptions axisMappingOptions, IReadOnlyCollection<MotionControl.Infrastructure.Configuration.IoPointConfigItem>? ioPointConfigs = null)
     {
         var axisNames = axisMappingOptions.AxisNames;
         var axisMappings = axisMappingOptions.Axes;
@@ -41,9 +41,11 @@ public static class MachineFactory
             })
             .ToArray();
 
-        var ioPoints = Enumerable.Range(0, 16)
-            .Select(index => new IoPoint($"DI_{index}", index, false))
-            .Concat(Enumerable.Range(0, 16).Select(index => new IoPoint($"DO_{index}", index, true)))
+        var ioPoints = (ioPointConfigs is { Count: > 0 }
+                ? ioPointConfigs.Select(item => new IoPoint(item.Name, item.Address, item.IsOutput, item.Description))
+                : Enumerable.Range(0, 16)
+                    .Select(index => new IoPoint($"DI_{index}", index, false))
+                    .Concat(Enumerable.Range(0, 16).Select(index => new IoPoint($"DO_{index}", index, true))))
             .ToArray();
 
         var alarms = new[]

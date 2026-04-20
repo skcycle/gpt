@@ -17,6 +17,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private readonly Machine _machine;
     private readonly IAxisParameterAppService _axisParameterAppService;
     private readonly IAxisRuntimeParameterSyncService _axisRuntimeParameterSyncService;
+    private readonly IIoConfigAppService _ioConfigAppService;
     private readonly ISystemAppService _systemAppService;
     private readonly ControllerRuntimeState _controllerRuntimeState;
     private readonly Timer _clockTimer;
@@ -34,6 +35,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         IAxisParameterAppService axisParameterAppService,
         IAxisRuntimeParameterSyncService axisRuntimeParameterSyncService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
+        IIoConfigAppService ioConfigAppService,
         ControllerRuntimeState controllerRuntimeState,
         HomePlanRuntimeState homePlanRuntimeState,
         CommandFeedbackRuntimeState commandFeedbackRuntimeState,
@@ -42,12 +44,24 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _machine = machine;
         _axisParameterAppService = axisParameterAppService;
         _axisRuntimeParameterSyncService = axisRuntimeParameterSyncService;
+        _ioConfigAppService = ioConfigAppService;
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine, commandFeedbackRuntimeState);
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
         AxisMonitor = new AxisMonitorViewModel(machine);
         IoMonitor = new IoMonitorViewModel(machine, ioControlService);
+        IoMonitor.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(IoMonitorViewModel.SelectedInput))
+            {
+                (DeleteInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+            else if (args.PropertyName == nameof(IoMonitorViewModel.SelectedOutput))
+            {
+                (DeleteOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+        };
         IoEventLog = new IoEventLogViewModel(commandFeedbackRuntimeState);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState);
         AxisParameterEditor = new AxisParameterEditorViewModel(axisParameterAppService, axisRuntimeParameterSyncService, axisControllerParameterAppService);
@@ -64,6 +78,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             });
         AddAxisCommand = new RelayCommand(async () => await AddAxisAsync());
         DeleteAxisCommand = new RelayCommand(async () => await DeleteSelectedAxisAsync(), () => AxisMonitor.SelectedAxis is not null);
+        AddInputCommand = new RelayCommand(async () => await AddIoPointAsync(false));
+        AddOutputCommand = new RelayCommand(async () => await AddIoPointAsync(true));
+        DeleteInputCommand = new RelayCommand(async () => await DeleteSelectedInputAsync(), () => IoMonitor.SelectedInput is not null);
+        DeleteOutputCommand = new RelayCommand(async () => await DeleteSelectedOutputAsync(), () => IoMonitor.SelectedOutput is not null);
+        SaveIoConfigCommand = new RelayCommand(async () => await SaveIoConfigAsync());
+        LoadIoConfigCommand = new RelayCommand(async () => await LoadIoConfigAsync());
         _clockTimer = new Timer(_ => CurrentBeijingTime = GetBeijingTimeString(), null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
     }
 
@@ -95,6 +115,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     public ICommand ReconnectCommand { get; }
     public ICommand AddAxisCommand { get; }
     public ICommand DeleteAxisCommand { get; }
+    public ICommand AddInputCommand { get; }
+    public ICommand AddOutputCommand { get; }
+    public ICommand DeleteInputCommand { get; }
+    public ICommand DeleteOutputCommand { get; }
+    public ICommand SaveIoConfigCommand { get; }
+    public ICommand LoadIoConfigCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -207,6 +233,94 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         _machine.RemoveAxis(axisNo);
         AxisMonitor.RemoveAxis(axisNo);
+        RefreshViewModels(force: true);
+    }
+
+    private async Task AddIoPointAsync(bool isOutput)
+    {
+        var item = await _ioConfigAppService.AddIoPointAsync(isOutput);
+        _machine.AddIoPoint(new IoPoint(item.Name, item.Address, item.IsOutput, item.Description));
+        IoMonitor.RefreshAll();
+        RefreshViewModels(force: true);
+    }
+
+    private async Task DeleteSelectedInputAsync()
+    {
+        var selected = IoMonitor.SelectedInput;
+        if (selected is null)
+        {
+            return;
+        }
+
+        var removed = await _ioConfigAppService.DeleteIoPointAsync(false, selected.Address);
+        if (!removed)
+        {
+            return;
+        }
+
+        _machine.RemoveIoPoint(false, selected.Address);
+        IoMonitor.SelectedInput = null;
+        IoMonitor.RefreshAll();
+        (DeleteInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        RefreshViewModels(force: true);
+    }
+
+    private async Task DeleteSelectedOutputAsync()
+    {
+        var selected = IoMonitor.SelectedOutput;
+        if (selected is null)
+        {
+            return;
+        }
+
+        var removed = await _ioConfigAppService.DeleteIoPointAsync(true, selected.Address);
+        if (!removed)
+        {
+            return;
+        }
+
+        _machine.RemoveIoPoint(true, selected.Address);
+        IoMonitor.SelectedOutput = null;
+        IoMonitor.RefreshAll();
+        (DeleteOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        RefreshViewModels(force: true);
+    }
+
+    private async Task SaveIoConfigAsync()
+    {
+        var items = IoMonitor.GetAllIoPoints()
+            .Select(io => new MotionControl.Infrastructure.Configuration.IoPointConfigItem
+            {
+                Name = io.Name,
+                Address = io.Address,
+                IsOutput = io.IsOutput,
+                Description = io.Description
+            })
+            .ToList();
+
+        await _ioConfigAppService.SaveIoPointsAsync(items);
+        IoMonitor.RefreshAll();
+        RefreshViewModels(force: true);
+    }
+
+    private async Task LoadIoConfigAsync()
+    {
+        var items = await _ioConfigAppService.LoadIoPointsAsync();
+        foreach (var ioPoint in _machine.IoPoints.ToList())
+        {
+            _machine.RemoveIoPoint(ioPoint.IsOutput, ioPoint.Address);
+        }
+
+        foreach (var item in items)
+        {
+            _machine.AddIoPoint(new IoPoint(item.Name, item.Address, item.IsOutput, item.Description));
+        }
+
+        IoMonitor.SelectedInput = null;
+        IoMonitor.SelectedOutput = null;
+        IoMonitor.RefreshAll();
+        (DeleteInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (DeleteOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         RefreshViewModels(force: true);
     }
 

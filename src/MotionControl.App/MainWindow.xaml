@@ -284,6 +284,8 @@
             <TabItem Header="IO Monitor">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="12" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="8" />
                         <RowDefinition Height="180" />
@@ -294,13 +296,23 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <GroupBox Header="Digital Inputs">
-                        <DataGrid ItemsSource="{Binding IoMonitor.Inputs}" AutoGenerateColumns="False" IsReadOnly="True">
+                    <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,0,0,4">
+                        <Button Content="Add DI" Command="{Binding AddInputCommand}" Padding="10,4" Margin="0,0,8,0" />
+                        <Button Content="Delete DI" Command="{Binding DeleteInputCommand}" Padding="10,4" Margin="0,0,16,0" />
+                        <Button Content="Add DO" Command="{Binding AddOutputCommand}" Padding="10,4" Margin="0,0,8,0" />
+                        <Button Content="Delete DO" Command="{Binding DeleteOutputCommand}" Padding="10,4" Margin="0,0,16,0" />
+                        <Button Content="Save" Command="{Binding SaveIoConfigCommand}" Padding="10,4" Margin="0,0,8,0" />
+                        <Button Content="Load" Command="{Binding LoadIoConfigCommand}" Padding="10,4" />
+                    </StackPanel>
+
+                    <GroupBox Grid.Row="2" Header="Digital Inputs">
+                        <DataGrid ItemsSource="{Binding IoMonitor.Inputs}" SelectedItem="{Binding IoMonitor.SelectedInput, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="False">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="140" />
-                                <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="100" />
-                                <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" Width="100" />
-                                <DataGridTemplateColumn Header="Value" Width="100">
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" />
+                                <DataGridTextColumn Header="Address" Binding="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
+                                <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" Width="70" IsReadOnly="True" />
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                <DataGridTemplateColumn Header="Value" Width="80">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <CheckBox IsChecked="{Binding Value, Mode=OneWay}" IsHitTestVisible="False" HorizontalAlignment="Center" />
@@ -311,11 +323,12 @@
                         </DataGrid>
                     </GroupBox>
 
-                    <GroupBox Grid.Column="2" Header="Digital Outputs">
-                        <DataGrid ItemsSource="{Binding IoMonitor.Outputs}" AutoGenerateColumns="False" IsReadOnly="True">
+                    <GroupBox Grid.Row="2" Grid.Column="2" Header="Digital Outputs">
+                        <DataGrid ItemsSource="{Binding IoMonitor.Outputs}" SelectedItem="{Binding IoMonitor.SelectedOutput, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="False">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="100" />
-                                <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="80" />
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" />
+                                <DataGridTextColumn Header="Address" Binding="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
                                 <DataGridTemplateColumn Header="Value" Width="70">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -323,7 +336,7 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Header="Toggle" Width="80">
+                                <DataGridTemplateColumn Header="Toggle" Width="80" IsReadOnly="True">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Content="Toggle"

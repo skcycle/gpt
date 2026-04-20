@@ -30,10 +30,13 @@ public static class HostBuilderFactory
             {
                 services.Configure<ZmcControllerOptions>(context.Configuration.GetSection("ZmcController"));
                 services.Configure<AxisMappingOptions>(context.Configuration.GetSection("AxisMapping"));
+                services.Configure<IoMappingOptions>(context.Configuration.GetSection("IoMapping"));
 
                 var axisMappingOptions = new AxisMappingOptions();
                 context.Configuration.GetSection("AxisMapping").Bind(axisMappingOptions);
-                services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions));
+                var ioMappingOptions = new IoMappingOptions();
+                context.Configuration.GetSection("IoMapping").Bind(ioMappingOptions);
+                services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions, ioMappingOptions.Points));
 
                 var zmcControllerOptions = new ZmcControllerOptions();
                 context.Configuration.GetSection("ZmcController").Bind(zmcControllerOptions);
@@ -53,6 +56,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<IAxisRuntimeParameterSyncService, AxisRuntimeParameterSyncService>();
                 services.AddSingleton<IAxisControllerParameterAppService, AxisControllerParameterAppService>();
                 services.AddSingleton<IAxisParameterAppService>(_ => new AxisParameterAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
+                services.AddSingleton<IIoConfigAppService>(_ => new IoConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
 
                 services.AddSingleton<SafetyInterlockService>();
                 services.AddSingleton<ControllerRuntimeState>();

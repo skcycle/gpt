@@ -10,6 +10,8 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
     private readonly IoControlService _ioControlService;
+    private IoPointViewModel? _selectedInput;
+    private IoPointViewModel? _selectedOutput;
 
     public IoMonitorViewModel(Machine machine, IoControlService ioControlService)
     {
@@ -22,6 +24,28 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
     public ObservableCollection<IoPointViewModel> Inputs { get; private set; }
     public ObservableCollection<IoPointViewModel> Outputs { get; private set; }
 
+    public IoPointViewModel? SelectedInput
+    {
+        get => _selectedInput;
+        set
+        {
+            if (_selectedInput == value) return;
+            _selectedInput = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public IoPointViewModel? SelectedOutput
+    {
+        get => _selectedOutput;
+        set
+        {
+            if (_selectedOutput == value) return;
+            _selectedOutput = value;
+            OnPropertyChanged();
+        }
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public void RefreshAll()
@@ -31,6 +55,26 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Inputs));
         OnPropertyChanged(nameof(Outputs));
     }
+
+    public void SelectIoPoint(IoPointViewModel? ioPoint)
+    {
+        if (ioPoint is null)
+        {
+            return;
+        }
+
+        if (ioPoint.IsOutput)
+        {
+            SelectedOutput = ioPoint;
+        }
+        else
+        {
+            SelectedInput = ioPoint;
+        }
+    }
+
+    public IReadOnlyList<IoPointViewModel> GetAllIoPoints()
+        => Inputs.Concat(Outputs).ToList();
 
     private ObservableCollection<IoPointViewModel> BuildInputs()
         => new(_machine.IoPoints.Where(io => !io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService)));

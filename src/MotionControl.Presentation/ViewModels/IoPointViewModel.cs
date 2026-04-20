@@ -33,10 +33,41 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
             () => IsOutput);
     }
 
-    public string Name => _ioPoint.Name;
-    public int Address => _ioPoint.Address;
+    public string Name
+    {
+        get => _ioPoint.Name;
+        set
+        {
+            if (_ioPoint.Name == value) return;
+            _ioPoint.UpdateMetadata(value, _ioPoint.Address, _ioPoint.Description);
+            OnPropertyChanged();
+        }
+    }
+
+    public int Address
+    {
+        get => _ioPoint.Address;
+        set
+        {
+            if (_ioPoint.Address == value) return;
+            _ioPoint.UpdateMetadata(_ioPoint.Name, value, _ioPoint.Description);
+            OnPropertyChanged();
+        }
+    }
+
     public bool IsOutput => _ioPoint.IsOutput;
     public string Direction => _ioPoint.IsOutput ? "DO" : "DI";
+    public string Description
+    {
+        get => _ioPoint.Description;
+        set
+        {
+            if (_ioPoint.Description == value) return;
+            _ioPoint.UpdateMetadata(_ioPoint.Name, _ioPoint.Address, value);
+            OnPropertyChanged();
+        }
+    }
+
     public bool Value => _value;
 
     public ICommand SetCommand { get; }
@@ -48,6 +79,9 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
         var newValue = _ioPoint.Value;
         _value = newValue;
         OnPropertyChanged(nameof(Value));
+        OnPropertyChanged(nameof(Name));
+        OnPropertyChanged(nameof(Address));
+        OnPropertyChanged(nameof(Description));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
