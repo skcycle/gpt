@@ -19,6 +19,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public double CurrentVelocity => _axis.CurrentVelocity;
     public bool HasAlarm => _axis.HasAlarm;
     public bool IsHomed => _axis.IsHomed;
+    public bool IsServoOn => _axis.ServoState == Domain.Enums.ServoState.On;
     public string HomeMode => _axis.HomeMode.ToString();
     public string ServoBinding => _axis.ServoBinding;
     public string SoftLimitDisplay => _axis.SoftLimit is null ? "N/A" : $"{_axis.SoftLimit.Minimum} ~ {_axis.SoftLimit.Maximum}";
@@ -31,6 +32,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CurrentVelocity));
         OnPropertyChanged(nameof(HasAlarm));
         OnPropertyChanged(nameof(IsHomed));
+        OnPropertyChanged(nameof(IsServoOn));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
