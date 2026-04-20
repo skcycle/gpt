@@ -108,90 +108,88 @@
             <TabItem Header="Axis Console">
                 <Grid Margin="12">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="360" />
+                        <ColumnDefinition Width="2*" MinWidth="500" />
                         <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="400" />
+                        <ColumnDefinition Width="1.5*" MinWidth="320" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="380" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- Left column: Axis Monitor (top) + Manual Operation (bottom) -->
-                    <Grid Grid.Column="0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" MinHeight="160" />
-                            <RowDefinition Height="16" />
-                            <RowDefinition Height="Auto" MinHeight="200" />
-                        </Grid.RowDefinitions>
+                    <!-- Column 0: Axis Monitor (full height) -->
+                    <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
 
-                        <!-- Top left: Axis Monitor -->
-                        <Border Grid.Row="0" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-
-                                <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                                    <TextBlock Text="Axis Monitor" FontSize="22" FontWeight="Bold" />
-                                    <TextBlock Text="Real-time axis overview and selection" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,6,0,0" />
-                                </StackPanel>
-
-                                <DataGrid Grid.Row="1"
-                                          x:Name="AxisMonitorDataGrid"
-                                          ItemsSource="{Binding AxisMonitor.Axes}"
-                                          SelectedItem="{Binding AxisMonitor.SelectedAxis, Mode=TwoWay}"
-                                          AutoGenerateColumns="False"
-                                          IsReadOnly="True"
-                                          HorizontalScrollBarVisibility="Auto"
-                                          PreviewMouseWheel="AxisMonitorDataGrid_PreviewMouseWheel">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="AxisNo" Binding="{Binding AxisNo}" Width="60" />
-                                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="90" />
-                                        <DataGridTextColumn Header="Position" Binding="{Binding CurrentPosition}" Width="90" />
-                                        <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed, Mode=OneWay}" Width="55" />
-                                        <DataGridCheckBoxColumn Header="ServoOn" Binding="{Binding IsServoOn, Mode=OneWay}" Width="70" />
-                                        <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding HasAlarm, Mode=OneWay}" Width="55" />
-                                        <DataGridCheckBoxColumn Header="Soft-" Binding="{Binding NegativeSoftLimitTriggered, Mode=OneWay}" Width="55" />
-                                        <DataGridCheckBoxColumn Header="Soft+" Binding="{Binding PositiveSoftLimitTriggered, Mode=OneWay}" Width="55" />
-                                        <DataGridCheckBoxColumn Header="Hard-" Binding="{Binding NegativeHardLimitTriggered, Mode=OneWay}" Width="55" />
-                                        <DataGridCheckBoxColumn Header="Hard+" Binding="{Binding PositiveHardLimitTriggered, Mode=OneWay}" Width="55" />
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </Grid>
-                        </Border>
-
-                        <!-- Bottom left: Axis Manual Operation -->
-                        <Border Grid.Row="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="16">
-                            <StackPanel>
-                                <TextBlock Text="Axis Manual Operation" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" />
-
-                                <TextBlock Text="Selected Axis" Foreground="{StaticResource SecondaryTextBrush}" />
-                                <TextBlock Text="{Binding AxisDebug.SelectedAxisNo}" FontSize="20" FontWeight="Bold" Margin="0,6,0,10" />
-
-                                <TextBlock Text="Target Position" Foreground="{StaticResource SecondaryTextBrush}" />
-                                <TextBox Text="{Binding AxisDebug.TargetPosition}" Margin="0,6,0,10" />
-
-                                <TextBlock Text="Velocity" Foreground="{StaticResource SecondaryTextBrush}" />
-                                <TextBox Text="{Binding AxisDebug.Velocity}" Margin="0,6,0,10" />
-
-                                <TextBlock Text="Acceleration" Foreground="{StaticResource SecondaryTextBrush}" />
-                                <TextBox Text="{Binding AxisDebug.Acceleration}" Margin="0,6,0,10" />
-
-                                <TextBlock Text="Deceleration" Foreground="{StaticResource SecondaryTextBrush}" />
-                                <TextBox Text="{Binding AxisDebug.Deceleration}" Margin="0,6,0,14" />
-
-                                <WrapPanel>
-                                    <Button Content="Enable" Command="{Binding AxisDebug.EnableAxisCommand}" Width="96" />
-                                    <Button Content="Home" Command="{Binding AxisDebug.HomeAxisCommand}" Width="96" />
-                                    <Button Content="Move" Command="{Binding AxisDebug.MoveAxisCommand}" Width="96" />
-                                    <Button Content="Stop" Command="{Binding AxisDebug.StopAxisCommand}" Width="96" />
-                                    <Button x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
-                                    <Button x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
-                                </WrapPanel>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                <TextBlock Text="Axis Monitor" FontSize="22" FontWeight="Bold" />
+                                <TextBlock Text="Real-time axis overview and selection" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,6,0,0" />
                             </StackPanel>
-                        </Border>
-                    </Grid>
+
+                            <DataGrid Grid.Row="1"
+                                      x:Name="AxisMonitorDataGrid"
+                                      ItemsSource="{Binding AxisMonitor.Axes}"
+                                      SelectedItem="{Binding AxisMonitor.SelectedAxis, Mode=TwoWay}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      HorizontalScrollBarVisibility="Auto"
+                                      PreviewMouseWheel="AxisMonitorDataGrid_PreviewMouseWheel">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="AxisNo" Binding="{Binding AxisNo}" Width="60" />
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="90" />
+                                    <DataGridTextColumn Header="Position" Binding="{Binding CurrentPosition}" Width="90" />
+                                    <DataGridTextColumn Header="Velocity" Binding="{Binding CurrentVelocity}" Width="80" />
+                                    <DataGridTextColumn Header="Torque" Binding="{Binding CurrentTorque}" Width="70" />
+                                    <DataGridTextColumn Header="State" Binding="{Binding State}" Width="80" />
+                                    <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="ServoOn" Binding="{Binding IsServoOn, Mode=OneWay}" Width="65" />
+                                    <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding HasAlarm, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Warn" Binding="{Binding HasWarning, Mode=OneWay}" Width="50" />
+                                    <DataGridCheckBoxColumn Header="FF-OK" Binding="{Binding FollowingErrorTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Soft-&quot; Binding="{Binding NegativeSoftLimitTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Soft+&quot; Binding="{Binding PositiveSoftLimitTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Hard-&quot; Binding="{Binding NegativeHardLimitTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Hard+&quot; Binding="{Binding PositiveHardLimitTriggered, Mode=OneWay}" Width="55" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Column 2: Axis Manual Operation -->
+                    <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="16">
+                        <StackPanel>
+                            <TextBlock Text="Axis Manual Operation" FontSize="20" FontWeight="Bold" Margin="0,0,0,14" />
+
+                            <TextBlock Text="Selected Axis" Foreground="{StaticResource SecondaryTextBrush}" />
+                            <TextBlock Text="{Binding AxisDebug.SelectedAxisNo}" FontSize="20" FontWeight="Bold" Margin="0,6,0,10" />
+
+                            <TextBlock Text="Target Position" Foreground="{StaticResource SecondaryTextBrush}" />
+                            <TextBox Text="{Binding AxisDebug.TargetPosition}" Margin="0,6,0,10" />
+
+                            <TextBlock Text="Velocity" Foreground="{StaticResource SecondaryTextBrush}" />
+                            <TextBox Text="{Binding AxisDebug.Velocity}" Margin="0,6,0,10" />
+
+                            <TextBlock Text="Acceleration" Foreground="{StaticResource SecondaryTextBrush}" />
+                            <TextBox Text="{Binding AxisDebug.Acceleration}" Margin="0,6,0,10" />
+
+                            <TextBlock Text="Deceleration" Foreground="{StaticResource SecondaryTextBrush}" />
+                            <TextBox Text="{Binding AxisDebug.Deceleration}" Margin="0,6,0,14" />
+
+                            <WrapPanel>
+                                <Button Content="Enable" Command="{Binding AxisDebug.EnableAxisCommand}" Width="96" />
+                                <Button Content="Home" Command="{Binding AxisDebug.HomeAxisCommand}" Width="96" />
+                                <Button Content="Move" Command="{Binding AxisDebug.MoveAxisCommand}" Width="96" />
+                                <Button Content="Stop" Command="{Binding AxisDebug.StopAxisCommand}" Width="96" />
+                                <Button x:Name="JogPositiveButton" Content="Jog +&quot; PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
+                                <Button x:Name="JogNegativeButton" Content="Jog -&quot; PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
 
                     <!-- Right column: Axis Parameters -->
-                    <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
+                    <Border Grid.Column="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
                         <ScrollViewer x:Name="AxisParametersScrollViewer"
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled"
