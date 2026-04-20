@@ -283,7 +283,13 @@
                                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="140" />
                                 <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="100" />
                                 <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" Width="100" />
-                                <DataGridCheckBoxColumn Header="Value" Binding="{Binding Value, Mode=OneWay}" Width="100" />
+                                <DataGridTemplateColumn Header="Value" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding Value, Mode=OneWay}" IsHitTestVisible="False" HorizontalAlignment="Center" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </GroupBox>
@@ -293,7 +299,13 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="100" />
                                 <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="80" />
-                                <DataGridCheckBoxColumn Header="Value" Binding="{Binding Value, Mode=OneWay}" Width="70" />
+                                <DataGridTemplateColumn Header="Value" Width="70">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding Value, Mode=OneWay}" IsHitTestVisible="False" HorizontalAlignment="Center" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Header="Toggle" Width="80">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
