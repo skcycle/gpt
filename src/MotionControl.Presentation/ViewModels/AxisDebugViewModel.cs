@@ -26,12 +26,12 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         _machine = machine;
         _homePlanRuntimeState = homePlanRuntimeState;
 
-        EnableAxisCommand = new RelayCommand(async () => await EnableSelectedAxisAsync(), () => SelectedAxisNo > 0);
-        HomeAxisCommand = new RelayCommand(async () => await HomeSelectedAxisAsync(), () => SelectedAxisNo > 0);
-        MoveAxisCommand = new RelayCommand(async () => await MoveSelectedAxisAsync(), () => SelectedAxisNo > 0);
-        StopAxisCommand = new RelayCommand(async () => await StopSelectedAxisAsync(), () => SelectedAxisNo > 0);
-        JogPositiveCommand = new RelayCommand(async () => await JogSelectedAxisAsync(true), () => SelectedAxisNo > 0);
-        JogNegativeCommand = new RelayCommand(async () => await JogSelectedAxisAsync(false), () => SelectedAxisNo > 0);
+        EnableAxisCommand = new RelayCommand(async () => await EnableSelectedAxisAsync(), () => SelectedAxis is not null);
+        HomeAxisCommand = new RelayCommand(async () => await HomeSelectedAxisAsync(), () => SelectedAxis is not null);
+        MoveAxisCommand = new RelayCommand(async () => await MoveSelectedAxisAsync(), () => SelectedAxis is not null);
+        StopAxisCommand = new RelayCommand(async () => await StopSelectedAxisAsync(), () => SelectedAxis is not null);
+        JogPositiveCommand = new RelayCommand(async () => await StartJogAsync(true), () => SelectedAxis is not null);
+        JogNegativeCommand = new RelayCommand(async () => await StartJogAsync(false), () => SelectedAxis is not null);
     }
 
     public int SelectedAxisNo
@@ -136,14 +136,19 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         await _motionAppService.StopAxisAsync(new AxisCommandDto(SelectedAxisNo));
     }
 
-    public async Task JogSelectedAxisAsync(bool positiveDirection)
+    public async Task StartJogAsync(bool positiveDirection)
     {
+        if (SelectedAxis is null)
+        {
+            return;
+        }
+
         await _motionAppService.JogAxisAsync(new JogAxisCommandDto(SelectedAxisNo, Velocity, positiveDirection));
     }
 
     public async Task StopJogAsync()
     {
-        if (SelectedAxisNo <= 0)
+        if (SelectedAxis is null)
         {
             return;
         }

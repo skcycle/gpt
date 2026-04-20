@@ -32,6 +32,28 @@ public partial class MainWindow : Window
         await _viewModel.InitializeAsync();
     }
 
+    private async void JogPositiveButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        await _viewModel.AxisDebug.StartJogAsync(true);
+    }
+
+    private async void JogNegativeButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        await _viewModel.AxisDebug.StartJogAsync(false);
+    }
+
     private async void JogButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         if (_viewModel is null)
@@ -39,6 +61,7 @@ public partial class MainWindow : Window
             return;
         }
 
+        e.Handled = true;
         await _viewModel.AxisDebug.StopJogAsync();
     }
 
