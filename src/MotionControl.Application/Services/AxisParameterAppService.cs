@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using MotionControl.Application.Interfaces;
 using MotionControl.Infrastructure.Configuration;
 
@@ -59,7 +60,8 @@ public sealed class AxisParameterAppService(string appSettingsPath) : IAxisParam
         var json = await File.ReadAllTextAsync(appSettingsPath, cancellationToken);
         return JsonSerializer.Deserialize<AppSettingsRoot>(json, new JsonSerializerOptions
         {
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
         }) ?? new AppSettingsRoot();
     }
 
