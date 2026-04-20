@@ -11,7 +11,8 @@ public sealed class ControllerPollingService(
     AxisPollingService axisPollingService,
     IoPollingService ioPollingService,
     AlarmPollingService alarmPollingService,
-    SystemStateMachine systemStateMachine)
+    SystemStateMachine systemStateMachine,
+    CommandFeedbackRuntimeState commandFeedbackRuntimeState)
 {
     private readonly SemaphoreSlim _pollLock = new(1, 1);
     private bool _isRunning;
@@ -23,7 +24,12 @@ public sealed class ControllerPollingService(
             return;
         }
 
-        machine.SetSystemState(systemStateMachine.OnConnectingRequested());
+        var connectingState = systemStateMachine.OnConnectingRequested();
+        if (machine.CurrentState != connectingState)
+        {
+            commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "SystemState", Status = "Changed", Message = $"{machine.CurrentState} -> {connectingState}" });
+            machine.SetSystemState(connectingState);
+        }
         var result = await motionController.ConnectAsync(cancellationToken);
         if (!result.Success)
         {
@@ -31,7 +37,12 @@ public sealed class ControllerPollingService(
         }
 
         _isRunning = true;
-        machine.SetSystemState(systemStateMachine.OnSyncingRequested());
+        var syncingState = systemStateMachine.OnSyncingRequested();
+        if (machine.CurrentState != syncingState)
+        {
+            commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "SystemState", Status = "Changed", Message = $"{machine.CurrentState} -> {syncingState}" });
+            machine.SetSystemState(syncingState);
+        }
         await PollOnceAsync(cancellationToken);
     }
 
@@ -61,8 +72,18 @@ public sealed class ControllerPollingService(
             var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
             controllerRuntimeState.Update(controllerStatus);
             await alarmPollingService.PollAsync(cancellationToken);
+            var previousSystemState = machine.CurrentState;
             var nextSystemState = systemStateMachine.OnPolling(machine, controllerStatus);
-            machine.SetSystemState(nextSystemState);
+            if (previousSystemState != nextSystemState)
+            {
+                commandFeedbackRuntimeState.Add(new CommandFeedback
+                {
+                    CommandName = "SystemState",
+                    Status = "Changed",
+                    Message = $"{previousSystemState} -> {nextSystemState}"
+                });
+                machine.SetSystemState(nextSystemState);
+            }
         }
         finally
         {

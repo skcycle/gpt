@@ -7,7 +7,8 @@ namespace MotionControl.Control.Services;
 public sealed class AxisPollingService(
     IMotionController motionController,
     Machine machine,
-    AxisStateMachine axisStateMachine)
+    AxisStateMachine axisStateMachine,
+    CommandFeedbackRuntimeState commandFeedbackRuntimeState)
 {
     public async Task PollAsync(CancellationToken cancellationToken = default)
     {
@@ -26,8 +27,19 @@ public sealed class AxisPollingService(
                 feedback.PositiveSoftLimitTriggered,
                 feedback.NegativeSoftLimitTriggered);
 
+            var previousState = axis.State;
             var nextState = axisStateMachine.GetNextState(axis);
-            axis.ApplyState(nextState);
+            if (previousState != nextState)
+            {
+                axis.ApplyState(nextState);
+                commandFeedbackRuntimeState.Add(new CommandFeedback
+                {
+                    CommandName = "AxisState",
+                    AxisNo = axis.ControllerAxisNo,
+                    Status = "Changed",
+                    Message = $"{previousState} -> {nextState}"
+                });
+            }
         }
     }
 }
