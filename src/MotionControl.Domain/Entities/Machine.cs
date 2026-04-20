@@ -26,21 +26,28 @@ public sealed class Machine
 
     public void SetSystemState(SystemState state) => CurrentState = state;
 
-    public void UpsertAlarm(string code, string message, string source = "System", string category = "General", string severity = "Error")
+    public bool UpsertAlarm(string code, string message, string source = "System", string category = "General", string severity = "Error")
     {
         var existing = _alarms.FirstOrDefault(alarm => alarm.Code == code && alarm.IsActive);
         if (existing is not null)
         {
-            return;
+            return false;
         }
 
         _alarms.RemoveAll(alarm => alarm.Code == code && !alarm.IsActive);
         _alarms.Add(new Alarm(code, message, DateTime.Now, source, category, severity));
+        return true;
     }
 
-    public void ClearAlarm(string code)
+    public bool ClearAlarm(string code)
     {
         var existing = _alarms.FirstOrDefault(alarm => alarm.Code == code && alarm.IsActive);
-        existing?.Clear();
+        if (existing is null)
+        {
+            return false;
+        }
+
+        existing.Clear();
+        return true;
     }
 }

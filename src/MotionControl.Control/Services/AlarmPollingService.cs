@@ -4,7 +4,8 @@ namespace MotionControl.Control.Services;
 
 public sealed class AlarmPollingService(
     Machine machine,
-    ControllerRuntimeState controllerRuntimeState)
+    ControllerRuntimeState controllerRuntimeState,
+    CommandFeedbackRuntimeState commandFeedbackRuntimeState)
 {
     public Task PollAsync(CancellationToken cancellationToken = default)
     {
@@ -12,11 +13,24 @@ public sealed class AlarmPollingService(
 
         if (controllerStatus is null || !controllerStatus.IsConnected)
         {
-            machine.UpsertAlarm("SYS-CONTROLLER-DISCONNECTED", "Controller not connected", "System", "Communication", "Error");
+            if (machine.UpsertAlarm("SYS-CONTROLLER-DISCONNECTED", "Controller not connected", "System", "Communication", "Error"))
+            {
+                commandFeedbackRuntimeState.Add(new CommandFeedback
+                {
+                    CommandName = "Alarm",
+                    Status = "Raised",
+                    Message = "Controller disconnect alarm raised"
+                });
+            }
         }
-        else
+        else if (machine.ClearAlarm("SYS-CONTROLLER-DISCONNECTED"))
         {
-            machine.ClearAlarm("SYS-CONTROLLER-DISCONNECTED");
+            commandFeedbackRuntimeState.Add(new CommandFeedback
+            {
+                CommandName = "Alarm",
+                Status = "Cleared",
+                Message = "Controller disconnect alarm cleared"
+            });
         }
 
         foreach (var axis in machine.Axes)
@@ -25,11 +39,26 @@ public sealed class AlarmPollingService(
             var message = $"{axis.Name} axis alarm active";
             if (axis.HasAlarm)
             {
-                machine.UpsertAlarm(code, message, axis.Name, "Motion", "Error");
+                if (machine.UpsertAlarm(code, message, axis.Name, "Motion", "Error"))
+                {
+                    commandFeedbackRuntimeState.Add(new CommandFeedback
+                    {
+                        CommandName = "Alarm",
+                        AxisNo = axis.ControllerAxisNo,
+                        Status = "Raised",
+                        Message = message
+                    });
+                }
             }
-            else
+            else if (machine.ClearAlarm(code))
             {
-                machine.ClearAlarm(code);
+                commandFeedbackRuntimeState.Add(new CommandFeedback
+                {
+                    CommandName = "Alarm",
+                    AxisNo = axis.ControllerAxisNo,
+                    Status = "Cleared",
+                    Message = $"{axis.Name} axis alarm cleared"
+                });
             }
         }
 
