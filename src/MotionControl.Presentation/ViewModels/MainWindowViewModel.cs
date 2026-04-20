@@ -13,6 +13,7 @@ public sealed class MainWindowViewModel
     private DateTime _lastAxisRefreshUtc = DateTime.MinValue;
     private DateTime _lastAlarmRefreshUtc = DateTime.MinValue;
     private DateTime _lastIoRefreshUtc = DateTime.MinValue;
+    private DateTime _lastIoEventRefreshUtc = DateTime.MinValue;
 
     public MainWindowViewModel(
         Machine machine,
@@ -31,6 +32,7 @@ public sealed class MainWindowViewModel
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
         AxisMonitor = new AxisMonitorViewModel(machine);
         IoMonitor = new IoMonitorViewModel(machine);
+        IoEventLog = new IoEventLogViewModel(commandFeedbackRuntimeState);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState);
         AxisParameterEditor = new AxisParameterEditorViewModel(axisParameterAppService, axisRuntimeParameterSyncService, axisControllerParameterAppService);
         AxisMonitor.SelectedAxisChanged += async axis => await HandleSelectedAxisChangedAsync(axis);
@@ -43,6 +45,7 @@ public sealed class MainWindowViewModel
     public AxisMonitorViewModel AxisMonitor { get; }
     public AxisDebugViewModel AxisDebug { get; }
     public IoMonitorViewModel IoMonitor { get; }
+    public IoEventLogViewModel IoEventLog { get; }
     public AxisParameterEditorViewModel AxisParameterEditor { get; }
     public AlarmViewModel Alarm { get; }
 
@@ -93,6 +96,12 @@ public sealed class MainWindowViewModel
         {
             IoMonitor.RefreshAll();
             _lastIoRefreshUtc = now;
+        }
+
+        if (force || now - _lastIoEventRefreshUtc >= TimeSpan.FromMilliseconds(500))
+        {
+            IoEventLog.Refresh();
+            _lastIoEventRefreshUtc = now;
         }
     }
 
