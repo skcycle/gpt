@@ -41,11 +41,8 @@ public static class MachineFactory
             })
             .ToArray();
 
-        var ioPoints = (ioPointConfigs is { Count: > 0 }
-                ? ioPointConfigs.Select(item => new IoPoint(item.Name, item.Address, item.IsOutput, item.Description))
-                : Enumerable.Range(0, 16)
-                    .Select(index => new IoPoint($"DI_{index}", index, false))
-                    .Concat(Enumerable.Range(0, 16).Select(index => new IoPoint($"DO_{index}", index, true))))
+        var ioPoints = (ioPointConfigs ?? Array.Empty<MotionControl.Infrastructure.Configuration.IoPointConfigItem>())
+            .Select(item => new IoPoint(item.Name, item.Address, item.IsOutput, item.Description))
             .ToArray();
 
         var alarms = new[]
