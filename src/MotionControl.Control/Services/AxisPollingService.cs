@@ -20,6 +20,7 @@ public sealed class AxisPollingService(
                 feedback.AxisState,
                 feedback.ServoState,
                 feedback.HasAlarm,
+                feedback.IsHomed,
                 feedback.PositiveLimitTriggered,
                 feedback.NegativeLimitTriggered);
 

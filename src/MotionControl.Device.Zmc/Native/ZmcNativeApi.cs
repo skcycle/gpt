@@ -41,6 +41,9 @@ public static class ZmcNativeApi
     [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetAxisStatus", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int DirectGetAxisStatus(IntPtr handle, int axisNo, ref int value);
 
+    [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetAxisStatus2", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    public static extern int DirectGetAxisStatus2(IntPtr handle, int axisNo, int homeIn, ref int axisStatus, ref int idle, ref int homeStatus, ref int busEnableStatus);
+
     [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetIn", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int DirectGetIn(IntPtr handle, int ioNo, ref uint value);
 

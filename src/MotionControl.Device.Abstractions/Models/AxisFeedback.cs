@@ -9,5 +9,6 @@ public sealed record AxisFeedback(
     AxisState AxisState,
     ServoState ServoState,
     bool HasAlarm,
+    bool IsHomed,
     bool PositiveLimitTriggered,
     bool NegativeLimitTriggered);

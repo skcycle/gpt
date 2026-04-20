@@ -82,6 +82,8 @@ public sealed class ZmcAxisNativeFacade
     public int GetAxisSpeed(int axisNo, ref float value) => ZmcNativeApi.DirectGetSpeed(_handle, axisNo, ref value);
     public int GetAxisIdle(int axisNo, ref int value) => ZmcNativeApi.DirectGetIfIdle(_handle, axisNo, ref value);
     public int GetAxisStatus(int axisNo, ref int value) => ZmcNativeApi.DirectGetAxisStatus(_handle, axisNo, ref value);
+    public int GetAxisStatus2(int axisNo, int homeIn, ref int axisStatus, ref int idle, ref int homeStatus, ref int busEnableStatus)
+        => ZmcNativeApi.DirectGetAxisStatus2(_handle, axisNo, homeIn, ref axisStatus, ref idle, ref homeStatus, ref busEnableStatus);
     public int GetInput(int ioNo, ref uint value) => ZmcNativeApi.DirectGetIn(_handle, ioNo, ref value);
     public int GetOutput(int ioNo, ref uint value) => ZmcNativeApi.DirectGetOp(_handle, ioNo, ref value);
 

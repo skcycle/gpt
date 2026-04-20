@@ -38,6 +38,7 @@ public sealed class Axis
         AxisState state,
         ServoState servoState,
         bool hasAlarm,
+        bool isHomed,
         bool positiveLimitTriggered,
         bool negativeLimitTriggered)
     {
@@ -46,6 +47,7 @@ public sealed class Axis
         State = state;
         ServoState = servoState;
         HasAlarm = hasAlarm;
+        IsHomed = isHomed;
         PositiveLimitTriggered = positiveLimitTriggered;
         NegativeLimitTriggered = negativeLimitTriggered;
     }
