@@ -164,99 +164,102 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="18">
-                        <StackPanel>
-                            <TextBlock Text="Selected Axis Diagnostics" FontSize="22" FontWeight="Bold" Margin="0,0,0,16" />
+                    <Border Grid.Column="4" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
+                                <TextBlock Text="Selected Axis Diagnostics" FontSize="22" FontWeight="Bold" Margin="0,0,0,16" />
 
-                            <UniformGrid Columns="2" Margin="0,0,0,16">
-                                <Border Background="{StaticResource PanelBackgroundAltBrush}" CornerRadius="10" Padding="12" Margin="0,0,10,10">
+                                <UniformGrid Columns="2" Margin="0,0,0,16">
+                                    <Border Background="{StaticResource PanelBackgroundAltBrush}" CornerRadius="10" Padding="12" Margin="0,0,10,10">
+                                        <StackPanel>
+                                            <TextBlock Text="HomeMode" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBlock Text="{Binding AxisDebug.SelectedAxisHomeMode}" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="{StaticResource PanelBackgroundAltBrush}" CornerRadius="10" Padding="12" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="ServoBinding" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBlock Text="{Binding AxisDebug.SelectedAxisServoBinding}" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="{StaticResource PanelBackgroundAltBrush}" CornerRadius="10" Padding="12" Margin="0,0,10,10">
+                                        <StackPanel>
+                                            <TextBlock Text="SoftLimit" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBlock Text="{Binding AxisDebug.SelectedAxisSoftLimit}" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Background="{StaticResource PanelBackgroundAltBrush}" CornerRadius="10" Padding="12" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="Jog Mode" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBlock Text="Press and hold to run, release to stop" FontSize="16" FontWeight="SemiBold" Margin="0,8,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </UniformGrid>
+
+                                <GroupBox Header="Axis Parameters">
                                     <StackPanel>
+                                        <TextBlock Text="Axis No" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.AxisNo}" Margin="0,6,0,8" IsReadOnly="True" />
+
+                                        <TextBlock Text="Name" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.Name}" Margin="0,6,0,8" />
+
+                                        <TextBlock Text="Group" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.Group}" Margin="0,6,0,8" />
+
+                                        <CheckBox Content="Is Master" IsChecked="{Binding AxisParameterEditor.IsMaster}" Margin="0,4,0,8" />
+
+                                        <TextBlock Text="Master Axis Name" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.MasterAxisName}" Margin="0,6,0,8" />
+
+                                        <TextBlock Text="SoftLimit Negative" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.SoftLimitNegative}" Margin="0,6,0,8" />
+
+                                        <TextBlock Text="SoftLimit Positive" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.SoftLimitPositive}" Margin="0,6,0,8" />
+
+                                        <TextBlock Text="Work Velocity" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.WorkVelocity}" Margin="0,6,0,8" />
+
+                                        <TextBlock Text="Setup Velocity" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.SetupVelocity}" Margin="0,6,0,8" />
+
+                                        <TextBlock Text="Pulse Equivalent (pulse/mm)" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.PulseEquivalent}" Margin="0,6,0,8" />
+
                                         <TextBlock Text="HomeMode" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBlock Text="{Binding AxisDebug.SelectedAxisHomeMode}" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,0" />
+                                        <ComboBox ItemsSource="{Binding AxisParameterEditor.HomeModes}" SelectedItem="{Binding AxisParameterEditor.HomeMode}" Margin="0,6,0,8" />
+
+                                        <TextBlock Text="Servo Binding" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        <TextBox Text="{Binding AxisParameterEditor.ServoBinding}" Margin="0,6,0,12" />
+
+                                        <WrapPanel>
+                                            <Button Content="Load Config" Command="{Binding AxisParameterEditor.LoadCommand}" Width="120" />
+                                            <Button Content="Save Config" Command="{Binding AxisParameterEditor.SaveCommand}" Width="120" />
+                                            <Button Content="Read Ctrl" Command="{Binding AxisParameterEditor.ReadControllerCommand}" Width="120" />
+                                            <Button Content="Write Ctrl" Command="{Binding AxisParameterEditor.WriteControllerCommand}" Width="120" />
+                                        </WrapPanel>
+
+                                        <TextBlock Text="{Binding AxisParameterEditor.StatusMessage}" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,10,0,6" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding AxisParameterEditor.ControllerParameterSnapshot}" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" />
                                     </StackPanel>
-                                </Border>
-                                <Border Background="{StaticResource PanelBackgroundAltBrush}" CornerRadius="10" Padding="12" Margin="0,0,0,10">
+                                </GroupBox>
+
+                                <GroupBox Header="Home Plan">
                                     <StackPanel>
-                                        <TextBlock Text="ServoBinding" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBlock Text="{Binding AxisDebug.SelectedAxisServoBinding}" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,0" />
+                                        <TextBlock Text="{Binding AxisDebug.SelectedHomePlanTitle}" FontWeight="SemiBold" Margin="0,0,0,8" />
+                                        <ItemsControl ItemsSource="{Binding AxisDebug.SelectedHomePlanSteps}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" Margin="0,0,0,6" TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
                                     </StackPanel>
-                                </Border>
-                                <Border Background="{StaticResource PanelBackgroundAltBrush}" CornerRadius="10" Padding="12" Margin="0,0,10,10">
-                                    <StackPanel>
-                                        <TextBlock Text="SoftLimit" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBlock Text="{Binding AxisDebug.SelectedAxisSoftLimit}" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <Border Background="{StaticResource PanelBackgroundAltBrush}" CornerRadius="10" Padding="12" Margin="0,0,0,10">
-                                    <StackPanel>
-                                        <TextBlock Text="Jog Mode" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBlock Text="Press and hold to run, release to stop" FontSize="16" FontWeight="SemiBold" Margin="0,8,0,0" />
-                                    </StackPanel>
-                                </Border>
-                            </UniformGrid>
-
-                            <GroupBox Header="Axis Parameters">
-                                <StackPanel>
-                                    <TextBlock Text="Axis No" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.AxisNo}" Margin="0,6,0,8" IsReadOnly="True" />
-
-                                    <TextBlock Text="Name" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.Name}" Margin="0,6,0,8" />
-
-                                    <TextBlock Text="Group" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.Group}" Margin="0,6,0,8" />
-
-                                    <CheckBox Content="Is Master" IsChecked="{Binding AxisParameterEditor.IsMaster}" Margin="0,4,0,8" />
-
-                                    <TextBlock Text="Master Axis Name" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.MasterAxisName}" Margin="0,6,0,8" />
-
-                                    <TextBlock Text="SoftLimit Negative" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.SoftLimitNegative}" Margin="0,6,0,8" />
-
-                                    <TextBlock Text="SoftLimit Positive" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.SoftLimitPositive}" Margin="0,6,0,8" />
-
-                                    <TextBlock Text="Work Velocity" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.WorkVelocity}" Margin="0,6,0,8" />
-
-                                    <TextBlock Text="Setup Velocity" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.SetupVelocity}" Margin="0,6,0,8" />
-
-                                    <TextBlock Text="Pulse Equivalent (pulse/mm)" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.PulseEquivalent}" Margin="0,6,0,8" />
-
-                                    <TextBlock Text="HomeMode" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <ComboBox ItemsSource="{Binding AxisParameterEditor.HomeModes}" SelectedItem="{Binding AxisParameterEditor.HomeMode}" Margin="0,6,0,8" />
-
-                                    <TextBlock Text="Servo Binding" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    <TextBox Text="{Binding AxisParameterEditor.ServoBinding}" Margin="0,6,0,12" />
-
-                                    <WrapPanel>
-                                        <Button Content="Load Config" Command="{Binding AxisParameterEditor.LoadCommand}" Width="120" />
-                                        <Button Content="Save Config" Command="{Binding AxisParameterEditor.SaveCommand}" Width="120" />
-                                        <Button Content="Read Ctrl" Command="{Binding AxisParameterEditor.ReadControllerCommand}" Width="120" />
-                                        <Button Content="Write Ctrl" Command="{Binding AxisParameterEditor.WriteControllerCommand}" Width="120" />
-                                    </WrapPanel>
-
-                                    <TextBlock Text="{Binding AxisParameterEditor.StatusMessage}" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,10,0,6" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding AxisParameterEditor.ControllerParameterSnapshot}" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" />
-                                </StackPanel>
-                            </GroupBox>
-
-                            <GroupBox Header="Home Plan">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding AxisDebug.SelectedHomePlanTitle}" FontWeight="SemiBold" Margin="0,0,0,8" />
-                                    <ItemsControl ItemsSource="{Binding AxisDebug.SelectedHomePlanSteps}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding}" Margin="0,0,0,6" TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </GroupBox>
-                        </StackPanel>
+                                </GroupBox>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Border>
                 </Grid>
             </TabItem>
