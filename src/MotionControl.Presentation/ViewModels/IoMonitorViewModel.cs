@@ -21,8 +21,8 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
         Outputs = BuildOutputs();
     }
 
-    public ObservableCollection<IoPointViewModel> Inputs { get; private set; }
-    public ObservableCollection<IoPointViewModel> Outputs { get; private set; }
+    public ObservableCollection<IoPointViewModel> Inputs { get; }
+    public ObservableCollection<IoPointViewModel> Outputs { get; }
 
     public IoPointViewModel? SelectedInput
     {
@@ -50,10 +50,58 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
 
     public void RefreshAll()
     {
-        Inputs = BuildInputs();
-        Outputs = BuildOutputs();
-        OnPropertyChanged(nameof(Inputs));
-        OnPropertyChanged(nameof(Outputs));
+        SyncCollections();
+
+        foreach (var input in Inputs)
+        {
+            input.Refresh();
+        }
+
+        foreach (var output in Outputs)
+        {
+            output.Refresh();
+        }
+    }
+
+    public void AddIoPoint(IoPoint ioPoint)
+    {
+        var viewModel = new IoPointViewModel(ioPoint, _ioControlService);
+        if (ioPoint.IsOutput)
+        {
+            Outputs.Add(viewModel);
+            SelectedOutput = viewModel;
+        }
+        else
+        {
+            Inputs.Add(viewModel);
+            SelectedInput = viewModel;
+        }
+    }
+
+    public void RemoveIoPoint(bool isOutput, int address)
+    {
+        var collection = isOutput ? Outputs : Inputs;
+        var existing = collection.FirstOrDefault(io => io.Address == address);
+        if (existing is null)
+        {
+            return;
+        }
+
+        var wasSelected = isOutput ? SelectedOutput == existing : SelectedInput == existing;
+        collection.Remove(existing);
+        if (!wasSelected)
+        {
+            return;
+        }
+
+        if (isOutput)
+        {
+            SelectedOutput = Outputs.FirstOrDefault();
+        }
+        else
+        {
+            SelectedInput = Inputs.FirstOrDefault();
+        }
     }
 
     public void SelectIoPoint(IoPointViewModel? ioPoint)
@@ -81,6 +129,32 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
 
     private ObservableCollection<IoPointViewModel> BuildOutputs()
         => new(_machine.IoPoints.Where(io => io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService)));
+
+    private void SyncCollections()
+    {
+        SyncCollection(Inputs, _machine.IoPoints.Where(io => !io.IsOutput).ToList());
+        SyncCollection(Outputs, _machine.IoPoints.Where(io => io.IsOutput).ToList());
+    }
+
+    private void SyncCollection(ObservableCollection<IoPointViewModel> collection, IReadOnlyList<IoPoint> source)
+    {
+        var sourceAddresses = source.Select(io => io.Address).ToHashSet();
+        for (var index = collection.Count - 1; index >= 0; index--)
+        {
+            if (!sourceAddresses.Contains(collection[index].Address))
+            {
+                collection.RemoveAt(index);
+            }
+        }
+
+        foreach (var ioPoint in source)
+        {
+            if (collection.All(existing => existing.Address != ioPoint.Address))
+            {
+                collection.Add(new IoPointViewModel(ioPoint, _ioControlService));
+            }
+        }
+    }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

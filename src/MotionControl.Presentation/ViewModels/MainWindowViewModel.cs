@@ -239,8 +239,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private async Task AddIoPointAsync(bool isOutput)
     {
         var item = await _ioConfigAppService.AddIoPointAsync(isOutput);
-        _machine.AddIoPoint(new IoPoint(item.Name, item.Address, item.IsOutput, item.Description));
-        IoMonitor.RefreshAll();
+        var ioPoint = new IoPoint(item.Name, item.Address, item.IsOutput, item.Description);
+        _machine.AddIoPoint(ioPoint);
+        IoMonitor.AddIoPoint(ioPoint);
         RefreshViewModels(force: true);
     }
 
@@ -259,8 +260,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         _machine.RemoveIoPoint(false, selected.Address);
-        IoMonitor.SelectedInput = null;
-        IoMonitor.RefreshAll();
+        IoMonitor.RemoveIoPoint(false, selected.Address);
         (DeleteInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         RefreshViewModels(force: true);
     }
@@ -280,8 +280,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         _machine.RemoveIoPoint(true, selected.Address);
-        IoMonitor.SelectedOutput = null;
-        IoMonitor.RefreshAll();
+        IoMonitor.RemoveIoPoint(true, selected.Address);
         (DeleteOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         RefreshViewModels(force: true);
     }
