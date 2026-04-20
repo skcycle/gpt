@@ -109,11 +109,11 @@
             <TabItem Header="Axis Console">
                 <Grid Margin="12">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" MinWidth="500" />
+                        <ColumnDefinition Width="1.5*" MinWidth="380" />
                         <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="1.5*" MinWidth="320" />
+                        <ColumnDefinition Width="2*" MinWidth="520" />
                         <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="380" />
+                        <ColumnDefinition Width="300" />
                     </Grid.ColumnDefinitions>
 
                     <!-- Column 0: Axis Monitor (full height) -->
@@ -191,14 +191,14 @@
                             <TextBlock Text="Deceleration" Foreground="{StaticResource SecondaryTextBrush}" />
                             <TextBox Text="{Binding AxisDebug.Deceleration}" Margin="0,6,0,14" />
 
-                            <WrapPanel>
-                                <Button Content="Enable" Command="{Binding AxisDebug.EnableAxisCommand}" Width="96" />
-                                <Button Content="Home" Command="{Binding AxisDebug.HomeAxisCommand}" Width="96" />
-                                <Button Content="Move" Command="{Binding AxisDebug.MoveAxisCommand}" Width="96" />
-                                <Button Content="Stop" Command="{Binding AxisDebug.StopAxisCommand}" Width="96" />
-                                <Button x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
-                                <Button x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
-                            </WrapPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Enable" Command="{Binding AxisDebug.EnableAxisCommand}" Width="80" Margin="0,0,6,0" />
+                                <Button Content="Home" Command="{Binding AxisDebug.HomeAxisCommand}" Width="80" Margin="0,0,6,0" />
+                                <Button Content="Move" Command="{Binding AxisDebug.MoveAxisCommand}" Width="80" Margin="0,0,6,0" />
+                                <Button Content="Stop" Command="{Binding AxisDebug.StopAxisCommand}" Width="80" Margin="0,0,6,0" />
+                                <Button x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="0,0,6,0" />
+                                <Button x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" />
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
