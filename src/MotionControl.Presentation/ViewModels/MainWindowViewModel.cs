@@ -3,6 +3,7 @@ using System.Windows.Input;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
+using MotionControl.Presentation.Commands;
 
 namespace MotionControl.Presentation.ViewModels;
 
