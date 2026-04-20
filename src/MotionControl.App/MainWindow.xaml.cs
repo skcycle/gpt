@@ -74,4 +74,35 @@ public partial class MainWindow : Window
 
         await _viewModel.AxisDebug.StopJogAsync();
     }
+
+    private void AxisMonitorDataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        // Forward mouse wheel to the parent ScrollViewer so the outer panel scrolls
+        var scrollViewer = FindVisualChild<System.Windows.Controls.ScrollViewer>(this);
+        if (scrollViewer != null)
+        {
+            scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3.0);
+            e.Handled = true;
+        }
+    }
+
+    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+            if (child is T result)
+            {
+                return result;
+            }
+
+            var grandChild = FindVisualChild<T>(child);
+            if (grandChild != null)
+            {
+                return grandChild;
+            }
+        }
+
+        return null;
+    }
 }

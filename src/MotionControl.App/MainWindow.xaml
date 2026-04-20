@@ -128,10 +128,12 @@
                                 </StackPanel>
 
                                 <DataGrid Grid.Row="1"
+                                          x:Name="AxisMonitorDataGrid"
                                           ItemsSource="{Binding AxisMonitor.Axes}"
                                           SelectedItem="{Binding AxisMonitor.SelectedAxis, Mode=TwoWay}"
                                           AutoGenerateColumns="False"
-                                          IsReadOnly="True">
+                                          IsReadOnly="True"
+                                          PreviewMouseWheel="AxisMonitorDataGrid_PreviewMouseWheel">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="AxisNo" Binding="{Binding AxisNo}" Width="70" />
                                         <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="120" />
