@@ -109,11 +109,11 @@
             <TabItem Header="Axis Console">
                 <Grid Margin="12">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.5*" MinWidth="380" />
+                        <ColumnDefinition Width="2*" MinWidth="400" />
                         <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="2*" MinWidth="520" />
+                        <ColumnDefinition Width="1.5*" MinWidth="300" />
                         <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="300" />
+                        <ColumnDefinition Width="400" />
                     </Grid.ColumnDefinitions>
 
                     <!-- Column 0: Axis Monitor (full height) -->
