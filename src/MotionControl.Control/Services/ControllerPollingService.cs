@@ -32,10 +32,10 @@ public sealed class ControllerPollingService(
             machine.SetSystemState(connectingState);
         }
         // Retry up to 3 times with a brief delay to handle transient connect failures
-        DeviceResult? result = null;
         using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         connectCts.CancelAfter(TimeSpan.FromSeconds(10));
-        for (var attempt = 0; attempt < 3 && !(result?.Success ?? false); attempt++)
+        var result = DeviceResult.Fail("Connect never attempted");
+        for (var attempt = 0; attempt < 3 && !result.Success; attempt++)
         {
             if (attempt > 0)
             {
@@ -43,7 +43,6 @@ public sealed class ControllerPollingService(
             }
             result = await motionController.ConnectAsync(connectCts.Token);
         }
-        result ??= DeviceResult.Fail("Connect never attempted or timed out");
         if (!result.Success)
         {
             machine.SetConnected(false);
