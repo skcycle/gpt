@@ -19,7 +19,17 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
         _ioControlService = ioControlService;
         _value = ioPoint.Value;
         SetCommand = new RelayCommand(
-            async () => await _ioControlService.SetOutputAsync(Address, !_value),
+            async () =>
+            {
+                var nextValue = !_ioPoint.Value;
+                var result = await _ioControlService.SetOutputAsync(Address, nextValue);
+                if (result.Success)
+                {
+                    _ioPoint.Update(nextValue);
+                    _value = nextValue;
+                    OnPropertyChanged(nameof(Value));
+                }
+            },
             () => IsOutput);
     }
 

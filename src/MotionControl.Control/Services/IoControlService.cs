@@ -1,11 +1,12 @@
 using MotionControl.Device.Abstractions.Controllers;
+using MotionControl.Device.Abstractions.Results;
 
 namespace MotionControl.Control.Services;
 
 public sealed class IoControlService(IMotionController motionController)
 {
-    public async Task SetOutputAsync(int address, bool value, CancellationToken cancellationToken = default)
+    public Task<DeviceResult> SetOutputAsync(int address, bool value, CancellationToken cancellationToken = default)
     {
-        await motionController.SetIoPointValueAsync(address, value, cancellationToken);
+        return motionController.SetIoPointValueAsync(address, value, cancellationToken);
     }
 }
