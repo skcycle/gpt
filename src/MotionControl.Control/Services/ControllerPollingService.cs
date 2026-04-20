@@ -55,10 +55,10 @@ public sealed class ControllerPollingService(
         {
             await axisPollingService.PollAsync(cancellationToken);
             await ioPollingService.PollAsync(cancellationToken);
-            await alarmPollingService.PollAsync(cancellationToken);
 
             var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
             controllerRuntimeState.Update(controllerStatus);
+            await alarmPollingService.PollAsync(cancellationToken);
             var nextSystemState = systemStateMachine.OnPolling(machine, controllerStatus);
             machine.SetSystemState(nextSystemState);
         }

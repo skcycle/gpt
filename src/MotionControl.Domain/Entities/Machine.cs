@@ -4,6 +4,8 @@ namespace MotionControl.Domain.Entities;
 
 public sealed class Machine
 {
+    private readonly List<Alarm> _alarms;
+
     public Machine(
         IReadOnlyCollection<Axis> axes,
         IReadOnlyCollection<AxisGroup> groups,
@@ -13,14 +15,32 @@ public sealed class Machine
         Axes = axes;
         Groups = groups;
         IoPoints = ioPoints ?? Array.Empty<IoPoint>();
-        Alarms = alarms ?? Array.Empty<Alarm>();
+        _alarms = alarms?.ToList() ?? new List<Alarm>();
     }
 
     public IReadOnlyCollection<Axis> Axes { get; }
     public IReadOnlyCollection<AxisGroup> Groups { get; }
     public IReadOnlyCollection<IoPoint> IoPoints { get; }
-    public IReadOnlyCollection<Alarm> Alarms { get; }
+    public IReadOnlyCollection<Alarm> Alarms => _alarms;
     public SystemState CurrentState { get; private set; } = SystemState.Initializing;
 
     public void SetSystemState(SystemState state) => CurrentState = state;
+
+    public void UpsertAlarm(string code, string message, string source = "System", string category = "General", string severity = "Error")
+    {
+        var existing = _alarms.FirstOrDefault(alarm => alarm.Code == code && alarm.IsActive);
+        if (existing is not null)
+        {
+            return;
+        }
+
+        _alarms.RemoveAll(alarm => alarm.Code == code && !alarm.IsActive);
+        _alarms.Add(new Alarm(code, message, DateTime.Now, source, category, severity));
+    }
+
+    public void ClearAlarm(string code)
+    {
+        var existing = _alarms.FirstOrDefault(alarm => alarm.Code == code && alarm.IsActive);
+        existing?.Clear();
+    }
 }

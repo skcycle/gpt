@@ -2,12 +2,37 @@ using MotionControl.Domain.Entities;
 
 namespace MotionControl.Control.Services;
 
-public sealed class AlarmPollingService(Machine machine)
+public sealed class AlarmPollingService(
+    Machine machine,
+    ControllerRuntimeState controllerRuntimeState)
 {
     public Task PollAsync(CancellationToken cancellationToken = default)
     {
-        // TODO: 这里后续接真实报警字、故障码、控制器状态字解析。
-        _ = machine;
+        var controllerStatus = controllerRuntimeState.LastControllerStatus;
+
+        if (controllerStatus is null || !controllerStatus.IsConnected)
+        {
+            machine.UpsertAlarm("SYS-CONTROLLER-DISCONNECTED", "Controller not connected", "System", "Communication", "Error");
+        }
+        else
+        {
+            machine.ClearAlarm("SYS-CONTROLLER-DISCONNECTED");
+        }
+
+        foreach (var axis in machine.Axes)
+        {
+            var code = $"AXIS-{axis.ControllerAxisNo:00}-ALARM";
+            var message = $"{axis.Name} axis alarm active";
+            if (axis.HasAlarm)
+            {
+                machine.UpsertAlarm(code, message, axis.Name, "Motion", "Error");
+            }
+            else
+            {
+                machine.ClearAlarm(code);
+            }
+        }
+
         return Task.CompletedTask;
     }
 }
