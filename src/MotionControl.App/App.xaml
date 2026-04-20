@@ -6,10 +6,17 @@
         <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#16202B" />
         <SolidColorBrush x:Key="PanelBackgroundAltBrush" Color="#1C2835" />
         <SolidColorBrush x:Key="PanelBorderBrush" Color="#2C3B4C" />
+        <SolidColorBrush x:Key="PanelBorderStrongBrush" Color="#3C5268" />
         <SolidColorBrush x:Key="PrimaryTextBrush" Color="#E6EEF8" />
         <SolidColorBrush x:Key="SecondaryTextBrush" Color="#94A9BD" />
+        <SolidColorBrush x:Key="MutedTextBrush" Color="#6F879D" />
         <SolidColorBrush x:Key="AccentBrush" Color="#27C1A5" />
         <SolidColorBrush x:Key="AccentBrushStrong" Color="#1FD6B5" />
+        <SolidColorBrush x:Key="SelectionBrush" Color="#27C1A5" />
+        <SolidColorBrush x:Key="SelectionTextBrush" Color="#081218" />
+        <SolidColorBrush x:Key="InputBackgroundBrush" Color="#213244" />
+        <SolidColorBrush x:Key="InputHoverBrush" Color="#284056" />
+        <SolidColorBrush x:Key="InputSelectionBrush" Color="#2F4E6C" />
         <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B" />
         <SolidColorBrush x:Key="DangerBrush" Color="#EF4444" />
 
@@ -41,7 +48,7 @@
         </Style>
 
         <Style TargetType="Button">
-            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Foreground" Value="#081218" />
             <Setter Property="Background" Value="{StaticResource AccentBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource AccentBrushStrong}" />
             <Setter Property="Padding" Value="12,8" />
@@ -51,21 +58,24 @@
 
         <Style TargetType="TextBox">
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
-            <Setter Property="Background" Value="{StaticResource PanelBackgroundAltBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}" />
+            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PanelBorderStrongBrush}" />
+            <Setter Property="CaretBrush" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="SelectionBrush" Value="{StaticResource SelectionBrush}" />
+            <Setter Property="SelectionTextBrush" Value="{StaticResource SelectionTextBrush}" />
             <Setter Property="Padding" Value="8,6" />
         </Style>
 
         <Style TargetType="ComboBox">
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="Background" Value="#213244" />
-            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource PanelBorderStrongBrush}" />
             <Setter Property="Padding" Value="6" />
         </Style>
 
         <Style TargetType="ComboBoxItem">
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="Background" Value="#213244" />
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource InputBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}" />
             <Setter Property="Padding" Value="6,4" />
         </Style>
@@ -89,6 +99,8 @@
             <Setter Property="AlternatingRowBackground" Value="{StaticResource PanelBackgroundAltBrush}" />
             <Setter Property="HeadersVisibility" Value="Column" />
             <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource PanelBorderBrush}" />
+            <Setter Property="VerticalGridLinesBrush" Value="{StaticResource PanelBorderBrush}" />
         </Style>
 
         <Style TargetType="DataGridColumnHeader">
@@ -99,10 +111,33 @@
             <Setter Property="Padding" Value="8,6" />
         </Style>
 
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="Padding" Value="6,4" />
+        </Style>
+
         <Style TargetType="ListBox">
             <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
             <Setter Property="Background" Value="{StaticResource PanelBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}" />
         </Style>
+
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="6,4" />
+        </Style>
+
+        <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#213244" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="#E6EEF8" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#213244" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#E6EEF8" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#27C1A5" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#081218" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.GrayTextBrushKey}" Color="#6F879D" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="#2F4E6C" />
+        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="#E6EEF8" />
     </Application.Resources>
 </Application>
