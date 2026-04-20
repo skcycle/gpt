@@ -1,3 +1,4 @@
+using System;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
@@ -8,6 +9,9 @@ public sealed class MainWindowViewModel
 {
     private readonly ISystemAppService _systemAppService;
     private readonly ControllerRuntimeState _controllerRuntimeState;
+    private DateTime _lastDashboardRefreshUtc = DateTime.MinValue;
+    private DateTime _lastAxisRefreshUtc = DateTime.MinValue;
+    private DateTime _lastAlarmRefreshUtc = DateTime.MinValue;
 
     public MainWindowViewModel(
         Machine machine,
@@ -35,19 +39,40 @@ public sealed class MainWindowViewModel
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await _systemAppService.InitializeAsync(cancellationToken);
-        RefreshViewModels();
+        RefreshViewModels(force: true);
     }
 
     public async Task RefreshAsync(CancellationToken cancellationToken = default)
     {
         await _systemAppService.RefreshAsync(cancellationToken);
-        RefreshViewModels();
+        RefreshViewModels(force: true);
     }
 
     public void RefreshViewModels()
     {
-        Dashboard.Refresh(_controllerRuntimeState.LastControllerStatus);
-        AxisMonitor.RefreshAll();
-        Alarm.Refresh();
+        RefreshViewModels(force: false);
+    }
+
+    public void RefreshViewModels(bool force)
+    {
+        var now = DateTime.UtcNow;
+
+        if (force || now - _lastDashboardRefreshUtc >= TimeSpan.FromMilliseconds(500))
+        {
+            Dashboard.Refresh(_controllerRuntimeState.LastControllerStatus);
+            _lastDashboardRefreshUtc = now;
+        }
+
+        if (force || now - _lastAxisRefreshUtc >= TimeSpan.FromMilliseconds(500))
+        {
+            AxisMonitor.RefreshAll();
+            _lastAxisRefreshUtc = now;
+        }
+
+        if (force || now - _lastAlarmRefreshUtc >= TimeSpan.FromMilliseconds(1000))
+        {
+            Alarm.Refresh();
+            _lastAlarmRefreshUtc = now;
+        }
     }
 }

@@ -31,9 +31,6 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CurrentVelocity));
         OnPropertyChanged(nameof(HasAlarm));
         OnPropertyChanged(nameof(IsHomed));
-        OnPropertyChanged(nameof(HomeMode));
-        OnPropertyChanged(nameof(ServoBinding));
-        OnPropertyChanged(nameof(SoftLimitDisplay));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

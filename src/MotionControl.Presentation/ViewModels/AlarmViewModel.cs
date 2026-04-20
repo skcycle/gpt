@@ -6,6 +6,8 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class AlarmViewModel
 {
     private readonly Machine _machine;
+    private string[] _lastActiveAlarmAxes = Array.Empty<string>();
+    private AlarmItemViewModel[] _lastActiveAlarms = Array.Empty<AlarmItemViewModel>();
 
     public AlarmViewModel(Machine machine)
     {
@@ -19,16 +21,36 @@ public sealed class AlarmViewModel
 
     public void Refresh()
     {
-        ActiveAlarmAxes.Clear();
-        foreach (var axis in _machine.Axes.Where(a => a.HasAlarm))
+        var latestAlarmAxes = _machine.Axes
+            .Where(a => a.HasAlarm)
+            .Select(axis => $"{axis.Name} (AxisNo={axis.ControllerAxisNo})")
+            .ToArray();
+
+        if (!_lastActiveAlarmAxes.SequenceEqual(latestAlarmAxes))
         {
-            ActiveAlarmAxes.Add($"{axis.Name} (AxisNo={axis.ControllerAxisNo})");
+            ActiveAlarmAxes.Clear();
+            foreach (var axis in latestAlarmAxes)
+            {
+                ActiveAlarmAxes.Add(axis);
+            }
+
+            _lastActiveAlarmAxes = latestAlarmAxes;
         }
 
-        ActiveAlarms.Clear();
-        foreach (var alarm in _machine.Alarms.Where(item => item.IsActive))
+        var latestAlarms = _machine.Alarms
+            .Where(item => item.IsActive)
+            .Select(alarm => new AlarmItemViewModel(alarm))
+            .ToArray();
+
+        if (!_lastActiveAlarms.SequenceEqual(latestAlarms))
         {
-            ActiveAlarms.Add(new AlarmItemViewModel(alarm));
+            ActiveAlarms.Clear();
+            foreach (var alarm in latestAlarms)
+            {
+                ActiveAlarms.Add(alarm);
+            }
+
+            _lastActiveAlarms = latestAlarms;
         }
     }
 }
