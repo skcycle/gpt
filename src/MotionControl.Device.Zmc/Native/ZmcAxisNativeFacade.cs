@@ -85,6 +85,32 @@ public sealed class ZmcAxisNativeFacade
     public int GetInput(int ioNo, ref uint value) => ZmcNativeApi.DirectGetIn(_handle, ioNo, ref value);
     public int GetOutput(int ioNo, ref uint value) => ZmcNativeApi.DirectGetOp(_handle, ioNo, ref value);
 
+    public string ReadAxisParameters(int axisNo)
+    {
+        if (_handle == IntPtr.Zero)
+        {
+            return "Controller not connected";
+        }
+
+        var buffer = new StringBuilder(512);
+        var result = ZmcNativeApi.Execute(_handle, $"?SPEED({axisNo})", buffer, 512);
+        if (result != 0)
+        {
+            return $"Read SPEED failed: {result}";
+        }
+
+        return buffer.ToString();
+    }
+
+    public int WriteAxisParameters(int axisNo, double workVelocity, double setupVelocity, double pulseEquivalent)
+    {
+        var result = ExecuteCommand($"SPEED({axisNo})={workVelocity}");
+        if (result != 0) return result;
+        result = ExecuteCommand($"CREEP({axisNo})={setupVelocity}");
+        if (result != 0) return result;
+        return ExecuteCommand($"UNITS({axisNo})={pulseEquivalent}");
+    }
+
     private int ExecuteCommand(string command)
     {
         if (_handle == IntPtr.Zero)

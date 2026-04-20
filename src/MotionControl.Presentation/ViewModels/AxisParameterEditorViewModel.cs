@@ -10,6 +10,8 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
 {
     private readonly IAxisParameterAppService _axisParameterAppService;
+    private readonly IAxisRuntimeParameterSyncService _axisRuntimeParameterSyncService;
+    private readonly IAxisControllerParameterAppService _axisControllerParameterAppService;
     private int _axisNo;
     private string _name = string.Empty;
     private string _group = string.Empty;
@@ -23,12 +25,17 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     private HomeMode _homeMode = HomeMode.Default;
     private string _servoBinding = string.Empty;
     private string _statusMessage = "Ready";
+    private string _controllerParameterSnapshot = string.Empty;
 
-    public AxisParameterEditorViewModel(IAxisParameterAppService axisParameterAppService)
+    public AxisParameterEditorViewModel(IAxisParameterAppService axisParameterAppService, IAxisRuntimeParameterSyncService axisRuntimeParameterSyncService, IAxisControllerParameterAppService axisControllerParameterAppService)
     {
         _axisParameterAppService = axisParameterAppService;
+        _axisRuntimeParameterSyncService = axisRuntimeParameterSyncService;
+        _axisControllerParameterAppService = axisControllerParameterAppService;
         LoadCommand = new RelayCommand(async () => await LoadAsync(), () => AxisNo >= 0);
         SaveCommand = new RelayCommand(async () => await SaveAsync(), () => AxisNo >= 0);
+        ReadControllerCommand = new RelayCommand(async () => await ReadControllerAsync(), () => AxisNo >= 0);
+        WriteControllerCommand = new RelayCommand(async () => await WriteControllerAsync(), () => AxisNo >= 0);
     }
 
     public int AxisNo
@@ -115,9 +122,17 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         set { _statusMessage = value; OnPropertyChanged(); }
     }
 
+    public string ControllerParameterSnapshot
+    {
+        get => _controllerParameterSnapshot;
+        set { _controllerParameterSnapshot = value; OnPropertyChanged(); }
+    }
+
     public Array HomeModes => Enum.GetValues(typeof(HomeMode));
     public RelayCommand LoadCommand { get; }
     public RelayCommand SaveCommand { get; }
+    public RelayCommand ReadControllerCommand { get; }
+    public RelayCommand WriteControllerCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -147,12 +162,13 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         PulseEquivalent = item.PulseEquivalent ?? 1000;
         HomeMode = item.HomeMode;
         ServoBinding = item.ServoBinding;
-        StatusMessage = $"Axis {AxisNo} config loaded";
+        await _axisRuntimeParameterSyncService.ApplyAsync(item);
+        StatusMessage = $"Axis {AxisNo} config loaded and applied";
     }
 
     public async Task SaveAsync()
     {
-        await _axisParameterAppService.SaveAxisParametersAsync(new AxisMappingItem
+        var item = new AxisMappingItem
         {
             AxisNo = AxisNo,
             Name = Name,
@@ -166,9 +182,28 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
             PulseEquivalent = PulseEquivalent,
             HomeMode = HomeMode,
             ServoBinding = ServoBinding
-        });
+        };
 
-        StatusMessage = $"Axis {AxisNo} config saved";
+        await _axisParameterAppService.SaveAxisParametersAsync(item);
+        await _axisRuntimeParameterSyncService.ApplyAsync(item);
+
+        StatusMessage = $"Axis {AxisNo} config saved and applied";
+    }
+
+    public async Task ReadControllerAsync()
+    {
+        ControllerParameterSnapshot = await _axisControllerParameterAppService.ReadControllerParametersAsync(AxisNo);
+        StatusMessage = $"Axis {AxisNo} controller parameters read";
+    }
+
+    public async Task WriteControllerAsync()
+    {
+        await _axisControllerParameterAppService.WriteControllerParametersAsync(
+            AxisNo,
+            WorkVelocity ?? 0,
+            SetupVelocity ?? 0,
+            PulseEquivalent ?? 1000);
+        StatusMessage = $"Axis {AxisNo} controller parameters written";
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

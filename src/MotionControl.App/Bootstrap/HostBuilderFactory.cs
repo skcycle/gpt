@@ -50,6 +50,8 @@ public static class HostBuilderFactory
                 services.AddSingleton<IHomingService, HomingService>();
                 services.AddSingleton<ISystemAppService, SystemAppService>();
                 services.AddSingleton<IMotionAppService, MotionAppService>();
+                services.AddSingleton<IAxisRuntimeParameterSyncService, AxisRuntimeParameterSyncService>();
+                services.AddSingleton<IAxisControllerParameterAppService, AxisControllerParameterAppService>();
                 services.AddSingleton<IAxisParameterAppService>(_ => new AxisParameterAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
 
                 services.AddSingleton<SafetyInterlockService>();

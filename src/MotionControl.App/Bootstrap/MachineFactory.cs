@@ -32,6 +32,9 @@ public static class MachineFactory
                 {
                     axis.SetHomeMode(mapping.HomeMode);
                     axis.SetServoBinding(mapping.ServoBinding);
+                    if (mapping.WorkVelocity.HasValue) axis.SetWorkVelocity(mapping.WorkVelocity.Value);
+                    if (mapping.SetupVelocity.HasValue) axis.SetSetupVelocity(mapping.SetupVelocity.Value);
+                    if (mapping.PulseEquivalent.HasValue) axis.SetPulseEquivalent(mapping.PulseEquivalent.Value);
                 }
 
                 return axis;

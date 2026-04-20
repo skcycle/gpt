@@ -248,9 +248,12 @@
                                     <WrapPanel>
                                         <Button Content="Load Config" Command="{Binding AxisParameterEditor.LoadCommand}" Width="120" />
                                         <Button Content="Save Config" Command="{Binding AxisParameterEditor.SaveCommand}" Width="120" />
+                                        <Button Content="Read Ctrl" Command="{Binding AxisParameterEditor.ReadControllerCommand}" Width="120" />
+                                        <Button Content="Write Ctrl" Command="{Binding AxisParameterEditor.WriteControllerCommand}" Width="120" />
                                     </WrapPanel>
 
-                                    <TextBlock Text="{Binding AxisParameterEditor.StatusMessage}" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,10,0,0" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding AxisParameterEditor.StatusMessage}" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,10,0,6" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding AxisParameterEditor.ControllerParameterSnapshot}" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </GroupBox>
 

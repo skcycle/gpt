@@ -26,6 +26,9 @@ public sealed class Axis
     public bool PositiveLimitTriggered { get; private set; }
     public bool NegativeLimitTriggered { get; private set; }
     public SoftLimit? SoftLimit { get; private set; }
+    public double WorkVelocity { get; private set; } = 200;
+    public double SetupVelocity { get; private set; } = 50;
+    public double PulseEquivalent { get; private set; } = 1000;
     public HomeMode HomeMode { get; private set; } = HomeMode.Default;
     public string ServoBinding { get; private set; } = string.Empty;
 
@@ -63,6 +66,9 @@ public sealed class Axis
     public void SetAlarm() => HasAlarm = true;
     public void ClearAlarm() => HasAlarm = false;
     public void SetSoftLimit(SoftLimit softLimit) => SoftLimit = softLimit;
+    public void SetWorkVelocity(double workVelocity) => WorkVelocity = workVelocity;
+    public void SetSetupVelocity(double setupVelocity) => SetupVelocity = setupVelocity;
+    public void SetPulseEquivalent(double pulseEquivalent) => PulseEquivalent = pulseEquivalent <= 0 ? 1000 : pulseEquivalent;
     public void SetHomeMode(HomeMode homeMode) => HomeMode = homeMode;
     public void SetServoBinding(string servoBinding) => ServoBinding = servoBinding;
 }

@@ -26,7 +26,10 @@ public sealed class MotionAppService(
     public async Task MoveAbsoluteAsync(MoveAxisCommandDto command, CancellationToken cancellationToken = default)
     {
         var axis = FindAxis(command.AxisNo);
-        await axisControlService.MoveAbsoluteAsync(axis, command.Position, command.Velocity, command.Acceleration, command.Deceleration, cancellationToken);
+        var pulseEquivalent = axis.PulseEquivalent <= 0 ? 1000 : axis.PulseEquivalent;
+        var pulsePosition = command.Position * pulseEquivalent;
+        var velocity = command.Velocity > 0 ? command.Velocity : axis.WorkVelocity;
+        await axisControlService.MoveAbsoluteAsync(axis, pulsePosition, velocity, command.Acceleration, command.Deceleration, cancellationToken);
     }
 
     public async Task StopAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default)
@@ -38,7 +41,8 @@ public sealed class MotionAppService(
     public async Task JogAxisAsync(JogAxisCommandDto command, CancellationToken cancellationToken = default)
     {
         var axis = FindAxis(command.AxisNo);
-        await axisControlService.JogAsync(axis, command.Velocity, command.PositiveDirection, cancellationToken);
+        var velocity = command.Velocity > 0 ? command.Velocity : axis.SetupVelocity;
+        await axisControlService.JogAsync(axis, velocity, command.PositiveDirection, cancellationToken);
     }
 
     private Axis FindAxis(int axisNo)
