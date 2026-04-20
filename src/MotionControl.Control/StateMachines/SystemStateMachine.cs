@@ -8,6 +8,10 @@ public sealed class SystemStateMachine
 {
     public SystemState OnInitializeRequested() => SystemState.Initializing;
 
+    public SystemState OnConnectingRequested() => SystemState.Connecting;
+
+    public SystemState OnSyncingRequested() => SystemState.Syncing;
+
     public SystemState OnRecoveryStarted() => SystemState.FaultRecovering;
 
     public SystemState OnRecoveryCompleted(Machine machine, EtherCatControllerStatus? controllerStatus)
@@ -45,17 +49,19 @@ public sealed class SystemStateMachine
 
         if (!controllerStatus.IsConnected)
         {
-            return SystemState.Fault;
+            return machine.CurrentState is SystemState.Initializing or SystemState.Connecting
+                ? SystemState.Connecting
+                : SystemState.Fault;
+        }
+
+        if (!controllerStatus.IsOperational)
+        {
+            return SystemState.Syncing;
         }
 
         if (hasAnyAlarm)
         {
             return SystemState.Alarm;
-        }
-
-        if (!controllerStatus.IsOperational)
-        {
-            return SystemState.Initializing;
         }
 
         if (anyAxisHoming || anyAxisMoving)

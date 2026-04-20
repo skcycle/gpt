@@ -4,14 +4,16 @@ public enum SystemState
 {
     PowerOff = 0,
     Initializing = 1,
-    Idle = 2,
-    Standby = 3,
-    Ready = 4,
-    Manual = 5,
-    Auto = 6,
-    Warning = 7,
-    Alarm = 8,
-    Fault = 9,
-    EmergencyStop = 10,
-    FaultRecovering = 11
+    Connecting = 2,
+    Syncing = 3,
+    Idle = 4,
+    Standby = 5,
+    Ready = 6,
+    Manual = 7,
+    Auto = 8,
+    Warning = 9,
+    Alarm = 10,
+    Fault = 11,
+    EmergencyStop = 12,
+    FaultRecovering = 13
 }

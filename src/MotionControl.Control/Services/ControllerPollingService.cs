@@ -23,6 +23,7 @@ public sealed class ControllerPollingService(
             return;
         }
 
+        machine.SetSystemState(systemStateMachine.OnConnectingRequested());
         var result = await motionController.ConnectAsync(cancellationToken);
         if (!result.Success)
         {
@@ -30,6 +31,7 @@ public sealed class ControllerPollingService(
         }
 
         _isRunning = true;
+        machine.SetSystemState(systemStateMachine.OnSyncingRequested());
         await PollOnceAsync(cancellationToken);
     }
 
