@@ -28,6 +28,9 @@ public sealed class AxisParameterAppService(string appSettingsPath) : IAxisParam
             existing.MasterAxisName = axisMappingItem.MasterAxisName;
             existing.SoftLimitPositive = axisMappingItem.SoftLimitPositive;
             existing.SoftLimitNegative = axisMappingItem.SoftLimitNegative;
+            existing.WorkVelocity = axisMappingItem.WorkVelocity;
+            existing.SetupVelocity = axisMappingItem.SetupVelocity;
+            existing.PulseEquivalent = axisMappingItem.PulseEquivalent;
             existing.HomeMode = axisMappingItem.HomeMode;
             existing.ServoBinding = axisMappingItem.ServoBinding;
         }

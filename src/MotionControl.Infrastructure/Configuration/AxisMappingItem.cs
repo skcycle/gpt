@@ -11,6 +11,9 @@ public sealed class AxisMappingItem
     public string? MasterAxisName { get; set; }
     public double? SoftLimitPositive { get; set; }
     public double? SoftLimitNegative { get; set; }
+    public double? WorkVelocity { get; set; }
+    public double? SetupVelocity { get; set; }
+    public double? PulseEquivalent { get; set; }
     public HomeMode HomeMode { get; set; } = HomeMode.Default;
     public string ServoBinding { get; set; } = string.Empty;
 }

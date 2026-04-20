@@ -17,6 +17,9 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     private string _masterAxisName = string.Empty;
     private double? _softLimitPositive;
     private double? _softLimitNegative;
+    private double? _workVelocity;
+    private double? _setupVelocity;
+    private double? _pulseEquivalent = 1000;
     private HomeMode _homeMode = HomeMode.Default;
     private string _servoBinding = string.Empty;
     private string _statusMessage = "Ready";
@@ -76,6 +79,24 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         set { _softLimitNegative = value; OnPropertyChanged(); }
     }
 
+    public double? WorkVelocity
+    {
+        get => _workVelocity;
+        set { _workVelocity = value; OnPropertyChanged(); }
+    }
+
+    public double? SetupVelocity
+    {
+        get => _setupVelocity;
+        set { _setupVelocity = value; OnPropertyChanged(); }
+    }
+
+    public double? PulseEquivalent
+    {
+        get => _pulseEquivalent;
+        set { _pulseEquivalent = value; OnPropertyChanged(); }
+    }
+
     public HomeMode HomeMode
     {
         get => _homeMode;
@@ -121,6 +142,9 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         MasterAxisName = item.MasterAxisName ?? string.Empty;
         SoftLimitPositive = item.SoftLimitPositive;
         SoftLimitNegative = item.SoftLimitNegative;
+        WorkVelocity = item.WorkVelocity;
+        SetupVelocity = item.SetupVelocity;
+        PulseEquivalent = item.PulseEquivalent ?? 1000;
         HomeMode = item.HomeMode;
         ServoBinding = item.ServoBinding;
         StatusMessage = $"Axis {AxisNo} config loaded";
@@ -137,6 +161,9 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
             MasterAxisName = string.IsNullOrWhiteSpace(MasterAxisName) ? null : MasterAxisName,
             SoftLimitPositive = SoftLimitPositive,
             SoftLimitNegative = SoftLimitNegative,
+            WorkVelocity = WorkVelocity,
+            SetupVelocity = SetupVelocity,
+            PulseEquivalent = PulseEquivalent,
             HomeMode = HomeMode,
             ServoBinding = ServoBinding
         });

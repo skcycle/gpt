@@ -230,6 +230,15 @@
                                     <TextBlock Text="SoftLimit Positive" Foreground="{StaticResource SecondaryTextBrush}" />
                                     <TextBox Text="{Binding AxisParameterEditor.SoftLimitPositive}" Margin="0,6,0,8" />
 
+                                    <TextBlock Text="Work Velocity" Foreground="{StaticResource SecondaryTextBrush}" />
+                                    <TextBox Text="{Binding AxisParameterEditor.WorkVelocity}" Margin="0,6,0,8" />
+
+                                    <TextBlock Text="Setup Velocity" Foreground="{StaticResource SecondaryTextBrush}" />
+                                    <TextBox Text="{Binding AxisParameterEditor.SetupVelocity}" Margin="0,6,0,8" />
+
+                                    <TextBlock Text="Pulse Equivalent (pulse/mm)" Foreground="{StaticResource SecondaryTextBrush}" />
+                                    <TextBox Text="{Binding AxisParameterEditor.PulseEquivalent}" Margin="0,6,0,8" />
+
                                     <TextBlock Text="HomeMode" Foreground="{StaticResource SecondaryTextBrush}" />
                                     <ComboBox ItemsSource="{Binding AxisParameterEditor.HomeModes}" SelectedItem="{Binding AxisParameterEditor.HomeMode}" Margin="0,6,0,8" />
 
