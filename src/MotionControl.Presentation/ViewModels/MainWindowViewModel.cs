@@ -17,6 +17,7 @@ public sealed class MainWindowViewModel
         Machine machine,
         ISystemAppService systemAppService,
         IMotionAppService motionAppService,
+        IAxisParameterAppService axisParameterAppService,
         ControllerRuntimeState controllerRuntimeState,
         HomePlanRuntimeState homePlanRuntimeState,
         CommandFeedbackRuntimeState commandFeedbackRuntimeState)
@@ -27,6 +28,8 @@ public sealed class MainWindowViewModel
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
         AxisMonitor = new AxisMonitorViewModel(machine);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState);
+        AxisParameterEditor = new AxisParameterEditorViewModel(axisParameterAppService);
+        AxisDebug.SelectedAxisChanged += async axisNo => await AxisParameterEditor.SyncAxisNoAsync(axisNo);
         Alarm = new AlarmViewModel(machine);
     }
 
@@ -34,11 +37,16 @@ public sealed class MainWindowViewModel
     public EtherCatMonitorViewModel EtherCatMonitor { get; }
     public AxisMonitorViewModel AxisMonitor { get; }
     public AxisDebugViewModel AxisDebug { get; }
+    public AxisParameterEditorViewModel AxisParameterEditor { get; }
     public AlarmViewModel Alarm { get; }
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await _systemAppService.InitializeAsync(cancellationToken);
+        if (AxisMonitor.Axes.Count > 0)
+        {
+            await AxisParameterEditor.SyncAxisNoAsync(AxisMonitor.Axes[0].AxisNo);
+        }
         RefreshViewModels(force: true);
     }
 

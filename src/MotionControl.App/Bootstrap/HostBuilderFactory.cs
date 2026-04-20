@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -48,6 +50,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<IHomingService, HomingService>();
                 services.AddSingleton<ISystemAppService, SystemAppService>();
                 services.AddSingleton<IMotionAppService, MotionAppService>();
+                services.AddSingleton<IAxisParameterAppService>(_ => new AxisParameterAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
 
                 services.AddSingleton<SafetyInterlockService>();
                 services.AddSingleton<ControllerRuntimeState>();

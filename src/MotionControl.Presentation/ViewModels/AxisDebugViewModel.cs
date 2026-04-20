@@ -34,6 +34,8 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         JogNegativeCommand = new RelayCommand(async () => await StartJogAsync(false), () => SelectedAxis is not null);
     }
 
+    public event Action<int>? SelectedAxisChanged;
+
     public int SelectedAxisNo
     {
         get => _selectedAxisNo;
@@ -57,6 +59,7 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             StopAxisCommand.RaiseCanExecuteChanged();
             JogPositiveCommand.RaiseCanExecuteChanged();
             JogNegativeCommand.RaiseCanExecuteChanged();
+            SelectedAxisChanged?.Invoke(_selectedAxisNo);
         }
     }
 
