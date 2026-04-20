@@ -5,6 +5,7 @@ namespace MotionControl.Control.Services;
 
 public sealed class FaultRecoveryService(
     CommandFeedbackRuntimeState commandFeedbackRuntimeState,
+    ControllerRuntimeState controllerRuntimeState,
     SystemStateMachine systemStateMachine)
 {
     public void BeginRecovery(Machine machine)
@@ -20,12 +21,15 @@ public sealed class FaultRecoveryService(
 
     public void CompleteRecovery(Machine machine)
     {
-        machine.SetSystemState(systemStateMachine.OnRecoveryCompleted());
+        var nextState = systemStateMachine.OnRecoveryCompleted(machine, controllerRuntimeState.LastControllerStatus);
+        machine.SetSystemState(nextState);
         commandFeedbackRuntimeState.Add(new CommandFeedback
         {
             CommandName = "FaultRecovery",
-            Status = "Succeeded",
-            Message = "System fault recovery completed"
+            Status = nextState == MotionControl.Domain.Enums.SystemState.FaultRecovering ? "Blocked" : "Succeeded",
+            Message = nextState == MotionControl.Domain.Enums.SystemState.FaultRecovering
+                ? "Fault recovery cannot complete while controller/alarm conditions remain active"
+                : "System fault recovery completed"
         });
     }
 }

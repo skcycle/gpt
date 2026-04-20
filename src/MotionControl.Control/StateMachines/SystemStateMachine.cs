@@ -10,7 +10,15 @@ public sealed class SystemStateMachine
 
     public SystemState OnRecoveryStarted() => SystemState.FaultRecovering;
 
-    public SystemState OnRecoveryCompleted() => SystemState.Standby;
+    public SystemState OnRecoveryCompleted(Machine machine, EtherCatControllerStatus? controllerStatus)
+    {
+        if (controllerStatus is null)
+        {
+            return SystemState.FaultRecovering;
+        }
+
+        return OnPolling(machine, controllerStatus);
+    }
 
     public SystemState OnPolling(Machine machine, EtherCatControllerStatus controllerStatus)
         => GetNextState(machine, controllerStatus);
