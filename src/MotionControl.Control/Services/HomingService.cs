@@ -22,15 +22,16 @@ public sealed class HomingService(
         homePlanRuntimeState.Update(plan);
 
         axis.ApplyState(axisStateMachine.OnHomeIssued());
+        commandFeedbackRuntimeState.AddStarted("Home", axis.ControllerAxisNo, plan.Title);
         var result = await motionController.HomeAxisAsync(axis.ControllerAxisNo, cancellationToken);
         if (!result.Success)
         {
-            commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Home", AxisNo = axis.ControllerAxisNo, Status = "Failed", Message = result.ErrorMessage ?? "Unknown error" });
+            commandFeedbackRuntimeState.AddFailed("Home", axis.ControllerAxisNo, result.ErrorMessage ?? "Unknown error");
             throw new InvalidOperationException($"Home axis failed: {result.ErrorMessage}");
         }
 
         await strategy.ExecuteAsync(axis, cancellationToken);
         axis.ApplyState(axisStateMachine.OnHomeSucceeded(axis));
-        commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Home", AxisNo = axis.ControllerAxisNo, Status = "Succeeded", Message = strategy.BuildPlan(axis).Title });
+        commandFeedbackRuntimeState.AddSucceeded("Home", axis.ControllerAxisNo, strategy.BuildPlan(axis).Title);
     }
 }
