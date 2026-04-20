@@ -1,4 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <UseWPF>true</UseWPF>
+    <TargetFramework>net8.0-windows</TargetFramework>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../MotionControl.Application/MotionControl.Application.csproj" />
     <ProjectReference Include="../MotionControl.Contracts/MotionControl.Contracts.csproj" />
