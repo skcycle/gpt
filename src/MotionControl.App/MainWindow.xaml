@@ -296,12 +296,12 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,0,0,4">
-                        <Button Content="Add DI" Command="{Binding AddInputCommand}" Padding="10,4" Margin="0,0,8,0" />
-                        <Button Content="Delete DI" Command="{Binding DeleteInputCommand}" Padding="10,4" Margin="0,0,16,0" />
-                        <Button Content="Add DO" Command="{Binding AddOutputCommand}" Padding="10,4" Margin="0,0,8,0" />
-                        <Button Content="Delete DO" Command="{Binding DeleteOutputCommand}" Padding="10,4" Margin="0,0,16,0" />
-                        <Button Content="Save" Command="{Binding SaveIoConfigCommand}" Padding="10,4" Margin="0,0,8,0" />
-                        <Button Content="Load" Command="{Binding LoadIoConfigCommand}" Padding="10,4" />
+                        <Button Content="Add DI" Command="{Binding AddInputCommand}" Padding="10,4" Margin="0,0,8,0" Background="#1A4A8B" Foreground="White" />
+                        <Button Content="Delete DI" Command="{Binding DeleteInputCommand}" Padding="10,4" Margin="0,0,16,0" Background="#8B0000" Foreground="White" />
+                        <Button Content="Add DO" Command="{Binding AddOutputCommand}" Padding="10,4" Margin="0,0,8,0" Background="#1A4A8B" Foreground="White" />
+                        <Button Content="Delete DO" Command="{Binding DeleteOutputCommand}" Padding="10,4" Margin="0,0,16,0" Background="#8B0000" Foreground="White" />
+                        <Button Content="Save" Command="{Binding SaveIoConfigCommand}" Padding="10,4" Margin="0,0,8,0" Background="#1A5C1A" Foreground="White" />
+                        <Button Content="Load" Command="{Binding LoadIoConfigCommand}" Padding="10,4" Background="#1A5C1A" Foreground="White" />
                     </StackPanel>
 
                     <GroupBox Grid.Row="2" Header="Digital Inputs">
