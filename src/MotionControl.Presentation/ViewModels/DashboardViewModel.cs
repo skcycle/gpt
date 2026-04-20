@@ -47,11 +47,17 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
     {
         _controllerStatus = controllerStatus ?? _controllerStatus;
 
+        // Notify all Dashboard card bindings
+        OnPropertyChanged(nameof(SystemState));
         OnPropertyChanged(nameof(IsConnected));
         OnPropertyChanged(nameof(ConnectionStatusText));
         OnPropertyChanged(nameof(ConnectionStatusColor));
         OnPropertyChanged(nameof(EtherCatConnected));
-        OnPropertyChanged(nameof(SystemState));
+        OnPropertyChanged(nameof(EtherCatNetworkState));
+        OnPropertyChanged(nameof(EtherCatOnlineSlaveCount));
+        OnPropertyChanged(nameof(AlarmCount));
+        OnPropertyChanged(nameof(ActiveInputCount));
+        OnPropertyChanged(nameof(ActiveOutputCount));
 
         var latestSlaves = _controllerStatus?.Slaves.Select(slave => new EtherCatSlaveViewModel(slave)).ToArray()
             ?? Array.Empty<EtherCatSlaveViewModel>();
@@ -70,6 +76,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         {
             RecentCommandFeedback = latestFeedback;
             _lastRecentCommandFeedback = latestFeedback;
+            OnPropertyChanged(nameof(RecentCommandFeedback));
         }
 
         var latestAlarmSummary = _machine.Alarms
@@ -82,6 +89,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         {
             ActiveAlarmSummary = latestAlarmSummary;
             _lastActiveAlarmSummary = latestAlarmSummary;
+            OnPropertyChanged(nameof(ActiveAlarmSummary));
         }
     }
 }
