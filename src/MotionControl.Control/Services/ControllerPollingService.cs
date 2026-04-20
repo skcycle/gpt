@@ -50,7 +50,6 @@ public sealed class ControllerPollingService(
             commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "SystemState", Status = "Changed", Message = $"{machine.CurrentState} -> {syncingState}" });
             machine.SetSystemState(syncingState);
         }
-        await PollOnceAsync(cancellationToken);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken = default)
@@ -73,6 +72,11 @@ public sealed class ControllerPollingService(
 
     public async Task PollOnceAsync(CancellationToken cancellationToken = default)
     {
+        if (!_isRunning)
+        {
+            return;
+        }
+
         if (!await _pollLock.WaitAsync(0, cancellationToken))
         {
             return;
@@ -80,7 +84,6 @@ public sealed class ControllerPollingService(
 
         try
         {
-            // Release lock during I/O to avoid blocking StopAsync/ReconnectAsync
             _pollLock.Release();
 
             await axisPollingService.PollAsync(cancellationToken);
