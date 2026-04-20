@@ -50,8 +50,25 @@ public sealed class IoConfigAppService(string appSettingsPath) : IIoConfigAppSer
 
     public async Task SaveIoPointsAsync(IEnumerable<IoPointConfigItem> ioPoints, CancellationToken cancellationToken = default)
     {
+        var normalized = ioPoints.OrderBy(item => item.IsOutput).ThenBy(item => item.Address).ToList();
+        var duplicatedInput = normalized.Where(item => !item.IsOutput)
+            .GroupBy(item => item.Address)
+            .FirstOrDefault(group => group.Count() > 1);
+        if (duplicatedInput is not null)
+        {
+            throw new InvalidOperationException($"DI address duplicated: {duplicatedInput.Key}");
+        }
+
+        var duplicatedOutput = normalized.Where(item => item.IsOutput)
+            .GroupBy(item => item.Address)
+            .FirstOrDefault(group => group.Count() > 1);
+        if (duplicatedOutput is not null)
+        {
+            throw new InvalidOperationException($"DO address duplicated: {duplicatedOutput.Key}");
+        }
+
         var root = await LoadRootAsync(cancellationToken);
-        root.IoMapping.Points = ioPoints.OrderBy(item => item.IsOutput).ThenBy(item => item.Address).ToList();
+        root.IoMapping.Points = normalized;
         await SaveRootAsync(root, cancellationToken);
     }
 
