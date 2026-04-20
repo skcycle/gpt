@@ -1,16 +1,29 @@
+using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Control.Services;
 
-public sealed class IoPollingService(Machine machine)
+public sealed class IoPollingService(
+    IMotionController motionController,
+    Machine machine,
+    CommandFeedbackRuntimeState commandFeedbackRuntimeState)
 {
-    public Task PollAsync(CancellationToken cancellationToken = default)
+    public async Task PollAsync(CancellationToken cancellationToken = default)
     {
         foreach (var ioPoint in machine.IoPoints)
         {
-            ioPoint.Update(ioPoint.Value);
+            var previousValue = ioPoint.Value;
+            var currentValue = await motionController.GetIoPointValueAsync(ioPoint.Address, ioPoint.IsOutput, cancellationToken);
+            if (previousValue != currentValue)
+            {
+                ioPoint.Update(currentValue);
+                commandFeedbackRuntimeState.Add(new CommandFeedback
+                {
+                    CommandName = ioPoint.IsOutput ? "DO" : "DI",
+                    Status = "Changed",
+                    Message = $"{ioPoint.Name} -> {(currentValue ? "ON" : "OFF")}"
+                });
+            }
         }
-
-        return Task.CompletedTask;
     }
 }

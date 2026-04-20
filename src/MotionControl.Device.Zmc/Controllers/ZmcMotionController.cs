@@ -73,6 +73,21 @@ public sealed class ZmcMotionController(
     public Task<DeviceResult> ResetAxisAlarmAsync(int axisNo, CancellationToken cancellationToken = default)
         => Task.FromResult(DeviceResult.Ok());
 
+    public Task<bool> GetIoPointValueAsync(int address, bool isOutput, CancellationToken cancellationToken = default)
+    {
+        uint value = 0;
+        if (isOutput)
+        {
+            axisNativeFacade.GetOutput(address, ref value);
+        }
+        else
+        {
+            axisNativeFacade.GetInput(address, ref value);
+        }
+
+        return Task.FromResult(value != 0);
+    }
+
     public Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default)
     {
         var slaves = Enumerable.Range(1, Math.Min(options.AxisCount, 4))
