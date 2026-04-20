@@ -9,6 +9,8 @@ public sealed class DashboardViewModel
     private readonly Machine _machine;
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private EtherCatControllerStatus? _controllerStatus;
+    private string[] _lastRecentCommandFeedback = Array.Empty<string>();
+    private EtherCatSlaveViewModel[] _lastEtherCatSlaves = Array.Empty<EtherCatSlaveViewModel>();
 
     public DashboardViewModel(Machine machine, CommandFeedbackRuntimeState commandFeedbackRuntimeState)
     {
@@ -28,12 +30,24 @@ public sealed class DashboardViewModel
     public void Refresh(EtherCatControllerStatus? controllerStatus = null)
     {
         _controllerStatus = controllerStatus ?? _controllerStatus;
-        EtherCatSlaves = _controllerStatus?.Slaves.Select(slave => new EtherCatSlaveViewModel(slave)).ToArray()
+
+        var latestSlaves = _controllerStatus?.Slaves.Select(slave => new EtherCatSlaveViewModel(slave)).ToArray()
             ?? Array.Empty<EtherCatSlaveViewModel>();
-        RecentCommandFeedback = _commandFeedbackRuntimeState.RecentFeedback
+        if (!_lastEtherCatSlaves.SequenceEqual(latestSlaves))
+        {
+            EtherCatSlaves = latestSlaves;
+            _lastEtherCatSlaves = latestSlaves;
+        }
+
+        var latestFeedback = _commandFeedbackRuntimeState.RecentFeedback
             .Reverse()
             .Take(5)
             .Select(item => $"[{item.Status}] {item.CommandName} Axis={item.AxisNo?.ToString() ?? "-"} {item.Message}")
             .ToArray();
+        if (!_lastRecentCommandFeedback.SequenceEqual(latestFeedback))
+        {
+            RecentCommandFeedback = latestFeedback;
+            _lastRecentCommandFeedback = latestFeedback;
+        }
     }
 }

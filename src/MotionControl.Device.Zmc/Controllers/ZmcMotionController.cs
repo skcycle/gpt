@@ -33,14 +33,12 @@ public sealed class ZmcMotionController(
         float dpos = 0;
         float speed = 0;
         var idle = 1;
-        var axisStatus = 0;
 
         axisNativeFacade.GetAxisDpos(axisNo, ref dpos);
         axisNativeFacade.GetAxisSpeed(axisNo, ref speed);
         axisNativeFacade.GetAxisIdle(axisNo, ref idle);
-        axisNativeFacade.GetAxisStatus(axisNo, ref axisStatus);
 
-        return Task.FromResult(statusTranslator.Translate(axisNo, dpos, speed, idle, axisStatus));
+        return Task.FromResult(statusTranslator.Translate(axisNo, dpos, speed, idle, 0));
     }
 
     public Task<DeviceResult> EnableAxisAsync(int axisNo, CancellationToken cancellationToken = default)

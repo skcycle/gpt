@@ -10,7 +10,11 @@ public static class MachineFactory
     {
         var axisNames = axisMappingOptions.AxisNames;
         var axisMappings = axisMappingOptions.Axes;
-        var axes = Enumerable.Range(1, 32)
+        var configuredAxisCount = axisMappings.Count > 0
+            ? axisMappings.Max(item => item.AxisNo)
+            : axisNames.Count;
+        var axisCount = Math.Max(1, configuredAxisCount);
+        var axes = Enumerable.Range(1, axisCount)
             .Select(axisNo =>
             {
                 var mapping = axisMappings.FirstOrDefault(item => item.AxisNo == axisNo);
