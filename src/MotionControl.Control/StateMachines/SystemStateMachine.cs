@@ -8,12 +8,30 @@ public sealed class SystemStateMachine
 {
     public SystemState GetNextState(Machine machine, EtherCatControllerStatus controllerStatus)
     {
+        var hasAxisAlarm = machine.Axes.Any(axis => axis.HasAlarm);
+        var hasSystemAlarm = machine.Alarms.Any(alarm => alarm.IsActive);
+        var hasSlaveAlarm = controllerStatus.Slaves.Any(slave => slave.HasAlarm);
+        var hasAnyAlarm = hasAxisAlarm || hasSystemAlarm || hasSlaveAlarm;
+        var anyAxisHoming = machine.Axes.Any(axis => axis.State == AxisState.Homing);
+        var anyAxisMoving = machine.Axes.Any(axis => axis.State == AxisState.Moving);
+        var anyServoOn = machine.Axes.Any(axis => axis.ServoState == ServoState.On);
+
+        if (machine.CurrentState == SystemState.FaultRecovering)
+        {
+            if (!controllerStatus.IsConnected)
+            {
+                return SystemState.FaultRecovering;
+            }
+
+            return hasAnyAlarm ? SystemState.FaultRecovering : SystemState.Standby;
+        }
+
         if (!controllerStatus.IsConnected)
         {
             return SystemState.Fault;
         }
 
-        if (machine.Axes.Any(axis => axis.HasAlarm) || machine.Alarms.Any(alarm => alarm.IsActive) || controllerStatus.Slaves.Any(slave => slave.HasAlarm))
+        if (hasAnyAlarm)
         {
             return SystemState.Alarm;
         }
@@ -23,12 +41,12 @@ public sealed class SystemStateMachine
             return SystemState.Initializing;
         }
 
-        if (machine.Axes.Any(axis => axis.State == AxisState.Homing))
+        if (anyAxisHoming || anyAxisMoving)
         {
             return SystemState.Manual;
         }
 
-        if (machine.Axes.Any(axis => axis.ServoState == ServoState.On))
+        if (anyServoOn)
         {
             return SystemState.Ready;
         }

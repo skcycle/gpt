@@ -13,7 +13,6 @@ public sealed class SystemAppService(
     {
         machine.SetSystemState(SystemState.Initializing);
         await controllerPollingService.StartAsync(cancellationToken);
-        machine.SetSystemState(SystemState.Ready);
     }
 
     public Task RefreshAsync(CancellationToken cancellationToken = default)
