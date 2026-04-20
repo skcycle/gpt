@@ -148,10 +148,10 @@
                                     <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding HasAlarm, Mode=OneWay}" Width="55" />
                                     <DataGridCheckBoxColumn Header="Warn" Binding="{Binding HasWarning, Mode=OneWay}" Width="50" />
                                     <DataGridCheckBoxColumn Header="FF-OK" Binding="{Binding FollowingErrorTriggered, Mode=OneWay}" Width="55" />
-                                    <DataGridCheckBoxColumn Header="Soft-&quot; Binding="{Binding NegativeSoftLimitTriggered, Mode=OneWay}" Width="55" />
-                                    <DataGridCheckBoxColumn Header="Soft+&quot; Binding="{Binding PositiveSoftLimitTriggered, Mode=OneWay}" Width="55" />
-                                    <DataGridCheckBoxColumn Header="Hard-&quot; Binding="{Binding NegativeHardLimitTriggered, Mode=OneWay}" Width="55" />
-                                    <DataGridCheckBoxColumn Header="Hard+&quot; Binding="{Binding PositiveHardLimitTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Soft-" Binding="{Binding NegativeSoftLimitTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Soft+" Binding="{Binding PositiveSoftLimitTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Hard-" Binding="{Binding NegativeHardLimitTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Hard+" Binding="{Binding PositiveHardLimitTriggered, Mode=OneWay}" Width="55" />
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
@@ -182,8 +182,8 @@
                                 <Button Content="Home" Command="{Binding AxisDebug.HomeAxisCommand}" Width="96" />
                                 <Button Content="Move" Command="{Binding AxisDebug.MoveAxisCommand}" Width="96" />
                                 <Button Content="Stop" Command="{Binding AxisDebug.StopAxisCommand}" Width="96" />
-                                <Button x:Name="JogPositiveButton" Content="Jog +&quot; PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
-                                <Button x:Name="JogNegativeButton" Content="Jog -&quot; PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
+                                <Button x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
+                                <Button x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="96" />
                             </WrapPanel>
                         </StackPanel>
                     </Border>
