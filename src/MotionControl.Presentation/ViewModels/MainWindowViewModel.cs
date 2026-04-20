@@ -95,7 +95,7 @@ public sealed class MainWindowViewModel
             _lastDashboardRefreshUtc = now;
         }
 
-        if (force || now - _lastAxisRefreshUtc >= TimeSpan.FromMilliseconds(100))
+        if (force || now - _lastAxisRefreshUtc >= TimeSpan.FromMilliseconds(300))
         {
             AxisMonitor.RefreshAll();
             _lastAxisRefreshUtc = now;
@@ -107,7 +107,7 @@ public sealed class MainWindowViewModel
             _lastAlarmRefreshUtc = now;
         }
 
-        if (force || now - _lastIoRefreshUtc >= TimeSpan.FromMilliseconds(100))
+        if (force || now - _lastIoRefreshUtc >= TimeSpan.FromMilliseconds(300))
         {
             IoMonitor.RefreshAll();
             _lastIoRefreshUtc = now;
