@@ -157,7 +157,6 @@
                                     <DataGridTextColumn Header="Velocity" Binding="{Binding CurrentVelocity}" Width="80" />
                                     <DataGridTextColumn Header="WorkVel" Binding="{Binding WorkVelocity}" Width="70" />
                                     <DataGridTextColumn Header="SetupVel" Binding="{Binding SetupVelocity}" Width="70" />
-                                    <DataGridTextColumn Header="Units" Binding="{Binding PulseEquivalent}" Width="70" />
                                     <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed, Mode=OneWay}" Width="55" />
                                     <DataGridCheckBoxColumn Header="ServoOn" Binding="{Binding IsServoOn, Mode=OneWay}" Width="65" />
                                     <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding HasAlarm, Mode=OneWay}" Width="55" />
