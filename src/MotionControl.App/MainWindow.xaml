@@ -104,7 +104,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="360" />
                         <ColumnDefinition Width="16" />
-                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="400" />
                     </Grid.ColumnDefinitions>
 
                     <!-- Left column: Axis Monitor (top) + Manual Operation (bottom) -->
