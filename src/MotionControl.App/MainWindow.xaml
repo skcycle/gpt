@@ -102,9 +102,9 @@
             <TabItem Header="Axis Console">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" MinHeight="180" />
                         <RowDefinition Height="16" />
-                        <RowDefinition Height="Auto" MinHeight="280" />
+                        <RowDefinition Height="Auto" MinHeight="200" />
                     </Grid.RowDefinitions>
 
                     <!-- Row 0: Left=AxisMonitor, Right=ManualOperation -->
