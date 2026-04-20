@@ -38,10 +38,7 @@ public sealed class MotionAppService(
     public async Task JogAxisAsync(JogAxisCommandDto command, CancellationToken cancellationToken = default)
     {
         var axis = FindAxis(command.AxisNo);
-        var direction = command.PositiveDirection ? 1 : -1;
-        var nextPosition = axis.CurrentPosition + direction * 10.0;
-        axis.SetTargetPosition(nextPosition, MotionControl.Domain.Enums.MotionMode.Jog);
-        await axisControlService.MoveAbsoluteAsync(axis, nextPosition, command.Velocity, command.Velocity, command.Velocity, cancellationToken);
+        await axisControlService.JogAsync(axis, command.Velocity, command.PositiveDirection, cancellationToken);
     }
 
     private Axis FindAxis(int axisNo)

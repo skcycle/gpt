@@ -51,6 +51,20 @@ public sealed class AxisControlService(
         commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Move", AxisNo = axis.ControllerAxisNo, Status = "Succeeded", Message = $"Target {position}" });
     }
 
+    public async Task JogAsync(Axis axis, double velocity, bool positiveDirection, CancellationToken cancellationToken = default)
+    {
+        var result = await motionController.JogAxisAsync(axis.ControllerAxisNo, velocity, positiveDirection, cancellationToken);
+        if (!result.Success)
+        {
+            commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Jog", AxisNo = axis.Id.Value, Status = "Failed", Message = result.ErrorMessage ?? "Unknown error" });
+            throw new InvalidOperationException($"Jog axis failed: {result.ErrorMessage}");
+        }
+
+        axis.SetTargetPosition(axis.CurrentPosition, MotionMode.Jog);
+        axis.ApplyState(AxisState.Moving);
+        commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Jog", AxisNo = axis.Id.Value, Status = "Succeeded", Message = positiveDirection ? "Jog positive" : "Jog negative" });
+    }
+
     public async Task StopAsync(Axis axis, CancellationToken cancellationToken = default)
     {
         axis.ApplyState(AxisState.Stopping);

@@ -55,6 +55,9 @@ public sealed class ZmcMotionController(
             ? DeviceResult.Ok()
             : DeviceResult.Fail("ZMC move absolute failed."));
 
+    public Task<DeviceResult> JogAxisAsync(int axisNo, double velocity, bool positiveDirection, CancellationToken cancellationToken = default)
+        => Task.FromResult(axisNativeFacade.JogAxis(axisNo, velocity, positiveDirection) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC jog axis failed."));
+
     public Task<DeviceResult> StopAxisAsync(int axisNo, CancellationToken cancellationToken = default)
         => Task.FromResult(axisNativeFacade.StopAxis(axisNo) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC stop axis failed."));
 

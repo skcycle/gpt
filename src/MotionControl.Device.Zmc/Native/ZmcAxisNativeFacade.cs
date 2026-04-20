@@ -61,8 +61,14 @@ public sealed class ZmcAxisNativeFacade
         return ZmcNativeApi.DirectSingleMoveAbs(_handle, axisNo, (float)position);
     }
 
-    public int JogAxis(int axisNo, bool positiveDirection)
+    public int JogAxis(int axisNo, double velocity, bool positiveDirection)
     {
+        var setup = ExecuteCommand($"SPEED({axisNo})={velocity}");
+        if (setup != 0)
+        {
+            return setup;
+        }
+
         return ZmcNativeApi.DirectSingleVmove(_handle, axisNo, positiveDirection ? 1 : -1);
     }
 
