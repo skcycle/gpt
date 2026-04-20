@@ -348,7 +348,7 @@
                         </DataGrid>
                     </GroupBox>
 
-                    <GroupBox Grid.ColumnSpan="3" Grid.Row="2" Header="IO Event Log">
+                    <GroupBox Grid.ColumnSpan="3" Grid.Row="4" Header="IO Event Log">
                         <DataGrid ItemsSource="{Binding IoEventLog.Events}" AutoGenerateColumns="False" IsReadOnly="True">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="130" />
