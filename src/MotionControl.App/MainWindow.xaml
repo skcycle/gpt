@@ -137,7 +137,7 @@
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
                                     <Button Content="Add Axis" Command="{Binding AddAxisCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="100" />
-                                    <Button Content="Delete Axis" Command="{Binding DeleteAxisCommand}" Padding="10,4" MinWidth="100" />
+                                    <Button Content="Delete Axis" Command="{Binding DeleteAxisCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="100" />
                                 </StackPanel>
                             </Grid>
 
@@ -266,10 +266,10 @@
                                 <TextBox Text="{Binding AxisParameterEditor.ServoBinding}" Margin="0,6,0,12" />
 
                                 <WrapPanel>
-                                    <Button Content="Load Config" Command="{Binding AxisParameterEditor.LoadCommand}" Width="120" />
-                                    <Button Content="Save Config" Command="{Binding AxisParameterEditor.SaveCommand}" Width="120" />
-                                    <Button Content="Read Ctrl" Command="{Binding AxisParameterEditor.ReadControllerCommand}" Width="120" />
-                                    <Button Content="Write Ctrl" Command="{Binding AxisParameterEditor.WriteControllerCommand}" Width="120" />
+                                    <Button Content="Load Config" Command="{Binding AxisParameterEditor.LoadCommand}" Width="120" Margin="0,0,8,0" />
+                                    <Button Content="Save Config" Command="{Binding AxisParameterEditor.SaveCommand}" Width="120" Margin="0,0,8,0" />
+                                    <Button Content="Read Ctrl" Command="{Binding AxisParameterEditor.ReadControllerCommand}" Width="120" Margin="0,0,8,0" />
+                                    <Button Content="Write Ctrl" Command="{Binding AxisParameterEditor.WriteControllerCommand}" Width="120" Margin="0,0,8,0" />
                                 </WrapPanel>
 
                                 <TextBlock Text="{Binding AxisParameterEditor.StatusMessage}" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,10,0,6" TextWrapping="Wrap" />
@@ -320,7 +320,7 @@
                         <Button Content="Add DO" Command="{Binding AddOutputCommand}" Padding="10,4" Margin="0,0,8,0" Background="#1A4A8B" Foreground="White" />
                         <Button Content="Delete DO" Command="{Binding DeleteOutputCommand}" Padding="10,4" Margin="0,0,16,0" Background="#8B0000" Foreground="White" />
                         <Button Content="Save" Command="{Binding SaveIoConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="100" Background="#1A5C1A" Foreground="White" />
-                        <Button Content="Load" Command="{Binding LoadIoConfigCommand}" Padding="10,4" MinWidth="100" Background="#1A5C1A" Foreground="White" />
+                        <Button Content="Load" Command="{Binding LoadIoConfigCommand}" Padding="10,4" MinWidth="100" Margin="0,0,8,0" Background="#1A5C1A" Foreground="White" />
                     </StackPanel>
 
                     <GroupBox Grid.Row="2" Header="Digital Inputs">
