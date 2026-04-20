@@ -1,5 +1,6 @@
 using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
+using MotionControl.Device.Abstractions.Results;
 using MotionControl.Domain.Entities;
 using MotionControl.Domain.Enums;
 
