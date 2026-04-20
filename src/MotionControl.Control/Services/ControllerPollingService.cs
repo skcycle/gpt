@@ -31,7 +31,19 @@ public sealed class ControllerPollingService(
             commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "SystemState", Status = "Changed", Message = $"{machine.CurrentState} -> {connectingState}" });
             machine.SetSystemState(connectingState);
         }
-        var result = await motionController.ConnectAsync(cancellationToken);
+        // Retry up to 3 times with a brief delay to handle transient connect failures
+        DeviceResult? result = null;
+        using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        connectCts.CancelAfter(TimeSpan.FromSeconds(10));
+        for (var attempt = 0; attempt < 3 && !(result?.Success ?? false); attempt++)
+        {
+            if (attempt > 0)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+            }
+            result = await motionController.ConnectAsync(connectCts.Token);
+        }
+        result ??= DeviceResult.Fail("Connect never attempted or timed out");
         if (!result.Success)
         {
             machine.SetConnected(false);
