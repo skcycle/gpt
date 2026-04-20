@@ -80,28 +80,40 @@ public sealed class ControllerPollingService(
 
         try
         {
+            // Release lock during I/O to avoid blocking StopAsync/ReconnectAsync
+            _pollLock.Release();
+
             await axisPollingService.PollAsync(cancellationToken);
             await ioPollingService.PollAsync(cancellationToken);
 
             var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
             controllerRuntimeState.Update(controllerStatus);
             await alarmPollingService.PollAsync(cancellationToken);
-            var previousSystemState = machine.CurrentState;
-            var nextSystemState = systemStateMachine.OnPolling(machine, controllerStatus);
-            if (previousSystemState != nextSystemState)
+
+            if (!await _pollLock.WaitAsync(0, cancellationToken))
             {
-                commandFeedbackRuntimeState.Add(new CommandFeedback
-                {
-                    CommandName = "SystemState",
-                    Status = "Changed",
-                    Message = $"{previousSystemState} -> {nextSystemState}"
-                });
-                machine.SetSystemState(nextSystemState);
+                return;
             }
-        }
-        finally
-        {
-            _pollLock.Release();
+
+            try
+            {
+                var previousSystemState = machine.CurrentState;
+                var nextSystemState = systemStateMachine.OnPolling(machine, controllerStatus);
+                if (previousSystemState != nextSystemState)
+                {
+                    commandFeedbackRuntimeState.Add(new CommandFeedback
+                    {
+                        CommandName = "SystemState",
+                        Status = "Changed",
+                        Message = $"{previousSystemState} -> {nextSystemState}"
+                    });
+                    machine.SetSystemState(nextSystemState);
+                }
+            }
+            finally
+            {
+                _pollLock.Release();
+            }
         }
     }
 }
