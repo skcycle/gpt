@@ -1,4 +1,5 @@
 using MotionControl.Application.Interfaces;
+using MotionControl.Control.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Control.StateMachines;
 using MotionControl.Domain.Entities;
@@ -8,7 +9,8 @@ namespace MotionControl.Application.Services;
 public sealed class SystemAppService(
     Machine machine,
     ControllerPollingService controllerPollingService,
-    SystemStateMachine systemStateMachine) : ISystemAppService
+    SystemStateMachine systemStateMachine,
+    IAxisControlService axisControlService) : ISystemAppService
 {
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -24,6 +26,19 @@ public sealed class SystemAppService(
     public async Task EmergencyStopAsync(CancellationToken cancellationToken = default)
     {
         machine.SetSystemState(systemStateMachine.OnEmergencyStopRequested());
+
+        foreach (var axis in machine.Axes)
+        {
+            try
+            {
+                await axisControlService.StopAsync(axis, cancellationToken);
+            }
+            catch
+            {
+                // Keep issuing stop to remaining axes during emergency stop.
+            }
+        }
+
         await controllerPollingService.PollOnceAsync(cancellationToken);
     }
 
