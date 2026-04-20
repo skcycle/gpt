@@ -50,6 +50,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsConnected));
         OnPropertyChanged(nameof(ConnectionStatusText));
         OnPropertyChanged(nameof(ConnectionStatusColor));
+        OnPropertyChanged(nameof(EtherCatConnected));
         OnPropertyChanged(nameof(SystemState));
 
         var latestSlaves = _controllerStatus?.Slaves.Select(slave => new EtherCatSlaveViewModel(slave)).ToArray()
