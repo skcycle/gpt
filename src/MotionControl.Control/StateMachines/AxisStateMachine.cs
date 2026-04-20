@@ -17,16 +17,39 @@ public sealed class AxisStateMachine
             return AxisState.Disabled;
         }
 
-        if (!axis.IsHomed && axis.ServoState == ServoState.On)
+        if (axis.State == AxisState.Homing && !axis.IsHomed)
         {
             return AxisState.Homing;
         }
 
+        if (axis.State == AxisState.Stopping && Math.Abs(axis.CurrentVelocity) > 0.001d)
+        {
+            return AxisState.Stopping;
+        }
+
         if (Math.Abs(axis.CurrentVelocity) > 0.001d)
         {
-            return AxisState.Moving;
+            return axis.MotionMode == MotionMode.Jog ? AxisState.Jogging : AxisState.Moving;
         }
 
         return AxisState.Standstill;
     }
+
+    public AxisState OnEnableSucceeded(Axis axis) => GetNextState(axis);
+
+    public AxisState OnDisableSucceeded() => AxisState.Disabled;
+
+    public AxisState OnHomeIssued() => AxisState.Homing;
+
+    public AxisState OnHomeSucceeded(Axis axis) => GetNextState(axis);
+
+    public AxisState OnMoveIssued() => AxisState.Moving;
+
+    public AxisState OnJogIssued() => AxisState.Jogging;
+
+    public AxisState OnStopIssued() => AxisState.Stopping;
+
+    public AxisState OnStopSucceeded(Axis axis) => GetNextState(axis);
+
+    public AxisState OnAlarmResetSucceeded(Axis axis) => GetNextState(axis);
 }

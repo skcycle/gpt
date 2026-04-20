@@ -1,4 +1,5 @@
 using MotionControl.Control.Interfaces;
+using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Device.Abstractions.Models;
 using MotionControl.Domain.Entities;
@@ -8,7 +9,8 @@ namespace MotionControl.Control.Services;
 
 public sealed class AxisControlService(
     IMotionController motionController,
-    CommandFeedbackRuntimeState commandFeedbackRuntimeState) : IAxisControlService
+    CommandFeedbackRuntimeState commandFeedbackRuntimeState,
+    AxisStateMachine axisStateMachine) : IAxisControlService
 {
     public async Task EnableAxisAsync(Axis axis, CancellationToken cancellationToken = default)
     {
@@ -19,7 +21,7 @@ public sealed class AxisControlService(
             throw new InvalidOperationException($"Enable axis failed: {result.ErrorMessage}");
         }
 
-        axis.ApplyState(AxisState.Standstill);
+        axis.ApplyState(axisStateMachine.OnEnableSucceeded(axis));
         commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Enable", AxisNo = axis.ControllerAxisNo, Status = "Succeeded", Message = "Axis enabled" });
     }
 
@@ -32,7 +34,7 @@ public sealed class AxisControlService(
             throw new InvalidOperationException($"Disable axis failed: {result.ErrorMessage}");
         }
 
-        axis.ApplyState(AxisState.Disabled);
+        axis.ApplyState(axisStateMachine.OnDisableSucceeded());
         commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Disable", AxisNo = axis.ControllerAxisNo, Status = "Succeeded", Message = "Axis disabled" });
     }
 
@@ -47,7 +49,7 @@ public sealed class AxisControlService(
         }
 
         axis.SetTargetPosition(position, MotionMode.Absolute);
-        axis.ApplyState(AxisState.Moving);
+        axis.ApplyState(axisStateMachine.OnMoveIssued());
         commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Move", AxisNo = axis.ControllerAxisNo, Status = "Succeeded", Message = $"Target {position}" });
     }
 
@@ -61,13 +63,13 @@ public sealed class AxisControlService(
         }
 
         axis.SetTargetPosition(axis.CurrentPosition, MotionMode.Jog);
-        axis.ApplyState(AxisState.Moving);
+        axis.ApplyState(axisStateMachine.OnJogIssued());
         commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Jog", AxisNo = axis.Id.Value, Status = "Succeeded", Message = positiveDirection ? "Jog positive" : "Jog negative" });
     }
 
     public async Task StopAsync(Axis axis, CancellationToken cancellationToken = default)
     {
-        axis.ApplyState(AxisState.Stopping);
+        axis.ApplyState(axisStateMachine.OnStopIssued());
         var result = await motionController.StopAxisAsync(axis.ControllerAxisNo, cancellationToken);
         if (!result.Success)
         {
@@ -75,7 +77,7 @@ public sealed class AxisControlService(
             throw new InvalidOperationException($"Stop axis failed: {result.ErrorMessage}");
         }
 
-        axis.ApplyState(AxisState.Standstill);
+        axis.ApplyState(axisStateMachine.OnStopSucceeded(axis));
         commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Stop", AxisNo = axis.ControllerAxisNo, Status = "Succeeded", Message = "Axis stopped" });
     }
 
@@ -89,6 +91,7 @@ public sealed class AxisControlService(
         }
 
         axis.ClearAlarm();
+        axis.ApplyState(axisStateMachine.OnAlarmResetSucceeded(axis));
         commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "ResetAlarm", AxisNo = axis.ControllerAxisNo, Status = "Succeeded", Message = "Alarm reset" });
     }
 }
