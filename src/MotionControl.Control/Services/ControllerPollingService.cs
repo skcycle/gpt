@@ -84,15 +84,19 @@ public sealed class ControllerPollingService(
 
     public async Task PollOnceAsync(CancellationToken cancellationToken = default)
     {
+        Console.WriteLine($"[PollOnceAsync] entered, _isRunning={_isRunning}, semaphore={_pollLock.CurrentCount}");
         if (!_isRunning)
         {
+            Console.WriteLine("[PollOnceAsync] _isRunning false, returning");
             return;
         }
 
         if (!await _pollLock.WaitAsync(0, cancellationToken))
         {
+            Console.WriteLine($"[PollOnceAsync] failed to acquire semaphore (count={_pollLock.CurrentCount}), returning");
             return;
         }
+        Console.WriteLine($"[PollOnceAsync] semaphore acquired, count={_pollLock.CurrentCount}");
 
         var innerLockAcquired = false;
         try
@@ -108,8 +112,10 @@ public sealed class ControllerPollingService(
 
             if (!await _pollLock.WaitAsync(0, cancellationToken))
             {
+                Console.WriteLine($"[PollOnceAsync] I/O done but failed to re-acquire semaphore for state update (count={_pollLock.CurrentCount}), returning — SEMAPHORE LEAKED");
                 return;
             }
+            Console.WriteLine($"[PollOnceAsync] inner lock acquired for state update, count={_pollLock.CurrentCount}");
 
             innerLockAcquired = true;
             try
@@ -134,9 +140,11 @@ public sealed class ControllerPollingService(
         }
         finally
         {
+            Console.WriteLine($"[PollOnceAsync] finally fired, innerLockAcquired={innerLockAcquired}, semaphore count={_pollLock.CurrentCount}");
             if (innerLockAcquired)
             {
                 _pollLock.Release();
+                Console.WriteLine($"[PollOnceAsync] finally released inner lock, semaphore count={_pollLock.CurrentCount}");
             }
         }
     }
