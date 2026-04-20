@@ -11,18 +11,17 @@ public static class MachineFactory
         var axisNames = axisMappingOptions.AxisNames;
         var axisMappings = axisMappingOptions.Axes;
         var configuredAxisCount = axisMappings.Count > 0
-            ? axisMappings.Max(item => item.AxisNo)
+            ? axisMappings.Max(item => item.AxisNo) + 1
             : axisNames.Count;
         var axisCount = Math.Max(1, configuredAxisCount);
-        var axes = Enumerable.Range(1, axisCount)
+        var axes = Enumerable.Range(0, axisCount)
             .Select(axisNo =>
             {
                 var mapping = axisMappings.FirstOrDefault(item => item.AxisNo == axisNo);
-                var controllerAxisNo = axisNo - 1;
                 var axis = new Axis(
                     new AxisId(axisNo),
-                    mapping?.Name ?? (axisNames.Count >= axisNo ? axisNames[axisNo - 1] : $"Axis {axisNo}"),
-                    controllerAxisNo);
+                    mapping?.Name ?? (axisNames.Count > axisNo ? axisNames[axisNo] : $"Axis {axisNo}"),
+                    axisNo);
 
                 if (mapping?.SoftLimitNegative is not null && mapping.SoftLimitPositive is not null)
                 {

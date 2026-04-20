@@ -134,7 +134,16 @@
                                       DisplayMemberPath="Name"
                                       SelectedValuePath="AxisNo"
                                       SelectedValue="{Binding AxisDebug.SelectedAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      Margin="0,6,0,10" />
+                                      Margin="0,6,0,10"
+                                      FontWeight="SemiBold">
+                                <ComboBox.Resources>
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#213244" />
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#27C1A5" />
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#081218" />
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#213244" />
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#FFFFFF" />
+                                </ComboBox.Resources>
+                            </ComboBox>
 
                             <TextBlock Text="Target Position" Foreground="{StaticResource SecondaryTextBrush}" />
                             <TextBox Text="{Binding AxisDebug.TargetPosition}" Margin="0,6,0,10" />
