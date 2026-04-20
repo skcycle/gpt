@@ -214,7 +214,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         var utcNow = DateTime.UtcNow;
         var beijingNow = utcNow + TimeSpan.FromHours(8);
-        return beijingNow.ToString("HH:mm:ss");
+        return beijingNow.ToString("yyyy-MM-dd HH:mm:ss");
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
