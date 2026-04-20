@@ -108,7 +108,11 @@
                     <StackPanel Grid.Column="0" Width="320">
                         <TextBlock Text="Axis Debug" FontSize="22" FontWeight="Bold" Margin="0,0,0,12" />
                         <TextBlock Text="Axis No" />
-                        <TextBox Text="{Binding AxisDebug.SelectedAxisNo}" Margin="0,0,0,8" />
+                        <ComboBox ItemsSource="{Binding AxisMonitor.Axes}"
+                                  DisplayMemberPath="Name"
+                                  SelectedValuePath="AxisNo"
+                                  SelectedValue="{Binding AxisDebug.SelectedAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Margin="0,0,0,8" />
                         <TextBlock Text="Target Position" />
                         <TextBox Text="{Binding AxisDebug.TargetPosition}" Margin="0,0,0,8" />
                         <TextBlock Text="Velocity" />
