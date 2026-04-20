@@ -88,43 +88,19 @@
                     </UniformGrid>
 
                     <Grid Grid.Row="1">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="200" />
-                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*" />
-                            <ColumnDefinition Width="12" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="12" />
+                            <ColumnDefinition Width="350" />
                         </Grid.ColumnDefinitions>
 
-                        <DataGrid Grid.Row="0" Grid.Column="0" ItemsSource="{Binding Dashboard.EtherCatSlaves}" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,12">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="SlaveNo" Binding="{Binding SlaveNo}" Width="100" />
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="180" />
-                                <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120" />
-                                <DataGridTextColumn Header="ModuleType" Binding="{Binding ModuleType}" Width="120" />
-                                <DataGridTextColumn Header="ModuleState" Binding="{Binding ModuleState}" Width="120" />
-                                <DataGridCheckBoxColumn Header="Online" Binding="{Binding IsOnline, Mode=OneWay}" Width="100" />
-                                <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding HasAlarm, Mode=OneWay}" Width="100" />
-                            </DataGrid.Columns>
-                        </DataGrid>
+                        <GroupBox Header="Active Alarm Summary">
+                            <ListBox ItemsSource="{Binding Dashboard.ActiveAlarmSummary}" />
+                        </GroupBox>
 
-                        <Grid Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="12" />
-                                <RowDefinition Height="*" />
-                            </Grid.RowDefinitions>
-
-                            <GroupBox Header="Active Alarm Summary">
-                                <ListBox ItemsSource="{Binding Dashboard.ActiveAlarmSummary}" />
-                            </GroupBox>
-
-                            <GroupBox Grid.Row="2" Header="Recent Runtime Events">
-                                <ListBox ItemsSource="{Binding Dashboard.RecentCommandFeedback}" />
-                            </GroupBox>
-                        </Grid>
+                        <GroupBox Grid.Column="2" Header="Recent Runtime Events">
+                            <ListBox ItemsSource="{Binding Dashboard.RecentCommandFeedback}" />
+                        </GroupBox>
                     </Grid>
                 </Grid>
             </TabItem>
