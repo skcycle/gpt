@@ -31,7 +31,7 @@ public sealed class SystemStateMachine
     {
         var hasAxisAlarm = machine.Axes.Any(axis => axis.HasAlarm);
         var hasSystemAlarm = machine.Alarms.Any(alarm => alarm.IsActive);
-        var hasSlaveAlarm = controllerStatus.Slaves.Any(slave => slave.HasAlarm);
+        var hasSlaveAlarm = controllerStatus.HasAnySlaveAlarm;
         var hasAnyAlarm = hasAxisAlarm || hasSystemAlarm || hasSlaveAlarm;
         var anyAxisHoming = machine.Axes.Any(axis => axis.State == AxisState.Homing);
         var anyAxisMoving = machine.Axes.Any(axis => axis.State == AxisState.Moving);
@@ -62,6 +62,11 @@ public sealed class SystemStateMachine
         if (hasAnyAlarm)
         {
             return SystemState.Alarm;
+        }
+
+        if (controllerStatus.HasOfflineSlave)
+        {
+            return SystemState.Warning;
         }
 
         if (anyAxisHoming || anyAxisMoving)

@@ -74,24 +74,38 @@ public sealed class ZmcMotionController(
         => Task.FromResult(DeviceResult.Ok());
 
     public Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(new EtherCatControllerStatus
+    {
+        var slaves = Enumerable.Range(1, Math.Min(options.AxisCount, 4))
+            .Select(index => new EtherCatSlaveStatus
+            {
+                SlaveNo = index,
+                Name = $"Servo-{index:00}",
+                State = _isConnected ? "OP" : "INIT",
+                ModuleType = index == 1 ? "Coupler" : "Servo",
+                FaultText = _isConnected ? string.Empty : "Controller offline",
+                IsOnline = _isConnected,
+                HasAlarm = false
+            })
+            .ToArray();
+
+        var onlineSlaveCount = slaves.Count(slave => slave.IsOnline);
+        var offlineSlaveCount = slaves.Length - onlineSlaveCount;
+        var alarmSlaveCount = slaves.Count(slave => slave.HasAlarm);
+
+        return Task.FromResult(new EtherCatControllerStatus
         {
             IsConnected = _isConnected,
             IsOperational = _isConnected,
-            OnlineSlaveCount = options.AxisCount,
+            ExpectedSlaveCount = slaves.Length,
+            OnlineSlaveCount = onlineSlaveCount,
+            OfflineSlaveCount = offlineSlaveCount,
+            AlarmSlaveCount = alarmSlaveCount,
+            HasOfflineSlave = offlineSlaveCount > 0,
+            HasAnySlaveAlarm = alarmSlaveCount > 0,
+            SummaryState = !_isConnected ? "Disconnected" : alarmSlaveCount > 0 ? "Alarm" : offlineSlaveCount > 0 ? "Warning" : "Healthy",
             NetworkState = _isConnected ? "Operational" : "Disconnected",
             ControllerModel = "ZMC432EtherCAT",
-            Slaves = Enumerable.Range(1, Math.Min(options.AxisCount, 4))
-                .Select(index => new EtherCatSlaveStatus
-                {
-                    SlaveNo = index,
-                    Name = $"Servo-{index:00}",
-                    State = _isConnected ? "OP" : "INIT",
-                    ModuleType = index == 1 ? "Coupler" : "Servo",
-                    FaultText = _isConnected ? string.Empty : "Controller offline",
-                    IsOnline = _isConnected,
-                    HasAlarm = false
-                })
-                .ToArray()
+            Slaves = slaves
         });
+    }
 }
