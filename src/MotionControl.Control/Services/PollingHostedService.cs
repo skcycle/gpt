@@ -17,27 +17,16 @@ public sealed class PollingHostedService(
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            try
-            {
-                Console.WriteLine("[HostedService] calling PollOnceAsync...");
-                await controllerPollingService.PollOnceAsync(stoppingToken);
-                Console.WriteLine("[HostedService] PollOnceAsync returned");
+            await controllerPollingService.PollOnceAsync(stoppingToken);
 
-                var now = DateTime.UtcNow;
-                if (now - lastRefreshUtc >= refreshInterval)
-                {
-                    uiRefreshNotifier.RequestRefresh();
-                    lastRefreshUtc = now;
-                }
-
-                await Task.Delay(interval, stoppingToken);
-            }
-            catch (Exception ex)
+            var now = DateTime.UtcNow;
+            if (now - lastRefreshUtc >= refreshInterval)
             {
-                Console.WriteLine($"[HostedService] EXCEPTION: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}");
-                throw; // re-throw so the host sees it
+                uiRefreshNotifier.RequestRefresh();
+                lastRefreshUtc = now;
             }
+
+            await Task.Delay(interval, stoppingToken);
         }
-        Console.WriteLine("[HostedService] loop ended, stoppingToken was cancelled");
     }
 }
