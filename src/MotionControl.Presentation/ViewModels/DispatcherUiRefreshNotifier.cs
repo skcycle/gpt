@@ -8,7 +8,7 @@ public sealed class DispatcherUiRefreshNotifier(Action refreshAction) : IUiRefre
 {
     public void RequestRefresh()
     {
-        var dispatcher = Application.Current?.Dispatcher;
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is null)
         {
             refreshAction();
