@@ -82,6 +82,10 @@ public sealed class ZmcMotionController(
                 Name = $"Servo-{index:00}",
                 State = _isConnected ? "OP" : "INIT",
                 ModuleType = index == 1 ? "Coupler" : "Servo",
+                ModuleState = _isConnected ? "Healthy" : "Offline",
+                TopologyPath = $"ECAT/{index:00}",
+                VendorId = index == 1 ? "ZMC" : "GenericDrive",
+                ProductCode = index == 1 ? "Coupler-01" : $"Servo-Drv-{index:00}",
                 FaultText = _isConnected ? string.Empty : "Controller offline",
                 IsOnline = _isConnected,
                 HasAlarm = false
