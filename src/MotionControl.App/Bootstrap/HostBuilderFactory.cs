@@ -61,6 +61,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<FaultRecoveryService>();
                 services.AddSingleton<AxisPollingService>();
                 services.AddSingleton<IoPollingService>();
+                services.AddSingleton<IoControlService>();
                 services.AddSingleton<AlarmPollingService>();
                 services.AddSingleton<AxisStateMachine>();
                 services.AddSingleton<SystemStateMachine>();

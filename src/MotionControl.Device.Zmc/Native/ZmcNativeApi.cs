@@ -49,4 +49,7 @@ public static class ZmcNativeApi
 
     [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetOp", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int DirectGetOp(IntPtr handle, int ioNo, ref uint value);
+
+    [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_SetOp", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    public static extern int DirectSetOp(IntPtr handle, int ioNo, int value);
 }

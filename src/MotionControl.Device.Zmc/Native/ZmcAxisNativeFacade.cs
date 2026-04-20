@@ -87,6 +87,8 @@ public sealed class ZmcAxisNativeFacade
     public int GetInput(int ioNo, ref uint value) => ZmcNativeApi.DirectGetIn(_handle, ioNo, ref value);
     public int GetOutput(int ioNo, ref uint value) => ZmcNativeApi.DirectGetOp(_handle, ioNo, ref value);
 
+    public int SetOutput(int ioNo, int value) => ZmcNativeApi.DirectSetOp(_handle, ioNo, value);
+
     public string ReadAxisParameters(int axisNo)
     {
         if (_handle == IntPtr.Zero)

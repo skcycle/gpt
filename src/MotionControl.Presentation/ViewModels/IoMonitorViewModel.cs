@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Presentation.ViewModels;
@@ -7,11 +8,11 @@ public sealed class IoMonitorViewModel
 {
     private readonly Machine _machine;
 
-    public IoMonitorViewModel(Machine machine)
+    public IoMonitorViewModel(Machine machine, IoControlService ioControlService)
     {
         _machine = machine;
-        Inputs = new ObservableCollection<IoPointViewModel>(_machine.IoPoints.Where(io => !io.IsOutput).Select(io => new IoPointViewModel(io)));
-        Outputs = new ObservableCollection<IoPointViewModel>(_machine.IoPoints.Where(io => io.IsOutput).Select(io => new IoPointViewModel(io)));
+        Inputs = new ObservableCollection<IoPointViewModel>(_machine.IoPoints.Where(io => !io.IsOutput).Select(io => new IoPointViewModel(io, ioControlService)));
+        Outputs = new ObservableCollection<IoPointViewModel>(_machine.IoPoints.Where(io => io.IsOutput).Select(io => new IoPointViewModel(io, ioControlService)));
     }
 
     public ObservableCollection<IoPointViewModel> Inputs { get; }

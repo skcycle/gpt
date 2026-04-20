@@ -26,14 +26,15 @@ public sealed class MainWindowViewModel
         IAxisControllerParameterAppService axisControllerParameterAppService,
         ControllerRuntimeState controllerRuntimeState,
         HomePlanRuntimeState homePlanRuntimeState,
-        CommandFeedbackRuntimeState commandFeedbackRuntimeState)
+        CommandFeedbackRuntimeState commandFeedbackRuntimeState,
+        IoControlService ioControlService)
     {
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine, commandFeedbackRuntimeState);
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
         AxisMonitor = new AxisMonitorViewModel(machine);
-        IoMonitor = new IoMonitorViewModel(machine);
+        IoMonitor = new IoMonitorViewModel(machine, ioControlService);
         IoEventLog = new IoEventLogViewModel(commandFeedbackRuntimeState);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState);
         AxisParameterEditor = new AxisParameterEditorViewModel(axisParameterAppService, axisRuntimeParameterSyncService, axisControllerParameterAppService);

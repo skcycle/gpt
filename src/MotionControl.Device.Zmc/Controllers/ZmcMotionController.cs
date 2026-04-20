@@ -88,6 +88,13 @@ public sealed class ZmcMotionController(
         return Task.FromResult(value != 0);
     }
 
+
+    public Task<DeviceResult> SetIoPointValueAsync(int address, bool value, CancellationToken cancellationToken = default)
+    {
+        var result = axisNativeFacade.SetOutput(address, value ? 1 : 0);
+        return Task.FromResult(result == 0 ? DeviceResult.Ok() : DeviceResult.Fail($"SetOutput failed: {result}"));
+    }
+
     public Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default)
     {
         var slaves = Enumerable.Range(1, Math.Min(options.AxisCount, 4))

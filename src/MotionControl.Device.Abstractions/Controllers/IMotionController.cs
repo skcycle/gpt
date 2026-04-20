@@ -16,5 +16,6 @@ public interface IMotionController
     Task<DeviceResult> StopAxisAsync(int axisNo, CancellationToken cancellationToken = default);
     Task<DeviceResult> ResetAxisAlarmAsync(int axisNo, CancellationToken cancellationToken = default);
     Task<bool> GetIoPointValueAsync(int address, bool isOutput, CancellationToken cancellationToken = default);
+    Task<DeviceResult> SetIoPointValueAsync(int address, bool value, CancellationToken cancellationToken = default);
     Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default);
 }
