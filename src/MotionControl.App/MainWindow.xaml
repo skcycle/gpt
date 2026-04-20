@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         WindowStartupLocation="CenterScreen"
         Title="Motion Control Console"
-        Height="760"
-        Width="1280"
+        Height="1080"
+        Width="1920"
         MinHeight="680"
         MinWidth="980">
     <Grid Margin="16">
