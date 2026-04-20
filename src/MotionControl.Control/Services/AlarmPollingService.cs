@@ -33,6 +33,84 @@ public sealed class AlarmPollingService(
             });
         }
 
+        if (controllerStatus?.HasOfflineSlave == true)
+        {
+            var offlineMessage = $"EtherCAT has {controllerStatus.OfflineSlaveCount} offline slave(s)";
+            if (machine.UpsertAlarm("ECAT-SLAVE-OFFLINE", offlineMessage, "EtherCAT", "Network", "Warning"))
+            {
+                commandFeedbackRuntimeState.Add(new CommandFeedback
+                {
+                    CommandName = "Alarm",
+                    Status = "Raised",
+                    Message = offlineMessage
+                });
+            }
+        }
+        else if (machine.ClearAlarm("ECAT-SLAVE-OFFLINE"))
+        {
+            commandFeedbackRuntimeState.Add(new CommandFeedback
+            {
+                CommandName = "Alarm",
+                Status = "Cleared",
+                Message = "EtherCAT offline slave alarm cleared"
+            });
+        }
+
+        if (controllerStatus is not null)
+        {
+            foreach (var slave in controllerStatus.Slaves)
+            {
+                var offlineCode = $"ECAT-SLAVE-{slave.SlaveNo:00}-OFFLINE";
+                var alarmCode = $"ECAT-SLAVE-{slave.SlaveNo:00}-ALARM";
+
+                if (!slave.IsOnline)
+                {
+                    var offlineMessage = $"EtherCAT slave {slave.SlaveNo} {slave.Name} offline";
+                    if (machine.UpsertAlarm(offlineCode, offlineMessage, slave.Name, "EtherCAT", "Warning"))
+                    {
+                        commandFeedbackRuntimeState.Add(new CommandFeedback
+                        {
+                            CommandName = "Alarm",
+                            Status = "Raised",
+                            Message = offlineMessage
+                        });
+                    }
+                }
+                else if (machine.ClearAlarm(offlineCode))
+                {
+                    commandFeedbackRuntimeState.Add(new CommandFeedback
+                    {
+                        CommandName = "Alarm",
+                        Status = "Cleared",
+                        Message = $"EtherCAT slave {slave.SlaveNo} offline alarm cleared"
+                    });
+                }
+
+                if (slave.HasAlarm)
+                {
+                    var slaveAlarmMessage = $"EtherCAT slave {slave.SlaveNo} {slave.Name} alarm active";
+                    if (machine.UpsertAlarm(alarmCode, slaveAlarmMessage, slave.Name, "EtherCAT", "Error"))
+                    {
+                        commandFeedbackRuntimeState.Add(new CommandFeedback
+                        {
+                            CommandName = "Alarm",
+                            Status = "Raised",
+                            Message = slaveAlarmMessage
+                        });
+                    }
+                }
+                else if (machine.ClearAlarm(alarmCode))
+                {
+                    commandFeedbackRuntimeState.Add(new CommandFeedback
+                    {
+                        CommandName = "Alarm",
+                        Status = "Cleared",
+                        Message = $"EtherCAT slave {slave.SlaveNo} alarm cleared"
+                    });
+                }
+            }
+        }
+
         foreach (var axis in machine.Axes)
         {
             var code = $"AXIS-{axis.ControllerAxisNo:00}-ALARM";
