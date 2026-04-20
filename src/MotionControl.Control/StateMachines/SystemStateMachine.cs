@@ -14,6 +14,18 @@ public sealed class SystemStateMachine
 
     public SystemState OnRecoveryStarted() => SystemState.FaultRecovering;
 
+    public SystemState OnEmergencyStopRequested() => SystemState.EmergencyStop;
+
+    public SystemState OnEmergencyStopCleared(Machine machine, EtherCatControllerStatus? controllerStatus)
+    {
+        if (controllerStatus is null || !controllerStatus.IsConnected)
+        {
+            return SystemState.FaultRecovering;
+        }
+
+        return GetNextState(machine, controllerStatus);
+    }
+
     public SystemState OnRecoveryCompleted(Machine machine, EtherCatControllerStatus? controllerStatus)
     {
         if (controllerStatus is null)
@@ -29,6 +41,11 @@ public sealed class SystemStateMachine
 
     public SystemState GetNextState(Machine machine, EtherCatControllerStatus controllerStatus)
     {
+        if (machine.CurrentState == SystemState.EmergencyStop)
+        {
+            return SystemState.EmergencyStop;
+        }
+
         var hasAxisAlarm = machine.Axes.Any(axis => axis.HasAlarm);
         var hasSystemAlarm = machine.Alarms.Any(alarm => alarm.IsActive);
         var hasSlaveAlarm = controllerStatus.HasAnySlaveAlarm;

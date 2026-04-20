@@ -20,4 +20,16 @@ public sealed class SystemAppService(
     {
         return controllerPollingService.PollOnceAsync(cancellationToken);
     }
+
+    public async Task EmergencyStopAsync(CancellationToken cancellationToken = default)
+    {
+        machine.SetSystemState(systemStateMachine.OnEmergencyStopRequested());
+        await controllerPollingService.PollOnceAsync(cancellationToken);
+    }
+
+    public async Task ClearEmergencyStopAsync(CancellationToken cancellationToken = default)
+    {
+        machine.SetSystemState(systemStateMachine.OnEmergencyStopCleared(machine, null));
+        await controllerPollingService.PollOnceAsync(cancellationToken);
+    }
 }

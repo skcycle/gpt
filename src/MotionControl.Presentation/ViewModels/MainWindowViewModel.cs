@@ -1,4 +1,5 @@
 using System;
+using System.Windows.Input;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
@@ -38,6 +39,8 @@ public sealed class MainWindowViewModel
         AxisMonitor.SelectedAxisChanged += async axis => await HandleSelectedAxisChangedAsync(axis);
         AxisDebug.SelectedAxisChanged += async axisNo => await AxisParameterEditor.SyncAxisNoAsync(axisNo);
         Alarm = new AlarmViewModel(machine);
+        EmergencyStopCommand = new RelayCommand(async () => await _systemAppService.EmergencyStopAsync());
+        ClearEmergencyStopCommand = new RelayCommand(async () => await _systemAppService.ClearEmergencyStopAsync());
     }
 
     public DashboardViewModel Dashboard { get; }
@@ -48,6 +51,9 @@ public sealed class MainWindowViewModel
     public IoEventLogViewModel IoEventLog { get; }
     public AxisParameterEditorViewModel AxisParameterEditor { get; }
     public AlarmViewModel Alarm { get; }
+
+    public ICommand EmergencyStopCommand { get; }
+    public ICommand ClearEmergencyStopCommand { get; }
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
