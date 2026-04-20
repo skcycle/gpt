@@ -263,6 +263,38 @@
                 </Grid>
             </TabItem>
 
+            <TabItem Header="IO Monitor">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="16" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <GroupBox Header="Digital Inputs">
+                        <DataGrid ItemsSource="{Binding IoMonitor.Inputs}" AutoGenerateColumns="False" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="140" />
+                                <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="100" />
+                                <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" Width="100" />
+                                <DataGridCheckBoxColumn Header="Value" Binding="{Binding Value, Mode=OneWay}" Width="100" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+
+                    <GroupBox Grid.Column="2" Header="Digital Outputs">
+                        <DataGrid ItemsSource="{Binding IoMonitor.Outputs}" AutoGenerateColumns="False" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="140" />
+                                <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="100" />
+                                <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" Width="100" />
+                                <DataGridCheckBoxColumn Header="Value" Binding="{Binding Value, Mode=OneWay}" Width="100" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+
             <TabItem Header="Alarm">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
