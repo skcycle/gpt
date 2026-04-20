@@ -77,6 +77,11 @@ public sealed class ZmcAxisNativeFacade
         return ZmcNativeApi.DirectSingleCancel(_handle, axisNo, 2);
     }
 
+    public int RapidStop(int mode)
+    {
+        return ExecuteCommand($"RAPIDSTOP({mode})");
+    }
+
     public int GetAxisDpos(int axisNo, ref float value) => ZmcNativeApi.DirectGetDpos(_handle, axisNo, ref value);
     public int GetAxisMpos(int axisNo, ref float value) => ZmcNativeApi.DirectGetMpos(_handle, axisNo, ref value);
     public int GetAxisSpeed(int axisNo, ref float value) => ZmcNativeApi.DirectGetSpeed(_handle, axisNo, ref value);

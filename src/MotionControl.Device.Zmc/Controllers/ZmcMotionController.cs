@@ -72,6 +72,9 @@ public sealed class ZmcMotionController(
     public Task<DeviceResult> StopAxisAsync(int axisNo, CancellationToken cancellationToken = default)
         => Task.FromResult(axisNativeFacade.StopAxis(axisNo) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC stop axis failed."));
 
+    public Task<DeviceResult> RapidStopAsync(int mode, CancellationToken cancellationToken = default)
+        => Task.FromResult(axisNativeFacade.RapidStop(mode) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC rapid stop failed."));
+
     public Task<DeviceResult> ResetAxisAlarmAsync(int axisNo, CancellationToken cancellationToken = default)
         => Task.FromResult(DeviceResult.Ok());
 
