@@ -123,10 +123,22 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                                <TextBlock Text="Axis Monitor" FontSize="22" FontWeight="Bold" />
-                                <TextBlock Text="Real-time axis overview and selection" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,6,0,0" />
-                            </StackPanel>
+                            <Grid Grid.Row="0" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Axis Monitor" FontSize="22" FontWeight="Bold" />
+                                    <TextBlock Text="Real-time axis overview and selection" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,6,0,0" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                                    <Button Content="Add Axis" Command="{Binding AddAxisCommand}" Padding="10,4" Margin="0,0,8,0" />
+                                    <Button Content="Delete Axis" Command="{Binding DeleteAxisCommand}" Padding="10,4" />
+                                </StackPanel>
+                            </Grid>
 
                             <DataGrid Grid.Row="1"
                                       x:Name="AxisMonitorDataGrid"

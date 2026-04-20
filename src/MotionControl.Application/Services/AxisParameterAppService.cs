@@ -16,6 +16,54 @@ public sealed class AxisParameterAppService(string appSettingsPath) : IAxisParam
     public async Task SaveAxisParametersAsync(AxisMappingItem axisMappingItem, CancellationToken cancellationToken = default)
     {
         var root = await LoadRootAsync(cancellationToken);
+        SaveAxisParameters(root, axisMappingItem);
+        await SaveRootAsync(root, cancellationToken);
+    }
+
+    public async Task<AxisMappingItem> AddAxisAsync(CancellationToken cancellationToken = default)
+    {
+        var root = await LoadRootAsync(cancellationToken);
+        var nextAxisNo = root.AxisMapping.Axes.Count == 0 ? 0 : root.AxisMapping.Axes.Max(axis => axis.AxisNo) + 1;
+        var axis = new AxisMappingItem
+        {
+            AxisNo = nextAxisNo,
+            Name = $"Axis {nextAxisNo}",
+            Group = string.Empty,
+            IsMaster = false,
+            SoftLimitPositive = 1000,
+            SoftLimitNegative = -1000,
+            WorkVelocity = 200,
+            SetupVelocity = 50,
+            PulseEquivalent = 1000,
+            HomeMode = MotionControl.Domain.Enums.HomeMode.Default,
+            ServoBinding = string.Empty
+        };
+
+        SaveAxisParameters(root, axis);
+        await SaveRootAsync(root, cancellationToken);
+        return axis;
+    }
+
+    public async Task<bool> DeleteAxisAsync(int axisNo, CancellationToken cancellationToken = default)
+    {
+        var root = await LoadRootAsync(cancellationToken);
+        var removed = root.AxisMapping.Axes.RemoveAll(axis => axis.AxisNo == axisNo) > 0;
+        if (!removed)
+        {
+            return false;
+        }
+
+        if (root.AxisMapping.AxisNames.Count > axisNo)
+        {
+            root.AxisMapping.AxisNames[axisNo] = $"Axis {axisNo}";
+        }
+
+        await SaveRootAsync(root, cancellationToken);
+        return true;
+    }
+
+    private static void SaveAxisParameters(AppSettingsRoot root, AxisMappingItem axisMappingItem)
+    {
         var existing = root.AxisMapping.Axes.FirstOrDefault(axis => axis.AxisNo == axisMappingItem.AxisNo);
         if (existing is null)
         {
@@ -45,7 +93,10 @@ public sealed class AxisParameterAppService(string appSettingsPath) : IAxisParam
         }
 
         root.AxisMapping.AxisNames[axisMappingItem.AxisNo] = axisMappingItem.Name;
+    }
 
+    private async Task SaveRootAsync(AppSettingsRoot root, CancellationToken cancellationToken)
+    {
         var json = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(appSettingsPath, json, cancellationToken);
     }

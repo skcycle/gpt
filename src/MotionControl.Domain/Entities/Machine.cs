@@ -4,6 +4,7 @@ namespace MotionControl.Domain.Entities;
 
 public sealed class Machine
 {
+    private readonly List<Axis> _axes;
     private readonly List<Alarm> _alarms;
 
     public Machine(
@@ -12,13 +13,13 @@ public sealed class Machine
         IReadOnlyCollection<IoPoint>? ioPoints = null,
         IReadOnlyCollection<Alarm>? alarms = null)
     {
-        Axes = axes;
+        _axes = axes.ToList();
         Groups = groups;
         IoPoints = ioPoints ?? Array.Empty<IoPoint>();
         _alarms = alarms?.ToList() ?? new List<Alarm>();
     }
 
-    public IReadOnlyCollection<Axis> Axes { get; }
+    public IReadOnlyCollection<Axis> Axes => _axes;
     public IReadOnlyCollection<AxisGroup> Groups { get; }
     public IReadOnlyCollection<IoPoint> IoPoints { get; }
     public IReadOnlyCollection<Alarm> Alarms => _alarms;
@@ -28,6 +29,28 @@ public sealed class Machine
     public void SetSystemState(SystemState state) => CurrentState = state;
 
     public void SetConnected(bool connected) => IsConnected = connected;
+
+    public void AddAxis(Axis axis)
+    {
+        if (_axes.Any(existing => existing.Id.Value == axis.Id.Value))
+        {
+            return;
+        }
+
+        _axes.Add(axis);
+    }
+
+    public bool RemoveAxis(int axisNo)
+    {
+        var axis = _axes.FirstOrDefault(item => item.Id.Value == axisNo);
+        if (axis is null)
+        {
+            return false;
+        }
+
+        _axes.Remove(axis);
+        return true;
+    }
 
     public bool UpsertAlarm(string code, string message, string source = "System", string category = "General", string severity = "Error")
     {

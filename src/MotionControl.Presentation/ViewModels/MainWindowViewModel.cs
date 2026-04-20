@@ -1,14 +1,19 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
+using MotionControl.Domain.ValueObjects;
 using MotionControl.Presentation.Commands;
 
 namespace MotionControl.Presentation.ViewModels;
 
 public sealed class MainWindowViewModel
 {
+    private readonly Machine _machine;
+    private readonly IAxisParameterAppService _axisParameterAppService;
+    private readonly IAxisRuntimeParameterSyncService _axisRuntimeParameterSyncService;
     private readonly ISystemAppService _systemAppService;
     private readonly ControllerRuntimeState _controllerRuntimeState;
     private DateTime _lastDashboardRefreshUtc = DateTime.MinValue;
@@ -29,6 +34,9 @@ public sealed class MainWindowViewModel
         CommandFeedbackRuntimeState commandFeedbackRuntimeState,
         IoControlService ioControlService)
     {
+        _machine = machine;
+        _axisParameterAppService = axisParameterAppService;
+        _axisRuntimeParameterSyncService = axisRuntimeParameterSyncService;
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine, commandFeedbackRuntimeState);
@@ -49,6 +57,8 @@ public sealed class MainWindowViewModel
                 await _systemAppService.ReconnectAsync();
                 RefreshViewModels(force: true);
             });
+        AddAxisCommand = new RelayCommand(async () => await AddAxisAsync());
+        DeleteAxisCommand = new RelayCommand(async () => await DeleteSelectedAxisAsync(), () => AxisMonitor.SelectedAxis is not null);
     }
 
     public DashboardViewModel Dashboard { get; }
@@ -63,6 +73,8 @@ public sealed class MainWindowViewModel
     public ICommand EmergencyStopCommand { get; }
     public ICommand ClearEmergencyStopCommand { get; }
     public ICommand ReconnectCommand { get; }
+    public ICommand AddAxisCommand { get; }
+    public ICommand DeleteAxisCommand { get; }
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -122,6 +134,8 @@ public sealed class MainWindowViewModel
 
     private async Task HandleSelectedAxisChangedAsync(AxisViewModel? axis)
     {
+        (DeleteAxisCommand as RelayCommand)?.RaiseCanExecuteChanged();
+
         if (axis is null)
         {
             return;
@@ -129,5 +143,48 @@ public sealed class MainWindowViewModel
 
         AxisDebug.SelectedAxisNo = axis.AxisNo;
         await AxisParameterEditor.SyncAxisNoAsync(axis.AxisNo);
+    }
+
+    private async Task AddAxisAsync()
+    {
+        var item = await _axisParameterAppService.AddAxisAsync();
+
+        var axis = new Axis(new AxisId(item.AxisNo), item.Name, item.AxisNo);
+        if (item.SoftLimitNegative.HasValue && item.SoftLimitPositive.HasValue)
+        {
+            axis.SetSoftLimit(new SoftLimit(item.SoftLimitNegative.Value, item.SoftLimitPositive.Value));
+        }
+
+        axis.SetHomeMode(item.HomeMode);
+        axis.SetServoBinding(item.ServoBinding);
+        if (item.WorkVelocity.HasValue) axis.SetWorkVelocity(item.WorkVelocity.Value);
+        if (item.SetupVelocity.HasValue) axis.SetSetupVelocity(item.SetupVelocity.Value);
+        if (item.PulseEquivalent.HasValue) axis.SetPulseEquivalent(item.PulseEquivalent.Value);
+
+        _machine.AddAxis(axis);
+        AxisMonitor.AddAxis(axis);
+        await _axisRuntimeParameterSyncService.ApplyAsync(item);
+        await AxisParameterEditor.SyncAxisNoAsync(item.AxisNo);
+        RefreshViewModels(force: true);
+    }
+
+    private async Task DeleteSelectedAxisAsync()
+    {
+        var selectedAxis = AxisMonitor.SelectedAxis;
+        if (selectedAxis is null)
+        {
+            return;
+        }
+
+        var axisNo = selectedAxis.AxisNo;
+        var removed = await _axisParameterAppService.DeleteAxisAsync(axisNo);
+        if (!removed)
+        {
+            return;
+        }
+
+        _machine.RemoveAxis(axisNo);
+        AxisMonitor.RemoveAxis(axisNo);
+        RefreshViewModels(force: true);
     }
 }

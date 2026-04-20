@@ -7,10 +7,12 @@ namespace MotionControl.Presentation.ViewModels;
 
 public sealed class AxisMonitorViewModel : INotifyPropertyChanged
 {
+    private readonly Machine _machine;
     private AxisViewModel? _selectedAxis;
 
     public AxisMonitorViewModel(Machine machine)
     {
+        _machine = machine;
         Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis)));
         _selectedAxis = Axes.FirstOrDefault();
     }
@@ -38,9 +40,55 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
 
     public void RefreshAll()
     {
+        SyncAxes();
+
         foreach (var axis in Axes)
         {
             axis.Refresh();
+        }
+    }
+
+    public AxisViewModel AddAxis(Axis axis)
+    {
+        var viewModel = new AxisViewModel(axis);
+        Axes.Add(viewModel);
+        SelectedAxis = viewModel;
+        return viewModel;
+    }
+
+    public void RemoveAxis(int axisNo)
+    {
+        var existing = Axes.FirstOrDefault(axis => axis.AxisNo == axisNo);
+        if (existing is null)
+        {
+            return;
+        }
+
+        var wasSelected = SelectedAxis == existing;
+        Axes.Remove(existing);
+        if (wasSelected)
+        {
+            SelectedAxis = Axes.FirstOrDefault();
+        }
+    }
+
+    private void SyncAxes()
+    {
+        var machineAxisNos = _machine.Axes.Select(axis => axis.Id.Value).ToHashSet();
+        for (var index = Axes.Count - 1; index >= 0; index--)
+        {
+            if (!machineAxisNos.Contains(Axes[index].AxisNo))
+            {
+                Axes.RemoveAt(index);
+            }
+        }
+
+        foreach (var axis in _machine.Axes)
+        {
+            if (Axes.All(existing => existing.AxisNo != axis.Id.Value))
+            {
+                Axes.Add(new AxisViewModel(axis));
+            }
         }
     }
 

@@ -6,4 +6,6 @@ public interface IAxisParameterAppService
 {
     Task<AxisMappingItem?> LoadAxisParametersAsync(int axisNo, CancellationToken cancellationToken = default);
     Task SaveAxisParametersAsync(AxisMappingItem axisMappingItem, CancellationToken cancellationToken = default);
+    Task<AxisMappingItem> AddAxisAsync(CancellationToken cancellationToken = default);
+    Task<bool> DeleteAxisAsync(int axisNo, CancellationToken cancellationToken = default);
 }
