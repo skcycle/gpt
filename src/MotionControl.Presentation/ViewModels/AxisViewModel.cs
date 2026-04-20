@@ -14,7 +14,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     }
 
     public string Name => _axis.Name;
-    public int AxisNo => _axis.ControllerAxisNo;
+    public int AxisNo => _axis.Id.Value;
     public double CurrentPosition => _axis.CurrentPosition;
     public double CurrentVelocity => _axis.CurrentVelocity;
     public bool HasAlarm => _axis.HasAlarm;

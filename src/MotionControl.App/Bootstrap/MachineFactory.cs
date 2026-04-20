@@ -18,10 +18,11 @@ public static class MachineFactory
             .Select(axisNo =>
             {
                 var mapping = axisMappings.FirstOrDefault(item => item.AxisNo == axisNo);
+                var controllerAxisNo = axisNo - 1;
                 var axis = new Axis(
                     new AxisId(axisNo),
                     mapping?.Name ?? (axisNames.Count >= axisNo ? axisNames[axisNo - 1] : $"Axis {axisNo}"),
-                    axisNo);
+                    controllerAxisNo);
 
                 if (mapping?.SoftLimitNegative is not null && mapping.SoftLimitPositive is not null)
                 {

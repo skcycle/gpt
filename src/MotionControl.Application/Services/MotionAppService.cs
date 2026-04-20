@@ -40,12 +40,13 @@ public sealed class MotionAppService(
         var axis = FindAxis(command.AxisNo);
         var direction = command.PositiveDirection ? 1 : -1;
         var nextPosition = axis.CurrentPosition + direction * 10.0;
+        axis.SetTargetPosition(nextPosition, MotionControl.Domain.Enums.MotionMode.Jog);
         await axisControlService.MoveAbsoluteAsync(axis, nextPosition, command.Velocity, command.Velocity, command.Velocity, cancellationToken);
     }
 
     private Axis FindAxis(int axisNo)
     {
-        return machine.Axes.FirstOrDefault(a => a.ControllerAxisNo == axisNo)
+        return machine.Axes.FirstOrDefault(a => a.Id.Value == axisNo)
                ?? throw new InvalidOperationException($"Axis {axisNo} not found.");
     }
 }

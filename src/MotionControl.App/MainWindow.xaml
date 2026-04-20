@@ -126,8 +126,8 @@
                             <Button Content="Home" Command="{Binding AxisDebug.HomeAxisCommand}" Margin="0,0,8,8" Width="90" />
                             <Button Content="Move" Command="{Binding AxisDebug.MoveAxisCommand}" Margin="0,0,8,8" Width="90" />
                             <Button Content="Stop" Command="{Binding AxisDebug.StopAxisCommand}" Margin="0,0,8,8" Width="90" />
-                            <Button Content="Jog +" Command="{Binding AxisDebug.JogPositiveCommand}" Margin="0,0,8,8" Width="90" />
-                            <Button Content="Jog -" Command="{Binding AxisDebug.JogNegativeCommand}" Margin="0,0,8,8" Width="90" />
+                            <Button x:Name="JogPositiveButton" Content="Jog +" Command="{Binding AxisDebug.JogPositiveCommand}" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Margin="0,0,8,8" Width="90" />
+                            <Button x:Name="JogNegativeButton" Content="Jog -" Command="{Binding AxisDebug.JogNegativeCommand}" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Margin="0,0,8,8" Width="90" />
                         </WrapPanel>
                     </StackPanel>
 

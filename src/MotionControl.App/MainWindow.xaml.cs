@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Input;
 using MotionControl.Presentation.ViewModels;
 
 namespace MotionControl.App;
@@ -29,5 +30,25 @@ public partial class MainWindow : Window
 
         _initialized = true;
         await _viewModel.InitializeAsync();
+    }
+
+    private async void JogButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        await _viewModel.AxisDebug.StopJogAsync();
+    }
+
+    private async void JogButton_MouseLeave(object sender, MouseEventArgs e)
+    {
+        if (_viewModel is null || e.LeftButton != MouseButtonState.Pressed)
+        {
+            return;
+        }
+
+        await _viewModel.AxisDebug.StopJogAsync();
     }
 }

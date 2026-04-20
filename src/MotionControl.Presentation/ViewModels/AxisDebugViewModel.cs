@@ -114,7 +114,7 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    private Axis? SelectedAxis => _machine.Axes.FirstOrDefault(axis => axis.ControllerAxisNo == SelectedAxisNo);
+    private Axis? SelectedAxis => _machine.Axes.FirstOrDefault(axis => axis.Id.Value == SelectedAxisNo);
 
     public async Task EnableSelectedAxisAsync()
     {
@@ -139,6 +139,16 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     public async Task JogSelectedAxisAsync(bool positiveDirection)
     {
         await _motionAppService.JogAxisAsync(new JogAxisCommandDto(SelectedAxisNo, Velocity, positiveDirection));
+    }
+
+    public async Task StopJogAsync()
+    {
+        if (SelectedAxisNo <= 0)
+        {
+            return;
+        }
+
+        await _motionAppService.StopAxisAsync(new AxisCommandDto(SelectedAxisNo));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
