@@ -31,6 +31,7 @@ public sealed class MainWindowViewModel
         AxisMonitor = new AxisMonitorViewModel(machine);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState);
         AxisParameterEditor = new AxisParameterEditorViewModel(axisParameterAppService, axisRuntimeParameterSyncService, axisControllerParameterAppService);
+        AxisMonitor.SelectedAxisChanged += async axis => await HandleSelectedAxisChangedAsync(axis);
         AxisDebug.SelectedAxisChanged += async axisNo => await AxisParameterEditor.SyncAxisNoAsync(axisNo);
         Alarm = new AlarmViewModel(machine);
     }
@@ -45,9 +46,9 @@ public sealed class MainWindowViewModel
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         await _systemAppService.InitializeAsync(cancellationToken);
-        if (AxisMonitor.Axes.Count > 0)
+        if (AxisMonitor.SelectedAxis is not null)
         {
-            await AxisParameterEditor.SyncAxisNoAsync(AxisMonitor.Axes[0].AxisNo);
+            await HandleSelectedAxisChangedAsync(AxisMonitor.SelectedAxis);
         }
         RefreshViewModels(force: true);
     }
@@ -84,5 +85,16 @@ public sealed class MainWindowViewModel
             Alarm.Refresh();
             _lastAlarmRefreshUtc = now;
         }
+    }
+
+    private async Task HandleSelectedAxisChangedAsync(AxisViewModel? axis)
+    {
+        if (axis is null)
+        {
+            return;
+        }
+
+        AxisDebug.SelectedAxisNo = axis.AxisNo;
+        await AxisParameterEditor.SyncAxisNoAsync(axis.AxisNo);
     }
 }

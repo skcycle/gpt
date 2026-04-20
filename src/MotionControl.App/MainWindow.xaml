@@ -121,7 +121,7 @@
                                 <TextBlock Text="Real-time axis overview and selection" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,6,0,0" />
                             </StackPanel>
 
-                            <DataGrid Grid.Row="1" ItemsSource="{Binding AxisMonitor.Axes}" AutoGenerateColumns="False" IsReadOnly="True">
+                            <DataGrid Grid.Row="1" ItemsSource="{Binding AxisMonitor.Axes}" SelectedItem="{Binding AxisMonitor.SelectedAxis, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="True">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="AxisNo" Binding="{Binding AxisNo}" Width="70" />
                                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="120" />
@@ -138,21 +138,8 @@
                         <StackPanel>
                             <TextBlock Text="Axis Manual Operation" FontSize="22" FontWeight="Bold" Margin="0,0,0,14" />
 
-                            <TextBlock Text="Axis Selection" Foreground="{StaticResource SecondaryTextBrush}" />
-                            <ComboBox ItemsSource="{Binding AxisMonitor.Axes}"
-                                      DisplayMemberPath="Name"
-                                      SelectedValuePath="AxisNo"
-                                      SelectedValue="{Binding AxisDebug.SelectedAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                      Margin="0,6,0,10"
-                                      FontWeight="SemiBold">
-                                <ComboBox.Resources>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#213244" />
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#27C1A5" />
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#081218" />
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#213244" />
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#FFFFFF" />
-                                </ComboBox.Resources>
-                            </ComboBox>
+                            <TextBlock Text="Selected Axis" Foreground="{StaticResource SecondaryTextBrush}" />
+                            <TextBlock Text="{Binding AxisDebug.SelectedAxisNo}" FontSize="20" FontWeight="Bold" Margin="0,6,0,10" />
 
                             <TextBlock Text="Target Position" Foreground="{StaticResource SecondaryTextBrush}" />
                             <TextBox Text="{Binding AxisDebug.TargetPosition}" Margin="0,6,0,10" />
