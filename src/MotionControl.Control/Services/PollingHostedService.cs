@@ -17,7 +17,9 @@ public sealed class PollingHostedService(
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            Console.WriteLine("[HostedService] calling PollOnceAsync...");
             await controllerPollingService.PollOnceAsync(stoppingToken);
+            Console.WriteLine("[HostedService] PollOnceAsync returned");
 
             var now = DateTime.UtcNow;
             if (now - lastRefreshUtc >= refreshInterval)
