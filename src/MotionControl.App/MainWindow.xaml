@@ -179,8 +179,10 @@
 
                     <!-- Right column: Axis Parameters -->
                     <Border Grid.Column="2" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="12" Padding="14">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled">
+                        <ScrollViewer x:Name="AxisParametersScrollViewer"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      PreviewMouseWheel="AxisParametersScrollViewer_PreviewMouseWheel">
                             <StackPanel>
                                 <TextBlock Text="Axis Parameters" FontSize="22" FontWeight="Bold" Margin="0,0,0,14" />
 
