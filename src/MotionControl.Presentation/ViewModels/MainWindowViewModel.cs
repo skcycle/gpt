@@ -1,4 +1,7 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using MotionControl.Application.Interfaces;
@@ -9,18 +12,20 @@ using MotionControl.Presentation.Commands;
 
 namespace MotionControl.Presentation.ViewModels;
 
-public sealed class MainWindowViewModel
+public sealed class MainWindowViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
     private readonly IAxisParameterAppService _axisParameterAppService;
     private readonly IAxisRuntimeParameterSyncService _axisRuntimeParameterSyncService;
     private readonly ISystemAppService _systemAppService;
     private readonly ControllerRuntimeState _controllerRuntimeState;
+    private readonly Timer _clockTimer;
     private DateTime _lastDashboardRefreshUtc = DateTime.MinValue;
     private DateTime _lastAxisRefreshUtc = DateTime.MinValue;
     private DateTime _lastAlarmRefreshUtc = DateTime.MinValue;
     private DateTime _lastIoRefreshUtc = DateTime.MinValue;
     private DateTime _lastIoEventRefreshUtc = DateTime.MinValue;
+    private string _currentBeijingTime = GetBeijingTimeString();
 
     public MainWindowViewModel(
         Machine machine,
@@ -59,9 +64,24 @@ public sealed class MainWindowViewModel
             });
         AddAxisCommand = new RelayCommand(async () => await AddAxisAsync());
         DeleteAxisCommand = new RelayCommand(async () => await DeleteSelectedAxisAsync(), () => AxisMonitor.SelectedAxis is not null);
+        _clockTimer = new Timer(_ => CurrentBeijingTime = GetBeijingTimeString(), null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
     }
 
     public DashboardViewModel Dashboard { get; }
+    public string CurrentBeijingTime
+    {
+        get => _currentBeijingTime;
+        private set
+        {
+            if (_currentBeijingTime == value)
+            {
+                return;
+            }
+
+            _currentBeijingTime = value;
+            OnPropertyChanged();
+        }
+    }
     public EtherCatMonitorViewModel EtherCatMonitor { get; }
     public AxisMonitorViewModel AxisMonitor { get; }
     public AxisDebugViewModel AxisDebug { get; }
@@ -75,6 +95,8 @@ public sealed class MainWindowViewModel
     public ICommand ReconnectCommand { get; }
     public ICommand AddAxisCommand { get; }
     public ICommand DeleteAxisCommand { get; }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
@@ -186,5 +208,17 @@ public sealed class MainWindowViewModel
         _machine.RemoveAxis(axisNo);
         AxisMonitor.RemoveAxis(axisNo);
         RefreshViewModels(force: true);
+    }
+
+    private static string GetBeijingTimeString()
+    {
+        var utcNow = DateTime.UtcNow;
+        var beijingNow = utcNow + TimeSpan.FromHours(8);
+        return beijingNow.ToString("yyyy-MM-dd HH:mm:ss '北京时间'");
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
