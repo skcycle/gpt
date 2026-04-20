@@ -149,6 +149,25 @@
                                       IsReadOnly="True"
                                       HorizontalScrollBarVisibility="Auto"
                                       PreviewMouseWheel="AxisMonitorDataGrid_PreviewMouseWheel">
+                                <DataGrid.Resources>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="Foreground" Value="#E6EEF8" />
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#27C1A5" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                    <Style TargetType="DataGridRow">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter Property="Background" Value="#27C1A5" />
+                                                <Setter Property="Foreground" Value="White" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGrid.Resources>
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="AxisNo" Binding="{Binding AxisNo}" Width="60" />
                                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="90" />
