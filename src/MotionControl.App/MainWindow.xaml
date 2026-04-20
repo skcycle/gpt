@@ -136,8 +136,8 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                                    <Button Content="Add Axis" Command="{Binding AddAxisCommand}" Padding="10,4" Margin="0,0,8,0" />
-                                    <Button Content="Delete Axis" Command="{Binding DeleteAxisCommand}" Padding="10,4" />
+                                    <Button Content="Add Axis" Command="{Binding AddAxisCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="100" />
+                                    <Button Content="Delete Axis" Command="{Binding DeleteAxisCommand}" Padding="10,4" MinWidth="100" />
                                 </StackPanel>
                             </Grid>
 
