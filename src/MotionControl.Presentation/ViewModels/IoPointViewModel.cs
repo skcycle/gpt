@@ -36,11 +36,8 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
     public void Refresh()
     {
         var newValue = _ioPoint.Value;
-        if (_value != newValue)
-        {
-            _value = newValue;
-            OnPropertyChanged(nameof(Value));
-        }
+        _value = newValue;
+        OnPropertyChanged(nameof(Value));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
