@@ -26,6 +26,9 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public bool NegativeHardLimitTriggered => _axis.NegativeLimitTriggered;
     public string HomeMode => _axis.HomeMode.ToString();
     public string ServoBinding => _axis.ServoBinding;
+    public double WorkVelocity => _axis.WorkVelocity;
+    public double SetupVelocity => _axis.SetupVelocity;
+    public double PulseEquivalent => _axis.PulseEquivalent;
     public string SoftLimitDisplay => _axis.SoftLimit is null ? "N/A" : $"{_axis.SoftLimit.Minimum} ~ {_axis.SoftLimit.Maximum}";
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -41,6 +44,9 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(NegativeSoftLimitTriggered));
         OnPropertyChanged(nameof(PositiveHardLimitTriggered));
         OnPropertyChanged(nameof(NegativeHardLimitTriggered));
+        OnPropertyChanged(nameof(WorkVelocity));
+        OnPropertyChanged(nameof(SetupVelocity));
+        OnPropertyChanged(nameof(PulseEquivalent));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
