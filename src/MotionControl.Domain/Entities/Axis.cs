@@ -25,6 +25,8 @@ public sealed class Axis
     public bool HasAlarm { get; private set; }
     public bool PositiveLimitTriggered { get; private set; }
     public bool NegativeLimitTriggered { get; private set; }
+    public bool PositiveSoftLimitTriggered { get; private set; }
+    public bool NegativeSoftLimitTriggered { get; private set; }
     public SoftLimit? SoftLimit { get; private set; }
     public double WorkVelocity { get; private set; } = 200;
     public double SetupVelocity { get; private set; } = 50;
@@ -40,7 +42,9 @@ public sealed class Axis
         bool hasAlarm,
         bool isHomed,
         bool positiveLimitTriggered,
-        bool negativeLimitTriggered)
+        bool negativeLimitTriggered,
+        bool positiveSoftLimitTriggered,
+        bool negativeSoftLimitTriggered)
     {
         CurrentPosition = currentPosition;
         CurrentVelocity = currentVelocity;
@@ -50,6 +54,8 @@ public sealed class Axis
         IsHomed = isHomed;
         PositiveLimitTriggered = positiveLimitTriggered;
         NegativeLimitTriggered = negativeLimitTriggered;
+        PositiveSoftLimitTriggered = positiveSoftLimitTriggered;
+        NegativeSoftLimitTriggered = negativeSoftLimitTriggered;
     }
 
     public void SetTargetPosition(double targetPosition, MotionMode motionMode)

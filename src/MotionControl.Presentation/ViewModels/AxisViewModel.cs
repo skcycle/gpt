@@ -20,8 +20,8 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public bool HasAlarm => _axis.HasAlarm;
     public bool IsHomed => _axis.IsHomed;
     public bool IsServoOn => _axis.ServoState == Domain.Enums.ServoState.On;
-    public bool HasPositiveSoftLimit => _axis.SoftLimit is not null;
-    public bool HasNegativeSoftLimit => _axis.SoftLimit is not null;
+    public bool PositiveSoftLimitTriggered => _axis.PositiveSoftLimitTriggered;
+    public bool NegativeSoftLimitTriggered => _axis.NegativeSoftLimitTriggered;
     public bool PositiveHardLimitTriggered => _axis.PositiveLimitTriggered;
     public bool NegativeHardLimitTriggered => _axis.NegativeLimitTriggered;
     public string HomeMode => _axis.HomeMode.ToString();
@@ -37,8 +37,8 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HasAlarm));
         OnPropertyChanged(nameof(IsHomed));
         OnPropertyChanged(nameof(IsServoOn));
-        OnPropertyChanged(nameof(HasPositiveSoftLimit));
-        OnPropertyChanged(nameof(HasNegativeSoftLimit));
+        OnPropertyChanged(nameof(PositiveSoftLimitTriggered));
+        OnPropertyChanged(nameof(NegativeSoftLimitTriggered));
         OnPropertyChanged(nameof(PositiveHardLimitTriggered));
         OnPropertyChanged(nameof(NegativeHardLimitTriggered));
     }

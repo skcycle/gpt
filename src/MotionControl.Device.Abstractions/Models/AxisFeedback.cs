@@ -10,5 +10,7 @@ public sealed record AxisFeedback(
     ServoState ServoState,
     bool HasAlarm,
     bool IsHomed,
-    bool PositiveLimitTriggered,
-    bool NegativeLimitTriggered);
+    bool PositiveHardLimitTriggered,
+    bool NegativeHardLimitTriggered,
+    bool PositiveSoftLimitTriggered,
+    bool NegativeSoftLimitTriggered);

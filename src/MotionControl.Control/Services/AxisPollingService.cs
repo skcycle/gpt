@@ -21,8 +21,10 @@ public sealed class AxisPollingService(
                 feedback.ServoState,
                 feedback.HasAlarm,
                 feedback.IsHomed,
-                feedback.PositiveLimitTriggered,
-                feedback.NegativeLimitTriggered);
+                feedback.PositiveHardLimitTriggered,
+                feedback.NegativeHardLimitTriggered,
+                feedback.PositiveSoftLimitTriggered,
+                feedback.NegativeSoftLimitTriggered);
 
             var nextState = axisStateMachine.GetNextState(axis);
             axis.ApplyState(nextState);
