@@ -141,8 +141,6 @@
                                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="90" />
                                     <DataGridTextColumn Header="Position" Binding="{Binding CurrentPosition}" Width="90" />
                                     <DataGridTextColumn Header="Velocity" Binding="{Binding CurrentVelocity}" Width="80" />
-                                    <DataGridTextColumn Header="Torque" Binding="{Binding CurrentTorque}" Width="70" />
-                                    <DataGridTextColumn Header="State" Binding="{Binding State}" Width="80" />
                                     <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed, Mode=OneWay}" Width="55" />
                                     <DataGridCheckBoxColumn Header="ServoOn" Binding="{Binding IsServoOn, Mode=OneWay}" Width="65" />
                                     <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding HasAlarm, Mode=OneWay}" Width="55" />
