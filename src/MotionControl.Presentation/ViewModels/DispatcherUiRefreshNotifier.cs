@@ -1,4 +1,6 @@
 using System;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace MotionControl.Presentation.ViewModels;
 
@@ -6,6 +8,19 @@ public sealed class DispatcherUiRefreshNotifier(Action refreshAction) : IUiRefre
 {
     public void RequestRefresh()
     {
-        refreshAction();
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher is null)
+        {
+            refreshAction();
+            return;
+        }
+
+        if (dispatcher.CheckAccess())
+        {
+            refreshAction();
+            return;
+        }
+
+        _ = dispatcher.BeginInvoke(refreshAction, DispatcherPriority.Background);
     }
 }

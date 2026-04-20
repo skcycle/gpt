@@ -13,6 +13,7 @@ public sealed class ControllerPollingService(
     AlarmPollingService alarmPollingService,
     SystemStateMachine systemStateMachine)
 {
+    private readonly SemaphoreSlim _pollLock = new(1, 1);
     private bool _isRunning;
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -45,13 +46,25 @@ public sealed class ControllerPollingService(
 
     public async Task PollOnceAsync(CancellationToken cancellationToken = default)
     {
-        await axisPollingService.PollAsync(cancellationToken);
-        await ioPollingService.PollAsync(cancellationToken);
-        await alarmPollingService.PollAsync(cancellationToken);
+        if (!await _pollLock.WaitAsync(0, cancellationToken))
+        {
+            return;
+        }
 
-        var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
-        controllerRuntimeState.Update(controllerStatus);
-        var nextSystemState = systemStateMachine.GetNextState(machine, controllerStatus);
-        machine.SetSystemState(nextSystemState);
+        try
+        {
+            await axisPollingService.PollAsync(cancellationToken);
+            await ioPollingService.PollAsync(cancellationToken);
+            await alarmPollingService.PollAsync(cancellationToken);
+
+            var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
+            controllerRuntimeState.Update(controllerStatus);
+            var nextSystemState = systemStateMachine.GetNextState(machine, controllerStatus);
+            machine.SetSystemState(nextSystemState);
+        }
+        finally
+        {
+            _pollLock.Release();
+        }
     }
 }
