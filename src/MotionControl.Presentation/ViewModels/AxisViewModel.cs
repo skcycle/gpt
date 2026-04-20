@@ -54,6 +54,8 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(CommandPositionMm));
         OnPropertyChanged(nameof(EncoderPositionMm));
         OnPropertyChanged(nameof(Name));
+        OnPropertyChanged(nameof(HomeMode));
+        OnPropertyChanged(nameof(ServoBinding));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
