@@ -1,10 +1,12 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using MotionControl.Control.Services;
 using MotionControl.Device.Abstractions.Models;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Presentation.ViewModels;
 
-public sealed class DashboardViewModel
+public sealed class DashboardViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
@@ -19,7 +21,17 @@ public sealed class DashboardViewModel
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
     }
 
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
     public string SystemState => _machine.CurrentState.ToString();
+    public bool IsConnected => _machine.IsConnected;
+    public string ConnectionStatusText => _machine.IsConnected ? "Online" : "Offline";
+    public string ConnectionStatusColor => _machine.IsConnected ? "#1FD6B5" : "#EF4444";
     public int AxisCount => _machine.Axes.Count;
     public int AlarmCount => _machine.Alarms.Count(alarm => alarm.IsActive);
     public int ActiveInputCount => _machine.IoPoints.Count(io => !io.IsOutput && io.Value);
@@ -34,6 +46,11 @@ public sealed class DashboardViewModel
     public void Refresh(EtherCatControllerStatus? controllerStatus = null)
     {
         _controllerStatus = controllerStatus ?? _controllerStatus;
+
+        OnPropertyChanged(nameof(IsConnected));
+        OnPropertyChanged(nameof(ConnectionStatusText));
+        OnPropertyChanged(nameof(ConnectionStatusColor));
+        OnPropertyChanged(nameof(SystemState));
 
         var latestSlaves = _controllerStatus?.Slaves.Select(slave => new EtherCatSlaveViewModel(slave)).ToArray()
             ?? Array.Empty<EtherCatSlaveViewModel>();

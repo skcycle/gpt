@@ -27,8 +27,8 @@
 
                 <Border Grid.Column="1" Background="#0E2E2A" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="18" Padding="14,8" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="10" Height="10" Fill="{StaticResource AccentBrushStrong}" Margin="0,0,8,0" />
-                        <TextBlock Text="Industrial Runtime Online" FontWeight="SemiBold" />
+                        <Ellipse Width="10" Height="10" Fill="{Binding Dashboard.ConnectionStatusColor, FallbackValue=#EF4444}" Margin="0,0,8,0" />
+                        <TextBlock Text="{Binding Dashboard.ConnectionStatusText, FallbackValue=Offline}" FontWeight="SemiBold" />
                         <Button Content="E-STOP" Command="{Binding EmergencyStopCommand}" Margin="20,0,0,0" Padding="10,4" FontWeight="Bold" Background="#8B0000" Foreground="White" />
                         <Button Content="CLR ESTOP" Command="{Binding ClearEmergencyStopCommand}" Margin="6,0,0,0" Padding="10,4" FontWeight="Bold" Background="#1A5C1A" Foreground="White" />
                         <Button Content="Reconnect" Command="{Binding ReconnectCommand}" Margin="6,0,0,0" Padding="10,4" FontWeight="Bold" Background="#1A4A8B" Foreground="White" />
