@@ -43,7 +43,12 @@ public sealed class MainWindowViewModel
         Alarm = new AlarmViewModel(machine);
         EmergencyStopCommand = new RelayCommand(async () => await _systemAppService.EmergencyStopAsync());
         ClearEmergencyStopCommand = new RelayCommand(async () => await _systemAppService.ClearEmergencyStopAsync());
-        ReconnectCommand = new RelayCommand(async () => await _systemAppService.ReconnectAsync());
+        ReconnectCommand = new RelayCommand(
+            async () =>
+            {
+                await _systemAppService.ReconnectAsync();
+                RefreshViewModels(force: true);
+            });
     }
 
     public DashboardViewModel Dashboard { get; }
