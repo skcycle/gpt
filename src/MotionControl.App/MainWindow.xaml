@@ -281,7 +281,7 @@
             </TabItem>
             <TabItem Header="EtherCAT Monitor">
                 <Grid Margin="12">
-                    <DataGrid ItemsSource="{Binding EtherCatMonitor.Dashboard.EtherCatSlaves}" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid ItemsSource="{Binding EtherCatMonitor.Slaves}" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="SlaveNo" Binding="{Binding SlaveNo}" Width="100" />
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="180" />
