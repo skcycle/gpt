@@ -10,6 +10,7 @@ public sealed class DashboardViewModel
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private EtherCatControllerStatus? _controllerStatus;
     private string[] _lastRecentCommandFeedback = Array.Empty<string>();
+    private string[] _lastActiveAlarmSummary = Array.Empty<string>();
     private EtherCatSlaveViewModel[] _lastEtherCatSlaves = Array.Empty<EtherCatSlaveViewModel>();
 
     public DashboardViewModel(Machine machine, CommandFeedbackRuntimeState commandFeedbackRuntimeState)
@@ -20,12 +21,15 @@ public sealed class DashboardViewModel
 
     public string SystemState => _machine.CurrentState.ToString();
     public int AxisCount => _machine.Axes.Count;
-    public int AlarmCount => _machine.Axes.Count(axis => axis.HasAlarm);
+    public int AlarmCount => _machine.Alarms.Count(alarm => alarm.IsActive);
+    public int ActiveInputCount => _machine.IoPoints.Count(io => !io.IsOutput && io.Value);
+    public int ActiveOutputCount => _machine.IoPoints.Count(io => io.IsOutput && io.Value);
     public string EtherCatNetworkState => _controllerStatus?.NetworkState ?? "Unknown";
     public bool EtherCatConnected => _controllerStatus?.IsConnected ?? false;
     public int EtherCatOnlineSlaveCount => _controllerStatus?.OnlineSlaveCount ?? 0;
     public IReadOnlyList<EtherCatSlaveViewModel> EtherCatSlaves { get; private set; } = Array.Empty<EtherCatSlaveViewModel>();
     public IReadOnlyList<string> RecentCommandFeedback { get; private set; } = Array.Empty<string>();
+    public IReadOnlyList<string> ActiveAlarmSummary { get; private set; } = Array.Empty<string>();
 
     public void Refresh(EtherCatControllerStatus? controllerStatus = null)
     {
@@ -41,13 +45,25 @@ public sealed class DashboardViewModel
 
         var latestFeedback = _commandFeedbackRuntimeState.RecentFeedback
             .Reverse()
-            .Take(5)
+            .Take(8)
             .Select(item => $"[{item.Status}] {item.CommandName} Axis={item.AxisNo?.ToString() ?? "-"} {item.Message}")
             .ToArray();
         if (!_lastRecentCommandFeedback.SequenceEqual(latestFeedback))
         {
             RecentCommandFeedback = latestFeedback;
             _lastRecentCommandFeedback = latestFeedback;
+        }
+
+        var latestAlarmSummary = _machine.Alarms
+            .Where(alarm => alarm.IsActive)
+            .OrderByDescending(alarm => alarm.OccurredAt)
+            .Take(5)
+            .Select(alarm => $"[{alarm.Severity}] {alarm.Code} {alarm.Message}")
+            .ToArray();
+        if (!_lastActiveAlarmSummary.SequenceEqual(latestAlarmSummary))
+        {
+            ActiveAlarmSummary = latestAlarmSummary;
+            _lastActiveAlarmSummary = latestAlarmSummary;
         }
     }
 }
