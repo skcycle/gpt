@@ -317,7 +317,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
         IoMonitor.SelectedInput = null;
         IoMonitor.SelectedOutput = null;
-        IoMonitor.RefreshAll();
+        IoMonitor.ReloadFromMachine();
         (DeleteInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (DeleteOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         RefreshViewModels(force: true);

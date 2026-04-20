@@ -63,6 +63,21 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
         }
     }
 
+    public void ReloadFromMachine()
+    {
+        Inputs.Clear();
+        foreach (var input in BuildInputs())
+        {
+            Inputs.Add(input);
+        }
+
+        Outputs.Clear();
+        foreach (var output in BuildOutputs())
+        {
+            Outputs.Add(output);
+        }
+    }
+
     public void AddIoPoint(IoPoint ioPoint)
     {
         var viewModel = new IoPointViewModel(ioPoint, _ioControlService);
@@ -149,7 +164,8 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
 
         foreach (var ioPoint in source)
         {
-            if (collection.All(existing => existing.Address != ioPoint.Address))
+            var existing = collection.FirstOrDefault(item => item.Address == ioPoint.Address);
+            if (existing is null)
             {
                 collection.Add(new IoPointViewModel(ioPoint, _ioControlService));
             }
