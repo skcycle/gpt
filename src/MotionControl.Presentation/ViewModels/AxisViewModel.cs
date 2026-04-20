@@ -53,6 +53,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(PulseEquivalent));
         OnPropertyChanged(nameof(CommandPositionMm));
         OnPropertyChanged(nameof(EncoderPositionMm));
+        OnPropertyChanged(nameof(Name));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

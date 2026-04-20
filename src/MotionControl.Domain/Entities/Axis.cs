@@ -82,4 +82,5 @@ public sealed class Axis
     public void SetPulseEquivalent(double pulseEquivalent) => PulseEquivalent = pulseEquivalent <= 0 ? 1000 : pulseEquivalent;
     public void SetHomeMode(HomeMode homeMode) => HomeMode = homeMode;
     public void SetServoBinding(string servoBinding) => ServoBinding = servoBinding;
+    public void SetName(string name) => Name = name;
 }
