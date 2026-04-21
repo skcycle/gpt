@@ -100,8 +100,8 @@
                             <ListBox ItemsSource="{Binding Dashboard.ActiveAlarmSummary}" />
                         </GroupBox>
 
-                        <GroupBox Grid.Column="2" Header="Recent Runtime Events">
-                            <ListBox ItemsSource="{Binding Dashboard.RecentCommandFeedback}" />
+                        <GroupBox Grid.Column="2" Header="Alarm Log">
+                            <ListBox ItemsSource="{Binding Dashboard.AlarmLog}" />
                         </GroupBox>
                     </Grid>
                 </Grid>
@@ -219,6 +219,10 @@
                                 <Button x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="0,0,6,0" />
                                 <Button x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="0,0,6,0" />
                             </StackPanel>
+
+                            <GroupBox Header="Recent Runtime Events" Margin="0,16,0,0">
+                                <ListBox ItemsSource="{Binding Dashboard.RecentCommandFeedback}" MaxHeight="160" />
+                            </GroupBox>
                         </StackPanel>
                     </Border>
 

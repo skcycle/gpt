@@ -41,6 +41,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
     public int EtherCatOnlineSlaveCount => _controllerStatus?.OnlineSlaveCount ?? 0;
     public IReadOnlyList<EtherCatSlaveViewModel> EtherCatSlaves { get; private set; } = Array.Empty<EtherCatSlaveViewModel>();
     public IReadOnlyList<string> RecentCommandFeedback { get; private set; } = Array.Empty<string>();
+    public IReadOnlyList<string> AlarmLog { get; private set; } = Array.Empty<string>();
     public IReadOnlyList<string> ActiveAlarmSummary { get; private set; } = Array.Empty<string>();
 
     public void Refresh(EtherCatControllerStatus? controllerStatus = null)
@@ -93,6 +94,17 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
             ActiveAlarmSummary = latestAlarmSummary;
             _lastActiveAlarmSummary = latestAlarmSummary;
             OnPropertyChanged(nameof(ActiveAlarmSummary));
+        }
+
+        var latestAlarmLog = _machine.Alarms
+            .OrderByDescending(alarm => alarm.OccurredAt)
+            .Take(20)
+            .Select(alarm => $"[{alarm.Severity}] {alarm.OccurredAt:MM-dd HH:mm:ss} {alarm.Code} {alarm.Message}")
+            .ToArray();
+        if (!AlarmLog.SequenceEqual(latestAlarmLog))
+        {
+            AlarmLog = latestAlarmLog;
+            OnPropertyChanged(nameof(AlarmLog));
         }
     }
 }
