@@ -17,6 +17,7 @@ public sealed class IoControlService(IIoController motionController, Machine mac
         var ioPoint = machine.IoPoints.FirstOrDefault(x => x.IsOutput && x.Address == address);
         if (ioPoint is not null)
         {
+            ioPoint.Update(value);
             ioEventRuntimeState.Add(new IoEventRecord
             {
                 Name = ioPoint.Name,
