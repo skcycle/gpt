@@ -373,6 +373,7 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" />
                                 <DataGridTextColumn Header="Address" Binding="{Binding Address, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
+                                <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" Width="70" IsReadOnly="True" />
                                 <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
                                 <DataGridTemplateColumn Header="Value" Width="50">
                                     <DataGridTemplateColumn.CellTemplate>
