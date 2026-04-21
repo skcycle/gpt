@@ -520,22 +520,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             {
                 if (_machine.UpsertAlarm(timeoutAlarmCode, $"Cylinder {cylinder.Name} {cylinder.PendingCommand} timeout ({cylinder.ActionTimeoutMs} ms)", cylinder.Name, "Cylinder", "Error"))
                 {
-                    _commandFeedbackRuntimeState.Add(new CommandFeedback
-                    {
-                        CommandName = "Cylinder",
-                        Status = "Timeout",
-                        Message = $"{cylinder.Name} {cylinder.PendingCommand} timeout ({cylinder.ActionTimeoutMs} ms)"
-                    });
+                    CylinderEventLogRecord(cylinder.Name, "Timeout", $"{cylinder.Name} {cylinder.PendingCommand} timeout ({cylinder.ActionTimeoutMs} ms)");
                 }
             }
             else if (_machine.ClearAlarm(timeoutAlarmCode))
             {
-                _commandFeedbackRuntimeState.Add(new CommandFeedback
-                {
-                    CommandName = "Cylinder",
-                    Status = "Recovered",
-                    Message = $"{cylinder.Name} timeout cleared"
-                });
+                CylinderEventLogRecord(cylinder.Name, "Recovered", $"{cylinder.Name} timeout cleared");
             }
 
             var conflictAlarmCode = $"CYL-{cylinder.Name}-SENSOR-CONFLICT";
@@ -543,22 +533,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             {
                 if (_machine.UpsertAlarm(conflictAlarmCode, $"Cylinder {cylinder.Name} sensor conflict: extend/retract DI both ON", cylinder.Name, "Cylinder", "Error"))
                 {
-                    _commandFeedbackRuntimeState.Add(new CommandFeedback
-                    {
-                        CommandName = "Cylinder",
-                        Status = "Conflict",
-                        Message = $"{cylinder.Name} sensor conflict"
-                    });
+                    CylinderEventLogRecord(cylinder.Name, "Conflict", $"{cylinder.Name} sensor conflict");
                 }
             }
             else if (_machine.ClearAlarm(conflictAlarmCode))
             {
-                _commandFeedbackRuntimeState.Add(new CommandFeedback
-                {
-                    CommandName = "Cylinder",
-                    Status = "Recovered",
-                    Message = $"{cylinder.Name} sensor conflict cleared"
-                });
+                CylinderEventLogRecord(cylinder.Name, "Recovered", $"{cylinder.Name} sensor conflict cleared");
             }
         }
     }
