@@ -148,46 +148,63 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
 
     private async Task OpenAsync()
     {
-        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0)
-        {
-            return;
-        }
-
+        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0) return;
         var first = await _ioControlService.SetOutputAsync(ExtendOutputAddress, true);
         var second = await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
         if (first.Success && second.Success)
         {
             _cylinder.StartExtendCommand();
-            _cylinderEventRuntimeState.Add(new CylinderEventRecord
-            {
-                CylinderName = _cylinder.Name,
-                EventType = "Command",
-                Message = $"{_cylinder.Name} open command sent"
-            });
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} open command sent" });
             OnPropertyChanged(nameof(State));
         }
     }
 
     private async Task CloseAsync()
     {
-        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0)
-        {
-            return;
-        }
-
+        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0) return;
         var first = await _ioControlService.SetOutputAsync(RetractOutputAddress, true);
         var second = await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
         if (first.Success && second.Success)
         {
             _cylinder.StartRetractCommand();
-            _cylinderEventRuntimeState.Add(new CylinderEventRecord
-            {
-                CylinderName = _cylinder.Name,
-                EventType = "Command",
-                Message = $"{_cylinder.Name} close command sent"
-            });
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} close command sent" });
             OnPropertyChanged(nameof(State));
         }
+    }
+
+    // 按住驱动：按下开，抬起关
+    public async void PressOpen()
+    {
+        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0) return;
+        await _ioControlService.SetOutputAsync(ExtendOutputAddress, true);
+        await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
+        _cylinder.StartExtendCommand();
+        OnPropertyChanged(nameof(State));
+    }
+
+    public async void ReleaseOpen()
+    {
+        if (_cylinder.ExtendOutputAddress < 0) return;
+        await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
+        _cylinder.ClearPendingCommand();
+        OnPropertyChanged(nameof(State));
+    }
+
+    public async void PressClose()
+    {
+        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0) return;
+        await _ioControlService.SetOutputAsync(RetractOutputAddress, true);
+        await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
+        _cylinder.StartRetractCommand();
+        OnPropertyChanged(nameof(State));
+    }
+
+    public async void ReleaseClose()
+    {
+        if (_cylinder.RetractOutputAddress < 0) return;
+        await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
+        _cylinder.ClearPendingCommand();
+        OnPropertyChanged(nameof(State));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

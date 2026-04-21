@@ -95,6 +95,31 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OpenButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (GetCylinderItemViewModel(sender) is { } vm) { vm.PressOpen(); e.Handled = true; }
+    }
+
+    private void OpenButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (GetCylinderItemViewModel(sender) is { } vm) { vm.ReleaseOpen(); e.Handled = true; }
+    }
+
+    private void CloseButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (GetCylinderItemViewModel(sender) is { } vm) { vm.PressClose(); e.Handled = true; }
+    }
+
+    private void CloseButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (GetCylinderItemViewModel(sender) is { } vm) { vm.ReleaseClose(); e.Handled = true; }
+    }
+
+    private static CylinderItemViewModel? GetCylinderItemViewModel(object sender)
+    {
+        return (sender as System.Windows.Controls.Button)?.DataContext as CylinderItemViewModel;
+    }
+
     private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
     {
         for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
