@@ -49,14 +49,28 @@ public sealed class Cylinder
         var hasExtendSensor = ExtendSensorInputAddress >= 0;
         var hasRetractSensor = RetractSensorInputAddress >= 0;
 
-        // 传感器冲突优先
         if (hasExtendSensor && hasRetractSensor && extendSensorOn && retractSensorOn)
         {
             State = CylinderState.Conflict;
             return;
         }
 
-        // 双作用气缸：有输出驱动时以输出为准
+        // 传感器到位优先于输出驱动，避免“已到位但仍显示 Extending/Retracting”
+        if (hasExtendSensor && extendSensorOn)
+        {
+            State = CylinderState.Extended;
+            if (PendingCommand == CylinderCommandType.Extend) ClearPendingCommand();
+            return;
+        }
+
+        if (hasRetractSensor && retractSensorOn)
+        {
+            State = CylinderState.Retracted;
+            if (PendingCommand == CylinderCommandType.Retract) ClearPendingCommand();
+            return;
+        }
+
+        // 双作用：未到位时再看输出方向
         if (hasExtendSensor && hasRetractSensor)
         {
             if (extendOutputOn && !retractOutputOn)
@@ -71,26 +85,12 @@ public sealed class Cylinder
                 return;
             }
 
-            if (extendSensorOn)
-            {
-                State = CylinderState.Extended;
-                if (PendingCommand == CylinderCommandType.Extend) ClearPendingCommand();
-                return;
-            }
-
-            if (retractSensorOn)
-            {
-                State = CylinderState.Retracted;
-                if (PendingCommand == CylinderCommandType.Retract) ClearPendingCommand();
-                return;
-            }
-
             State = CylinderState.Unknown;
             return;
         }
 
-        // 单作用伸侧（无缩侧传感器/输出）
-        if (!hasRetractSensor)
+        // 单作用伸侧：有伸侧传感器时先看传感器，否则看输出，最后默认回缩
+        if (hasExtendSensor && !hasRetractSensor)
         {
             if (extendOutputOn)
             {
@@ -98,14 +98,13 @@ public sealed class Cylinder
                 return;
             }
 
-            // 伸侧输出关闭时默认为缩回状态（弹簧复位）
             State = CylinderState.Retracted;
             if (PendingCommand == CylinderCommandType.Extend) ClearPendingCommand();
             return;
         }
 
-        // 单作用缩侧（无伸侧传感器/输出）
-        if (!hasExtendSensor)
+        // 单作用缩侧：有缩侧传感器时先看传感器，否则看输出，最后默认伸出
+        if (!hasExtendSensor && hasRetractSensor)
         {
             if (retractOutputOn)
             {
@@ -113,7 +112,6 @@ public sealed class Cylinder
                 return;
             }
 
-            // 缩侧输出关闭时默认为伸状态
             State = CylinderState.Extended;
             if (PendingCommand == CylinderCommandType.Retract) ClearPendingCommand();
             return;
