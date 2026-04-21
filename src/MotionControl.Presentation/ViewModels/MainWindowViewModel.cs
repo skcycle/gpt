@@ -325,14 +325,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             .FirstOrDefault(group => group.Count() > 1);
         if (duplicateAddress is not null)
         {
-            OperationStatus = $"存在重复地址: {(duplicateAddress.Key.IsOutput ? "DO" : "DI")} {duplicateAddress.Key.Address}";
+            var msg = $"存在重复地址: {(duplicateAddress.Key.IsOutput ? "DO" : "DI")} {duplicateAddress.Key.Address}";
+            OperationStatus = msg;
+            System.Windows.MessageBox.Show(msg, "IO 配置校验失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             return;
         }
 
         var invalidItem = items.FirstOrDefault(io => string.IsNullOrWhiteSpace(io.Name) || io.Address < 0);
         if (invalidItem is not null)
         {
-            OperationStatus = "IO 配置存在空名称或非法地址，保存已取消";
+            var msg = "IO 配置存在空名称或非法地址，保存已取消";
+            OperationStatus = msg;
+            System.Windows.MessageBox.Show(msg, "IO 配置校验失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             return;
         }
 
@@ -352,6 +356,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         catch (InvalidOperationException ex)
         {
             OperationStatus = ex.Message;
+            System.Windows.MessageBox.Show(ex.Message, "IO 配置保存失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            return;
         }
     }
 

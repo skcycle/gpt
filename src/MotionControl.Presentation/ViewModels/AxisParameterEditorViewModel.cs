@@ -200,6 +200,7 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         if (!TryValidate(out var validationMessage))
         {
             StatusMessage = validationMessage;
+            System.Windows.MessageBox.Show(validationMessage, "参数校验失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
             return;
         }
 
