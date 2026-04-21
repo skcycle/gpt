@@ -23,6 +23,7 @@
                 <StackPanel>
                     <TextBlock Text="MOTION CONTROL CONSOLE" FontSize="24" FontWeight="Bold" />
                     <TextBlock Text="ZMC real-time diagnostics, axis operation and EtherCAT monitoring" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,6,0,0" />
+                    <TextBlock Text="{Binding OperationStatus}" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
                 </StackPanel>
 
                 <Border Grid.Column="1" Background="#0E2E2A" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="18" Padding="14,8" VerticalAlignment="Center">

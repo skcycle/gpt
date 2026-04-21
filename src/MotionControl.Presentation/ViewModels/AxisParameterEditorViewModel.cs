@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Linq;
 using MotionControl.Application.Interfaces;
 using MotionControl.Domain.Enums;
 using MotionControl.Infrastructure.Configuration;
@@ -11,6 +12,7 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
 {
     private readonly IAxisManagementAppService _axisManagementAppService;
     private readonly IAxisControllerParameterAppService _axisControllerParameterAppService;
+    private readonly Func<IEnumerable<int>> _axisNoProvider;
     private int _axisNo;
     private string _name = string.Empty;
     private string _group = string.Empty;
@@ -26,10 +28,14 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     private string _statusMessage = "Ready";
     private string _controllerParameterSnapshot = string.Empty;
 
-    public AxisParameterEditorViewModel(IAxisManagementAppService axisManagementAppService, IAxisControllerParameterAppService axisControllerParameterAppService)
+    public AxisParameterEditorViewModel(
+        IAxisManagementAppService axisManagementAppService,
+        IAxisControllerParameterAppService axisControllerParameterAppService,
+        Func<IEnumerable<int>> axisNoProvider)
     {
         _axisManagementAppService = axisManagementAppService;
         _axisControllerParameterAppService = axisControllerParameterAppService;
+        _axisNoProvider = axisNoProvider;
         LoadCommand = new RelayCommand(async () => await LoadAsync(), () => AxisNo >= 0);
         SaveCommand = new RelayCommand(async () => await SaveAsync(), () => AxisNo >= 0);
         ReadControllerCommand = new RelayCommand(async () => await ReadControllerAsync(), () => AxisNo >= 0);
@@ -165,6 +171,12 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
 
     public async Task SaveAsync()
     {
+        if (!TryValidate(out var validationMessage))
+        {
+            StatusMessage = validationMessage;
+            return;
+        }
+
         var item = new AxisMappingItem
         {
             AxisNo = AxisNo,
@@ -200,6 +212,55 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
             SetupVelocity ?? 0,
             PulseEquivalent ?? 1000);
         StatusMessage = $"Axis {AxisNo} controller parameters written";
+    }
+
+    private bool TryValidate(out string validationMessage)
+    {
+        if (AxisNo < 0)
+        {
+            validationMessage = "AxisNo 不能小于 0";
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Name))
+        {
+            validationMessage = "Axis 名称不能为空";
+            return false;
+        }
+
+        if (WorkVelocity.HasValue && WorkVelocity.Value <= 0)
+        {
+            validationMessage = "WorkVelocity 必须大于 0";
+            return false;
+        }
+
+        if (SetupVelocity.HasValue && SetupVelocity.Value <= 0)
+        {
+            validationMessage = "SetupVelocity 必须大于 0";
+            return false;
+        }
+
+        if (PulseEquivalent.HasValue && PulseEquivalent.Value <= 0)
+        {
+            validationMessage = "PulseEquivalent 必须大于 0";
+            return false;
+        }
+
+        if (SoftLimitPositive.HasValue && SoftLimitNegative.HasValue && SoftLimitPositive.Value <= SoftLimitNegative.Value)
+        {
+            validationMessage = "SoftLimitPositive 必须大于 SoftLimitNegative";
+            return false;
+        }
+
+        var duplicateAxisExists = _axisNoProvider().Any(axisNo => axisNo == AxisNo) == false;
+        if (duplicateAxisExists)
+        {
+            validationMessage = $"Axis {AxisNo} 不存在于当前运行时列表，无法保存";
+            return false;
+        }
+
+        validationMessage = string.Empty;
+        return true;
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

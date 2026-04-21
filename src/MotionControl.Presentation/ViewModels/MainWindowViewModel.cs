@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private DateTime _lastIoRefreshUtc = DateTime.MinValue;
     private DateTime _lastIoEventRefreshUtc = DateTime.MinValue;
     private string _currentBeijingTime = GetBeijingTimeString();
+    private string _operationStatus = "Ready";
 
     public MainWindowViewModel(
         Machine machine,
@@ -53,7 +55,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         IoMonitor = new IoMonitorViewModel(machine, ioControlService);
         IoEventLog = new IoEventLogViewModel(commandFeedbackRuntimeState);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState);
-        AxisParameterEditor = new AxisParameterEditorViewModel(axisManagementAppService, axisControllerParameterAppService);
+        AxisParameterEditor = new AxisParameterEditorViewModel(axisManagementAppService, axisControllerParameterAppService, () => _machine.Axes.Select(axis => axis.Id.Value));
         Alarm = new AlarmViewModel(machine);
         EmergencyStopCommand = new RelayCommand(async () => await _systemAppService.EmergencyStopAsync());
         ClearEmergencyStopCommand = new RelayCommand(async () => await _systemAppService.ClearEmergencyStopAsync());
@@ -92,6 +94,21 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+    public string OperationStatus
+    {
+        get => _operationStatus;
+        private set
+        {
+            if (_operationStatus == value)
+            {
+                return;
+            }
+
+            _operationStatus = value;
+            OnPropertyChanged();
+        }
+    }
+
     public EtherCatMonitorViewModel EtherCatMonitor { get; }
     public AxisMonitorViewModel AxisMonitor { get; }
     public AxisDebugViewModel AxisDebug { get; }
@@ -175,10 +192,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private async Task AddAxisAsync()
     {
         var item = await _axisManagementAppService.AddAxisAsync();
-        var axis = _machine.Axes.First(a => a.Id.Value == item.AxisNo);
+        var axis = _machine.Axes.FirstOrDefault(a => a.Id.Value == item.AxisNo);
+        if (axis is null)
+        {
+            OperationStatus = $"Axis {item.AxisNo} 创建后未同步到运行时";
+            return;
+        }
+
         AxisMonitor.AddAxis(axis);
         RaiseAxisDeleteCanExecuteChanged();
         await _axisConsoleCoordinator.SyncSelectedAxisAsync(item.AxisNo);
+        OperationStatus = $"Axis {item.AxisNo} 已新增";
         RefreshViewModels(force: true);
     }
 
@@ -190,16 +214,24 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (!UiGuards.Confirm("删除 Axis", $"确定删除 Axis {selectedAxis.AxisNo} 吗？此操作会同时更新配置。"))
+        {
+            OperationStatus = "已取消删除 Axis";
+            return;
+        }
+
         var axisNo = selectedAxis.AxisNo;
         var removed = await _axisManagementAppService.DeleteAxisAsync(axisNo);
         if (!removed)
         {
+            OperationStatus = $"Axis {axisNo} 删除失败";
             return;
         }
 
         _machine.RemoveAxis(axisNo);
         AxisMonitor.RemoveAxis(axisNo);
         RaiseAxisDeleteCanExecuteChanged();
+        OperationStatus = $"Axis {axisNo} 已删除";
         RefreshViewModels(force: true);
     }
 
@@ -208,6 +240,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         var item = await _ioManagementAppService.AddIoPointAsync(isOutput);
         var ioPoint = _machine.IoPoints.First(io => io.IsOutput == item.IsOutput && io.Address == item.Address);
         IoMonitor.AddIoPoint(ioPoint);
+        OperationStatus = $"{(isOutput ? "DO" : "DI")} {item.Address} 已新增";
         RefreshViewModels(force: true);
     }
 
@@ -219,12 +252,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (!UiGuards.Confirm("删除输入点", $"确定删除 DI {selected.Address} 吗？此操作会同时更新配置。"))
+        {
+            OperationStatus = "已取消删除 DI";
+            return;
+        }
+
         var removed = await _ioManagementAppService.DeleteIoPointAsync(false, selected.Address);
         if (!removed)
         {
+            OperationStatus = $"DI {selected.Address} 删除失败";
             return;
         }
         _ioMonitorCoordinator.AfterDelete(false, selected.Address);
+        OperationStatus = $"DI {selected.Address} 已删除";
         RefreshViewModels(force: true);
     }
 
@@ -236,12 +277,20 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
+        if (!UiGuards.Confirm("删除输出点", $"确定删除 DO {selected.Address} 吗？此操作会同时更新配置。"))
+        {
+            OperationStatus = "已取消删除 DO";
+            return;
+        }
+
         var removed = await _ioManagementAppService.DeleteIoPointAsync(true, selected.Address);
         if (!removed)
         {
+            OperationStatus = $"DO {selected.Address} 删除失败";
             return;
         }
         _ioMonitorCoordinator.AfterDelete(true, selected.Address);
+        OperationStatus = $"DO {selected.Address} 已删除";
         RefreshViewModels(force: true);
     }
 
@@ -257,15 +306,45 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             })
             .ToList();
 
+        var duplicateAddress = items
+            .GroupBy(io => new { io.IsOutput, io.Address })
+            .FirstOrDefault(group => group.Count() > 1);
+        if (duplicateAddress is not null)
+        {
+            OperationStatus = $"存在重复地址: {(duplicateAddress.Key.IsOutput ? "DO" : "DI")} {duplicateAddress.Key.Address}";
+            return;
+        }
+
+        var invalidItem = items.FirstOrDefault(io => string.IsNullOrWhiteSpace(io.Name) || io.Address < 0);
+        if (invalidItem is not null)
+        {
+            OperationStatus = "IO 配置存在空名称或非法地址，保存已取消";
+            return;
+        }
+
+        if (!UiGuards.Confirm("保存 IO 配置", "确定覆盖当前 IO 配置到 appsettings.json 吗？"))
+        {
+            OperationStatus = "已取消保存 IO 配置";
+            return;
+        }
+
         await _ioManagementAppService.SaveIoPointsAsync(items);
         _ioMonitorCoordinator.AfterLoadOrReload();
+        OperationStatus = $"IO 配置已保存，共 {items.Count} 个点位";
         RefreshViewModels(force: true);
     }
 
     private async Task LoadIoConfigAsync()
     {
+        if (!UiGuards.Confirm("加载 IO 配置", "确定从 appsettings.json 重新加载 IO 配置吗？未保存修改将丢失。"))
+        {
+            OperationStatus = "已取消加载 IO 配置";
+            return;
+        }
+
         await _ioManagementAppService.LoadIoPointsAsync();
         _ioMonitorCoordinator.AfterLoadOrReload();
+        OperationStatus = "IO 配置已重新加载";
         RefreshViewModels(force: true);
     }
 
