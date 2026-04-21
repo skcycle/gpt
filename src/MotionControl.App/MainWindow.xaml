@@ -169,7 +169,7 @@
                                     <DataGridTemplateColumn Header="ServoOn" Width="75">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
-                                                <CheckBox IsChecked="{Binding IsServoOn, Mode=OneWay}"
+                                                <CheckBox IsChecked="{Binding PendingServoOn, Mode=OneWay}"
                                                           Command="{Binding ToggleServoCommand}"
                                                           HorizontalAlignment="Center"
                                                           VerticalAlignment="Center" />
