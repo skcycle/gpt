@@ -54,8 +54,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         AxisMonitor.SelectedAxisChanged += _ => RaiseAxisDeleteCanExecuteChanged();
         IoMonitor = new IoMonitorViewModel(machine, ioControlService);
         IoEventLog = new IoEventLogViewModel(commandFeedbackRuntimeState);
-        AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState);
-        AxisParameterEditor = new AxisParameterEditorViewModel(axisManagementAppService, axisControllerParameterAppService, () => _machine.Axes.Select(axis => axis.Id.Value));
+        AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, CanControlAxisCommands);
+        AxisParameterEditor = new AxisParameterEditorViewModel(
+            axisManagementAppService,
+            axisControllerParameterAppService,
+            () => _machine.Axes.Select(axis => axis.Id.Value),
+            CanWriteAxisConfiguration,
+            CanAccessControllerParameters);
         Alarm = new AlarmViewModel(machine);
         EmergencyStopCommand = new RelayCommand(async () => await _systemAppService.EmergencyStopAsync());
         ClearEmergencyStopCommand = new RelayCommand(async () => await _systemAppService.ClearEmergencyStopAsync());
@@ -151,6 +156,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     public void RefreshViewModels(bool force)
     {
+        AxisDebug.RefreshCommandStates();
+        AxisParameterEditor.RefreshCommandStates();
+        RaiseAxisDeleteCanExecuteChanged();
+        (DeleteInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (DeleteOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         var now = DateTime.UtcNow;
 
         if (force || now - _lastDashboardRefreshUtc >= TimeSpan.FromMilliseconds(500))
@@ -354,6 +364,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         OperationStatus = "IO 配置已重新加载";
         RefreshViewModels(force: true);
     }
+
+    private bool CanControlAxisCommands()
+        => _controllerRuntimeState.IsConnected && !_machine.IsEmergencyStopped;
+
+    private bool CanWriteAxisConfiguration()
+        => AxisMonitor.SelectedAxis is not null && !_machine.IsEmergencyStopped;
+
+    private bool CanAccessControllerParameters()
+        => AxisMonitor.SelectedAxis is not null && _controllerRuntimeState.IsConnected && !_machine.IsEmergencyStopped;
 
     private static string GetBeijingTimeString()
     {

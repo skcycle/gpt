@@ -14,24 +14,26 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     private readonly IMotionAppService _motionAppService;
     private readonly Machine _machine;
     private readonly HomePlanRuntimeState _homePlanRuntimeState;
+    private readonly Func<bool> _canControlAxis;
     private int _selectedAxisNo;
     private double _targetPosition;
     private double _velocity = 100;
     private double _acceleration = 100;
     private double _deceleration = 100;
 
-    public AxisDebugViewModel(IMotionAppService motionAppService, Machine machine, HomePlanRuntimeState homePlanRuntimeState)
+    public AxisDebugViewModel(IMotionAppService motionAppService, Machine machine, HomePlanRuntimeState homePlanRuntimeState, Func<bool> canControlAxis)
     {
         _motionAppService = motionAppService;
         _machine = machine;
         _homePlanRuntimeState = homePlanRuntimeState;
+        _canControlAxis = canControlAxis;
 
-        EnableAxisCommand = new RelayCommand(async () => await EnableSelectedAxisAsync(), () => SelectedAxis is not null);
-        HomeAxisCommand = new RelayCommand(async () => await HomeSelectedAxisAsync(), () => SelectedAxis is not null);
-        MoveAxisCommand = new RelayCommand(async () => await MoveSelectedAxisAsync(), () => SelectedAxis is not null);
-        StopAxisCommand = new RelayCommand(async () => await StopSelectedAxisAsync(), () => SelectedAxis is not null);
-        JogPositiveCommand = new RelayCommand(async () => await StartJogAsync(true), () => SelectedAxis is not null);
-        JogNegativeCommand = new RelayCommand(async () => await StartJogAsync(false), () => SelectedAxis is not null);
+        EnableAxisCommand = new RelayCommand(async () => await EnableSelectedAxisAsync(), CanExecuteAxisCommand);
+        HomeAxisCommand = new RelayCommand(async () => await HomeSelectedAxisAsync(), CanExecuteAxisCommand);
+        MoveAxisCommand = new RelayCommand(async () => await MoveSelectedAxisAsync(), CanExecuteAxisCommand);
+        StopAxisCommand = new RelayCommand(async () => await StopSelectedAxisAsync(), CanExecuteAxisCommand);
+        JogPositiveCommand = new RelayCommand(async () => await StartJogAsync(true), CanExecuteAxisCommand);
+        JogNegativeCommand = new RelayCommand(async () => await StartJogAsync(false), CanExecuteAxisCommand);
     }
 
     public event Action<int>? SelectedAxisChanged;
@@ -61,6 +63,16 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             JogNegativeCommand.RaiseCanExecuteChanged();
             SelectedAxisChanged?.Invoke(_selectedAxisNo);
         }
+    }
+
+    public void RefreshCommandStates()
+    {
+        EnableAxisCommand.RaiseCanExecuteChanged();
+        HomeAxisCommand.RaiseCanExecuteChanged();
+        MoveAxisCommand.RaiseCanExecuteChanged();
+        StopAxisCommand.RaiseCanExecuteChanged();
+        JogPositiveCommand.RaiseCanExecuteChanged();
+        JogNegativeCommand.RaiseCanExecuteChanged();
     }
 
     public double TargetPosition
@@ -118,6 +130,8 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private Axis? SelectedAxis => _machine.Axes.FirstOrDefault(axis => axis.Id.Value == SelectedAxisNo);
+
+    private bool CanExecuteAxisCommand() => SelectedAxis is not null && _canControlAxis();
 
     public async Task EnableSelectedAxisAsync()
     {

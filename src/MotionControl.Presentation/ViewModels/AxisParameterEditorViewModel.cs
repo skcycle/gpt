@@ -13,6 +13,8 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     private readonly IAxisManagementAppService _axisManagementAppService;
     private readonly IAxisControllerParameterAppService _axisControllerParameterAppService;
     private readonly Func<IEnumerable<int>> _axisNoProvider;
+    private readonly Func<bool> _canWriteParameters;
+    private readonly Func<bool> _canAccessControllerParameters;
     private int _axisNo;
     private string _name = string.Empty;
     private string _group = string.Empty;
@@ -31,15 +33,19 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     public AxisParameterEditorViewModel(
         IAxisManagementAppService axisManagementAppService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
-        Func<IEnumerable<int>> axisNoProvider)
+        Func<IEnumerable<int>> axisNoProvider,
+        Func<bool> canWriteParameters,
+        Func<bool> canAccessControllerParameters)
     {
         _axisManagementAppService = axisManagementAppService;
         _axisControllerParameterAppService = axisControllerParameterAppService;
         _axisNoProvider = axisNoProvider;
+        _canWriteParameters = canWriteParameters;
+        _canAccessControllerParameters = canAccessControllerParameters;
         LoadCommand = new RelayCommand(async () => await LoadAsync(), () => AxisNo >= 0);
-        SaveCommand = new RelayCommand(async () => await SaveAsync(), () => AxisNo >= 0);
-        ReadControllerCommand = new RelayCommand(async () => await ReadControllerAsync(), () => AxisNo >= 0);
-        WriteControllerCommand = new RelayCommand(async () => await WriteControllerAsync(), () => AxisNo >= 0);
+        SaveCommand = new RelayCommand(async () => await SaveAsync(), () => AxisNo >= 0 && _canWriteParameters());
+        ReadControllerCommand = new RelayCommand(async () => await ReadControllerAsync(), () => AxisNo >= 0 && _canAccessControllerParameters());
+        WriteControllerCommand = new RelayCommand(async () => await WriteControllerAsync(), () => AxisNo >= 0 && _canAccessControllerParameters());
     }
 
     public int AxisNo
@@ -139,6 +145,14 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     public RelayCommand WriteControllerCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void RefreshCommandStates()
+    {
+        LoadCommand.RaiseCanExecuteChanged();
+        SaveCommand.RaiseCanExecuteChanged();
+        ReadControllerCommand.RaiseCanExecuteChanged();
+        WriteControllerCommand.RaiseCanExecuteChanged();
+    }
 
     public async Task SyncAxisNoAsync(int axisNo)
     {
