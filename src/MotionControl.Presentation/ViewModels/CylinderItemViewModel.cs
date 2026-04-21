@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
+using MotionControl.Domain.Enums;
 using MotionControl.Presentation.Commands;
 
 namespace MotionControl.Presentation.ViewModels;
