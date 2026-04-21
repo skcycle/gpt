@@ -52,4 +52,10 @@ public static class ZmcNativeApi
 
     [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_SetOp", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int DirectSetOp(IntPtr handle, int ioNo, int value);
+
+    [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_SetAxisEnable", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    public static extern int DirectSetAxisEnable(IntPtr handle, int axisNo, int value);
+
+    [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetAxisEnable", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    public static extern int DirectGetAxisEnable(IntPtr handle, int axisNo, ref int value);
 }

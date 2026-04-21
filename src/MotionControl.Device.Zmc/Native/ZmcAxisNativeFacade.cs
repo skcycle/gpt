@@ -41,12 +41,20 @@ public sealed class ZmcAxisNativeFacade
 
     public int EnableAxis(int axisNo)
     {
-        return ExecuteCommand($"ENABLE AXIS({axisNo})");
+        if (_handle == IntPtr.Zero) return -1;
+        return ZmcNativeApi.DirectSetAxisEnable(_handle, axisNo, 1);
     }
 
     public int DisableAxis(int axisNo)
     {
-        return ExecuteCommand($"DISABLE AXIS({axisNo})");
+        if (_handle == IntPtr.Zero) return -1;
+        return ZmcNativeApi.DirectSetAxisEnable(_handle, axisNo, 0);
+    }
+
+    public int GetAxisEnable(int axisNo, ref int value)
+    {
+        if (_handle == IntPtr.Zero) return -1;
+        return ZmcNativeApi.DirectGetAxisEnable(_handle, axisNo, ref value);
     }
 
     public int HomeAxis(int axisNo)
