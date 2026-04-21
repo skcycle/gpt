@@ -98,6 +98,7 @@ public sealed class ControllerPollingService(
             await axisPollingService.PollAsync(cancellationToken);
             await ioPollingService.PollAsync(cancellationToken);
             var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
+            machine.SetConnected(controllerStatus.IsConnected);
             controllerRuntimeState.Update(controllerStatus);
             await alarmPollingService.PollAsync(cancellationToken);
 
