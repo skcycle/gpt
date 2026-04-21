@@ -420,7 +420,7 @@
                         <Button Content="Add Cylinder" Command="{Binding AddCylinderCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                         <Button Content="Delete Cylinder" Command="{Binding DeleteCylinderCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                         <Button Content="Save Config" Command="{Binding SaveCylinderConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                        <Button Content="Load Config" Command="{Binding LoadCylinderConfigCommand}" Padding="10,4" MinWidth="120" />
+                        <Button Content="Load Config" Command="{Binding LoadCylinderConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                     </StackPanel>
 
                     <DataGrid Grid.Row="1"
