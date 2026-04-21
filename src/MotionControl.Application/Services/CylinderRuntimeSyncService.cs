@@ -9,6 +9,11 @@ public sealed class CylinderRuntimeSyncService(Machine machine) : ICylinderRunti
 {
     public Task ApplyAsync(CylinderConfigItem cylinder, CancellationToken cancellationToken = default)
     {
+        EnsureIoPointExists(cylinder.ExtendSensorInputAddress, false);
+        EnsureIoPointExists(cylinder.RetractSensorInputAddress, false);
+        EnsureIoPointExists(cylinder.ExtendOutputAddress, true);
+        EnsureIoPointExists(cylinder.RetractOutputAddress, true);
+
         var existing = machine.Cylinders.FirstOrDefault(item => string.Equals(item.Name, cylinder.Name, StringComparison.OrdinalIgnoreCase));
         if (existing is null)
         {
@@ -29,10 +34,29 @@ public sealed class CylinderRuntimeSyncService(Machine machine) : ICylinderRunti
 
         foreach (var item in cylinders)
         {
+            EnsureIoPointExists(item.ExtendSensorInputAddress, false);
+            EnsureIoPointExists(item.RetractSensorInputAddress, false);
+            EnsureIoPointExists(item.ExtendOutputAddress, true);
+            EnsureIoPointExists(item.RetractOutputAddress, true);
             machine.AddCylinder(new Cylinder(item.Name, item.ExtendSensorInputAddress, item.RetractSensorInputAddress, item.ExtendOutputAddress, item.RetractOutputAddress, item.Description, item.ActionTimeoutMs));
         }
 
         return Task.CompletedTask;
+    }
+
+    private void EnsureIoPointExists(int address, bool isOutput)
+    {
+        if (address < 0)
+        {
+            return;
+        }
+
+        if (machine.IoPoints.Any(item => item.IsOutput == isOutput && item.Address == address))
+        {
+            return;
+        }
+
+        machine.AddIoPoint(new IoPoint($"{(isOutput ? "DO" : "DI")} {address}", address, isOutput, "Auto-created for Cylinder"));
     }
 
     public Task RemoveAsync(string name, CancellationToken cancellationToken = default)
