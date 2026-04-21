@@ -12,7 +12,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     private readonly Axis _axis;
     private readonly AxisControlService _axisControlService;
 
-    public AxisViewModel(Axis axis, AxisControlService axisControlService)
+    public AxisViewModel(Axis axis, IAxisControlService axisControlService)
     {
         _axis = axis;
         _axisControlService = axisControlService;

@@ -11,7 +11,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
     private readonly Machine _machine;
     private AxisViewModel? _selectedAxis;
 
-    public AxisMonitorViewModel(Machine machine, AxisControlService axisControlService)
+    public AxisMonitorViewModel(Machine machine, IAxisControlService axisControlService)
     {
         _machine = machine;
         Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis, axisControlService)));
@@ -93,7 +93,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         }
     }
 
-    private readonly AxisControlService _axisControlService;
+    private readonly IAxisControlService _axisControlService;
 
     private AxisControlService GetAxisControlService() => _axisControlService;
 
