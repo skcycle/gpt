@@ -257,6 +257,12 @@
                                 <TextBlock Text="Setup Velocity" Foreground="{StaticResource SecondaryTextBrush}" />
                                 <TextBox Text="{Binding AxisParameterEditor.SetupVelocity}" Margin="0,6,0,8" />
 
+                                <TextBlock Text="Acceleration" Foreground="{StaticResource SecondaryTextBrush}" />
+                                <TextBox Text="{Binding AxisParameterEditor.Acceleration}" Margin="0,6,0,8" />
+
+                                <TextBlock Text="Deceleration" Foreground="{StaticResource SecondaryTextBrush}" />
+                                <TextBox Text="{Binding AxisParameterEditor.Deceleration}" Margin="0,6,0,8" />
+
                                 <TextBlock Text="Pulse Equivalent (pulse/mm)" Foreground="{StaticResource SecondaryTextBrush}" />
                                 <TextBox Text="{Binding AxisParameterEditor.PulseEquivalent}" Margin="0,6,0,8" />
 

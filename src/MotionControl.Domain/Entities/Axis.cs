@@ -31,6 +31,8 @@ public sealed class Axis
     public SoftLimit? SoftLimit { get; private set; }
     public double WorkVelocity { get; private set; } = 200;
     public double SetupVelocity { get; private set; } = 50;
+    public double Acceleration { get; private set; } = 100;
+    public double Deceleration { get; private set; } = 100;
     public double PulseEquivalent { get; private set; } = 1000;
     public HomeMode HomeMode { get; private set; } = HomeMode.Default;
     public string ServoBinding { get; private set; } = string.Empty;
@@ -80,6 +82,8 @@ public sealed class Axis
     public void SetWorkVelocity(double workVelocity) => WorkVelocity = workVelocity;
     public void SetSetupVelocity(double setupVelocity) => SetupVelocity = setupVelocity;
     public void SetPulseEquivalent(double pulseEquivalent) => PulseEquivalent = pulseEquivalent <= 0 ? 1000 : pulseEquivalent;
+    public void SetAcceleration(double acceleration) => Acceleration = acceleration <= 0 ? 100 : acceleration;
+    public void SetDeceleration(double deceleration) => Deceleration = deceleration <= 0 ? 100 : deceleration;
     public void SetHomeMode(HomeMode homeMode) => HomeMode = homeMode;
     public void SetServoBinding(string servoBinding) => ServoBinding = servoBinding;
     public void SetName(string name) => Name = name;

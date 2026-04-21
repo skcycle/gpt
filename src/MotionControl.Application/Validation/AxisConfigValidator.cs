@@ -30,6 +30,16 @@ public static class AxisConfigValidator
             throw new InvalidOperationException("SetupVelocity 必须大于 0");
         }
 
+        if (item.Acceleration.HasValue && item.Acceleration.Value <= 0)
+        {
+            throw new InvalidOperationException("Acceleration 必须大于 0");
+        }
+
+        if (item.Deceleration.HasValue && item.Deceleration.Value <= 0)
+        {
+            throw new InvalidOperationException("Deceleration 必须大于 0");
+        }
+
         if (item.PulseEquivalent.HasValue && item.PulseEquivalent.Value <= 0)
         {
             throw new InvalidOperationException("PulseEquivalent 必须大于 0");

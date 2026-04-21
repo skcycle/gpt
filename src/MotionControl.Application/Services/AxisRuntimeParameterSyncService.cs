@@ -30,6 +30,8 @@ public sealed class AxisRuntimeParameterSyncService(Machine machine) : IAxisRunt
         axis.SetServoBinding(axisMappingItem.ServoBinding);
         if (axisMappingItem.WorkVelocity.HasValue) axis.SetWorkVelocity(axisMappingItem.WorkVelocity.Value);
         if (axisMappingItem.SetupVelocity.HasValue) axis.SetSetupVelocity(axisMappingItem.SetupVelocity.Value);
+        if (axisMappingItem.Acceleration.HasValue) axis.SetAcceleration(axisMappingItem.Acceleration.Value);
+        if (axisMappingItem.Deceleration.HasValue) axis.SetDeceleration(axisMappingItem.Deceleration.Value);
         if (axisMappingItem.PulseEquivalent.HasValue) axis.SetPulseEquivalent(axisMappingItem.PulseEquivalent.Value);
         if (!string.IsNullOrEmpty(axisMappingItem.Name)) axis.SetName(axisMappingItem.Name);
 

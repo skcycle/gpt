@@ -22,6 +22,8 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     private double? _softLimitNegative;
     private double? _workVelocity;
     private double? _setupVelocity;
+    private double? _acceleration = 100;
+    private double? _deceleration = 100;
     private double? _pulseEquivalent = 1000;
     private HomeMode _homeMode = HomeMode.Default;
     private string _servoBinding = string.Empty;
@@ -116,6 +118,18 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         set { _homeMode = value; OnPropertyChanged(); }
     }
 
+    public double? Acceleration
+    {
+        get => _acceleration;
+        set { _acceleration = value; OnPropertyChanged(); }
+    }
+
+    public double? Deceleration
+    {
+        get => _deceleration;
+        set { _deceleration = value; OnPropertyChanged(); }
+    }
+
     public string ServoBinding
     {
         get => _servoBinding;
@@ -173,6 +187,8 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         SoftLimitNegative = item.SoftLimitNegative;
         WorkVelocity = item.WorkVelocity;
         SetupVelocity = item.SetupVelocity;
+        Acceleration = item.Acceleration ?? 100;
+        Deceleration = item.Deceleration ?? 100;
         PulseEquivalent = item.PulseEquivalent ?? 1000;
         HomeMode = item.HomeMode;
         ServoBinding = item.ServoBinding;
@@ -198,6 +214,8 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
             SoftLimitNegative = SoftLimitNegative,
             WorkVelocity = WorkVelocity,
             SetupVelocity = SetupVelocity,
+            Acceleration = Acceleration,
+            Deceleration = Deceleration,
             PulseEquivalent = PulseEquivalent,
             HomeMode = HomeMode,
             ServoBinding = ServoBinding
@@ -253,6 +271,18 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         if (SetupVelocity.HasValue && SetupVelocity.Value <= 0)
         {
             validationMessage = "SetupVelocity 必须大于 0";
+            return false;
+        }
+
+        if (Acceleration.HasValue && Acceleration.Value <= 0)
+        {
+            validationMessage = "Acceleration 必须大于 0";
+            return false;
+        }
+
+        if (Deceleration.HasValue && Deceleration.Value <= 0)
+        {
+            validationMessage = "Deceleration 必须大于 0";
             return false;
         }
 
