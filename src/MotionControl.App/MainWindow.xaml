@@ -444,7 +444,7 @@
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                             <Button Content="Open" Command="{Binding OpenCommand}" Width="80" Margin="0,0,6,0" />
-                                            <Button Content="Close" Command="{Binding CloseCommand}" Width="80" />
+                                            <Button Content="Close" Command="{Binding CloseCommand}" Width="80" Margin="0,0,6,0" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
