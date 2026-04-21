@@ -153,17 +153,22 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     private async Task OpenAsync()
     {
         if (_cylinder.ExtendOutputAddress < 0) return;
-        var first = await _ioControlService.SetOutputAsync(ExtendOutputAddress, true);
-        var secondSuccess = true;
-        if (_cylinder.RetractOutputAddress >= 0)
+
+        var currentValue = _machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == _cylinder.ExtendOutputAddress)?.Value ?? false;
+        var nextValue = !currentValue;
+        var result = await _ioControlService.SetOutputAsync(ExtendOutputAddress, nextValue);
+        if (result.Success)
         {
-            var second = await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
-            secondSuccess = second.Success;
-        }
-        if (first.Success && secondSuccess)
-        {
-            _cylinder.StartExtendCommand();
-            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} open command sent" });
+            if (nextValue)
+            {
+                _cylinder.StartExtendCommand();
+                _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} open on" });
+            }
+            else
+            {
+                _cylinder.ClearPendingCommand();
+                _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} open off" });
+            }
             Refresh();
         }
     }
@@ -171,61 +176,27 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     private async Task CloseAsync()
     {
         if (_cylinder.RetractOutputAddress < 0) return;
-        var first = await _ioControlService.SetOutputAsync(RetractOutputAddress, true);
-        var secondSuccess = true;
-        if (_cylinder.ExtendOutputAddress >= 0)
+
+        var currentValue = _machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == _cylinder.RetractOutputAddress)?.Value ?? false;
+        var nextValue = !currentValue;
+        var result = await _ioControlService.SetOutputAsync(RetractOutputAddress, nextValue);
+        if (result.Success)
         {
-            var second = await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
-            secondSuccess = second.Success;
-        }
-        if (first.Success && secondSuccess)
-        {
-            _cylinder.StartRetractCommand();
-            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} close command sent" });
+            if (nextValue)
+            {
+                _cylinder.StartRetractCommand();
+                _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} close on" });
+            }
+            else
+            {
+                _cylinder.ClearPendingCommand();
+                _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} close off" });
+            }
             Refresh();
         }
     }
 
-    // 按住驱动：按下开，抬起关
-    public async void PressOpen()
-    {
-        if (_cylinder.ExtendOutputAddress < 0) return;
-        await _ioControlService.SetOutputAsync(ExtendOutputAddress, true);
-        if (_cylinder.RetractOutputAddress >= 0)
-        {
-            await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
-        }
-        _cylinder.StartExtendCommand();
-        Refresh();
-    }
 
-    public async void ReleaseOpen()
-    {
-        if (_cylinder.ExtendOutputAddress < 0) return;
-        await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
-        _cylinder.ClearPendingCommand();
-        Refresh();
-    }
-
-    public async void PressClose()
-    {
-        if (_cylinder.RetractOutputAddress < 0) return;
-        await _ioControlService.SetOutputAsync(RetractOutputAddress, true);
-        if (_cylinder.ExtendOutputAddress >= 0)
-        {
-            await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
-        }
-        _cylinder.StartRetractCommand();
-        Refresh();
-    }
-
-    public async void ReleaseClose()
-    {
-        if (_cylinder.RetractOutputAddress < 0) return;
-        await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
-        _cylinder.ClearPendingCommand();
-        Refresh();
-    }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
