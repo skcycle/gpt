@@ -17,6 +17,12 @@ public sealed class MotionAppService(
         await axisControlService.EnableAxisAsync(axis, cancellationToken);
     }
 
+    public async Task DisableAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default)
+    {
+        var axis = FindAxis(command.AxisNo);
+        await axisControlService.DisableAxisAsync(axis, cancellationToken);
+    }
+
     public async Task HomeAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default)
     {
         var axis = FindAxis(command.AxisNo);

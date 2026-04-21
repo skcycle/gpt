@@ -208,6 +208,7 @@
 
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="Enable" Command="{Binding AxisDebug.EnableAxisCommand}" Width="80" Margin="0,0,6,0" />
+                                <Button Content="Disable" Command="{Binding AxisDebug.DisableAxisCommand}" Width="80" Margin="0,0,6,0" />
                                 <Button Content="Home" Command="{Binding AxisDebug.HomeAxisCommand}" Width="80" Margin="0,0,6,0" />
                                 <Button Content="Move" Command="{Binding AxisDebug.MoveAxisCommand}" Width="80" Margin="0,0,6,0" />
                                 <Button Content="Stop" Command="{Binding AxisDebug.StopAxisCommand}" Width="80" Margin="0,0,6,0" />

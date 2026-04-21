@@ -29,6 +29,7 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         _canControlAxis = canControlAxis;
 
         EnableAxisCommand = new RelayCommand(async () => await EnableSelectedAxisAsync(), CanExecuteAxisCommand);
+        DisableAxisCommand = new RelayCommand(async () => await DisableSelectedAxisAsync(), CanExecuteAxisCommand);
         HomeAxisCommand = new RelayCommand(async () => await HomeSelectedAxisAsync(), CanExecuteAxisCommand);
         MoveAxisCommand = new RelayCommand(async () => await MoveSelectedAxisAsync(), CanExecuteAxisCommand);
         StopAxisCommand = new RelayCommand(async () => await StopSelectedAxisAsync(), CanExecuteAxisCommand);
@@ -121,6 +122,7 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     public string SelectedHomePlanTitle => _homePlanRuntimeState.CurrentPlan?.Title ?? "No plan generated";
     public IReadOnlyList<string> SelectedHomePlanSteps => _homePlanRuntimeState.CurrentPlan?.Steps ?? Array.Empty<string>();
     public RelayCommand EnableAxisCommand { get; }
+    public RelayCommand DisableAxisCommand { get; }
     public RelayCommand HomeAxisCommand { get; }
     public RelayCommand MoveAxisCommand { get; }
     public RelayCommand StopAxisCommand { get; }
@@ -136,6 +138,11 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     public async Task EnableSelectedAxisAsync()
     {
         await _motionAppService.EnableAxisAsync(new AxisCommandDto(SelectedAxisNo));
+    }
+
+    public async Task DisableSelectedAxisAsync()
+    {
+        await _motionAppService.DisableAxisAsync(new AxisCommandDto(SelectedAxisNo));
     }
 
     public async Task HomeSelectedAxisAsync()
