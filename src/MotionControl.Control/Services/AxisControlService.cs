@@ -12,6 +12,12 @@ public sealed class AxisControlService(
     CommandFeedbackRuntimeState commandFeedbackRuntimeState,
     AxisStateMachine axisStateMachine) : IAxisControlService
 {
+    public async Task<bool> IsServoOnAsync(Axis axis, CancellationToken cancellationToken = default)
+    {
+        var feedback = await motionController.GetAxisFeedbackAsync(axis.ControllerAxisNo, cancellationToken);
+        return feedback.ServoState == ServoState.On;
+    }
+
     public async Task EnableAxisAsync(Axis axis, CancellationToken cancellationToken = default)
     {
         commandFeedbackRuntimeState.AddStarted("Enable", axis.ControllerAxisNo, "Axis enable requested");

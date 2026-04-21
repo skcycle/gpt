@@ -4,6 +4,7 @@ namespace MotionControl.Control.Interfaces;
 
 public interface IAxisControlService
 {
+    Task<bool> IsServoOnAsync(Axis axis, CancellationToken cancellationToken = default);
     Task EnableAxisAsync(Axis axis, CancellationToken cancellationToken = default);
     Task DisableAxisAsync(Axis axis, CancellationToken cancellationToken = default);
     Task MoveAbsoluteAsync(Axis axis, double position, double velocity, double acceleration, double deceleration, CancellationToken cancellationToken = default);

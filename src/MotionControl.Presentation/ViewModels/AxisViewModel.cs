@@ -86,7 +86,9 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     {
         try
         {
-            if (IsServoOn)
+            // 先真实读取一次控制器当前使能状态
+            var currentOn = await _axisControlService.IsServoOnAsync(_axis);
+            if (currentOn)
             {
                 await _axisControlService.DisableAxisAsync(_axis);
             }
