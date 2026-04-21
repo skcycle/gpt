@@ -8,4 +8,5 @@ public sealed class CylinderConfigItem
     public int RetractSensorInputAddress { get; set; }
     public int ExtendOutputAddress { get; set; }
     public int RetractOutputAddress { get; set; }
+    public int ActionTimeoutMs { get; set; } = 3000;
 }

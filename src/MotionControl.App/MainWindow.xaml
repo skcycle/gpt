@@ -435,6 +435,7 @@
                             <DataGridTextColumn Header="Retract DI" Binding="{Binding RetractSensorInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
                             <DataGridTextColumn Header="Extend DO" Binding="{Binding ExtendOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
                             <DataGridTextColumn Header="Retract DO" Binding="{Binding RetractOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
+                            <DataGridTextColumn Header="Timeout(ms)" Binding="{Binding ActionTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100" />
                             <DataGridTextColumn Header="State" Binding="{Binding State}" Width="110" />
                             <DataGridTemplateColumn Header="Actions" Width="260">
                                 <DataGridTemplateColumn.CellTemplate>

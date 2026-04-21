@@ -443,7 +443,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 ExtendSensorInputAddress = cylinder.ExtendSensorInputAddress,
                 RetractSensorInputAddress = cylinder.RetractSensorInputAddress,
                 ExtendOutputAddress = cylinder.ExtendOutputAddress,
-                RetractOutputAddress = cylinder.RetractOutputAddress
+                RetractOutputAddress = cylinder.RetractOutputAddress,
+                ActionTimeoutMs = cylinder.ActionTimeoutMs
             })
             .ToList();
 
@@ -484,6 +485,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private void RefreshCylinderStates()
     {
+        var utcNow = DateTime.UtcNow;
         foreach (var cylinder in _machine.Cylinders)
         {
             var extendSensorOn = _machine.IoPoints.FirstOrDefault(io => !io.IsOutput && io.Address == cylinder.ExtendSensorInputAddress)?.Value ?? false;
@@ -491,6 +493,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             var extendOutputOn = _machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == cylinder.ExtendOutputAddress)?.Value ?? false;
             var retractOutputOn = _machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == cylinder.RetractOutputAddress)?.Value ?? false;
             cylinder.UpdateState(extendSensorOn, retractSensorOn, extendOutputOn, retractOutputOn);
+
+            var timeoutAlarmCode = $"CYL-{cylinder.Name}-TIMEOUT";
+            if (cylinder.IsActionTimedOut(utcNow))
+            {
+                _machine.UpsertAlarm(timeoutAlarmCode, $"Cylinder {cylinder.Name} {cylinder.PendingCommand} timeout ({cylinder.ActionTimeoutMs} ms)", cylinder.Name, "Cylinder", "Error");
+            }
+            else
+            {
+                _machine.ClearAlarm(timeoutAlarmCode);
+            }
         }
     }
 

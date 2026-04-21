@@ -49,7 +49,7 @@ public static class MachineFactory
             .ToArray();
 
         var cylinders = (cylinderConfigs ?? Array.Empty<MotionControl.Infrastructure.Configuration.CylinderConfigItem>())
-            .Select(item => new Cylinder(item.Name, item.ExtendSensorInputAddress, item.RetractSensorInputAddress, item.ExtendOutputAddress, item.RetractOutputAddress, item.Description))
+            .Select(item => new Cylinder(item.Name, item.ExtendSensorInputAddress, item.RetractSensorInputAddress, item.ExtendOutputAddress, item.RetractOutputAddress, item.Description, item.ActionTimeoutMs))
             .ToArray();
 
         var alarms = new[]

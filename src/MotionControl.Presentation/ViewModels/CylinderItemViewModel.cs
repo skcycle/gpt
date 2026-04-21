@@ -29,7 +29,7 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         set
         {
             if (_cylinder.Name == value) return;
-            _cylinder.UpdateMetadata(value, _cylinder.ExtendSensorInputAddress, _cylinder.RetractSensorInputAddress, _cylinder.ExtendOutputAddress, _cylinder.RetractOutputAddress, _cylinder.Description);
+            _cylinder.UpdateMetadata(value, _cylinder.ExtendSensorInputAddress, _cylinder.RetractSensorInputAddress, _cylinder.ExtendOutputAddress, _cylinder.RetractOutputAddress, _cylinder.Description, _cylinder.ActionTimeoutMs);
             OnPropertyChanged();
         }
     }
@@ -40,7 +40,7 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         set
         {
             if (_cylinder.Description == value) return;
-            _cylinder.UpdateMetadata(_cylinder.Name, _cylinder.ExtendSensorInputAddress, _cylinder.RetractSensorInputAddress, _cylinder.ExtendOutputAddress, _cylinder.RetractOutputAddress, value);
+            _cylinder.UpdateMetadata(_cylinder.Name, _cylinder.ExtendSensorInputAddress, _cylinder.RetractSensorInputAddress, _cylinder.ExtendOutputAddress, _cylinder.RetractOutputAddress, value, _cylinder.ActionTimeoutMs);
             OnPropertyChanged();
         }
     }
@@ -48,25 +48,31 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     public int ExtendSensorInputAddress
     {
         get => _cylinder.ExtendSensorInputAddress;
-        set { if (_cylinder.ExtendSensorInputAddress == value) return; _cylinder.UpdateMetadata(_cylinder.Name, value, _cylinder.RetractSensorInputAddress, _cylinder.ExtendOutputAddress, _cylinder.RetractOutputAddress, _cylinder.Description); OnPropertyChanged(); }
+        set { if (_cylinder.ExtendSensorInputAddress == value) return; _cylinder.UpdateMetadata(_cylinder.Name, value, _cylinder.RetractSensorInputAddress, _cylinder.ExtendOutputAddress, _cylinder.RetractOutputAddress, _cylinder.Description, _cylinder.ActionTimeoutMs); OnPropertyChanged(); }
     }
 
     public int RetractSensorInputAddress
     {
         get => _cylinder.RetractSensorInputAddress;
-        set { if (_cylinder.RetractSensorInputAddress == value) return; _cylinder.UpdateMetadata(_cylinder.Name, _cylinder.ExtendSensorInputAddress, value, _cylinder.ExtendOutputAddress, _cylinder.RetractOutputAddress, _cylinder.Description); OnPropertyChanged(); }
+        set { if (_cylinder.RetractSensorInputAddress == value) return; _cylinder.UpdateMetadata(_cylinder.Name, _cylinder.ExtendSensorInputAddress, value, _cylinder.ExtendOutputAddress, _cylinder.RetractOutputAddress, _cylinder.Description, _cylinder.ActionTimeoutMs); OnPropertyChanged(); }
     }
 
     public int ExtendOutputAddress
     {
         get => _cylinder.ExtendOutputAddress;
-        set { if (_cylinder.ExtendOutputAddress == value) return; _cylinder.UpdateMetadata(_cylinder.Name, _cylinder.ExtendSensorInputAddress, _cylinder.RetractSensorInputAddress, value, _cylinder.RetractOutputAddress, _cylinder.Description); OnPropertyChanged(); }
+        set { if (_cylinder.ExtendOutputAddress == value) return; _cylinder.UpdateMetadata(_cylinder.Name, _cylinder.ExtendSensorInputAddress, _cylinder.RetractSensorInputAddress, value, _cylinder.RetractOutputAddress, _cylinder.Description, _cylinder.ActionTimeoutMs); OnPropertyChanged(); }
     }
 
     public int RetractOutputAddress
     {
         get => _cylinder.RetractOutputAddress;
-        set { if (_cylinder.RetractOutputAddress == value) return; _cylinder.UpdateMetadata(_cylinder.Name, _cylinder.ExtendSensorInputAddress, _cylinder.RetractSensorInputAddress, _cylinder.ExtendOutputAddress, value, _cylinder.Description); OnPropertyChanged(); }
+        set { if (_cylinder.RetractOutputAddress == value) return; _cylinder.UpdateMetadata(_cylinder.Name, _cylinder.ExtendSensorInputAddress, _cylinder.RetractSensorInputAddress, _cylinder.ExtendOutputAddress, value, _cylinder.Description, _cylinder.ActionTimeoutMs); OnPropertyChanged(); }
+    }
+
+    public int ActionTimeoutMs
+    {
+        get => _cylinder.ActionTimeoutMs;
+        set { if (_cylinder.ActionTimeoutMs == value) return; _cylinder.UpdateMetadata(_cylinder.Name, _cylinder.ExtendSensorInputAddress, _cylinder.RetractSensorInputAddress, _cylinder.ExtendOutputAddress, _cylinder.RetractOutputAddress, _cylinder.Description, value); OnPropertyChanged(); }
     }
 
     public string State => _cylinder.State.ToString();
@@ -84,6 +90,7 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(RetractSensorInputAddress));
         OnPropertyChanged(nameof(ExtendOutputAddress));
         OnPropertyChanged(nameof(RetractOutputAddress));
+        OnPropertyChanged(nameof(ActionTimeoutMs));
         OnPropertyChanged(nameof(State));
         (ExtendCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (RetractCommand as RelayCommand)?.RaiseCanExecuteChanged();
@@ -96,6 +103,15 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         var second = await _ioControlService.SetOutputAsync(extend ? RetractOutputAddress : ExtendOutputAddress, false);
         if (first.Success && second.Success)
         {
+            if (extend)
+            {
+                _cylinder.StartExtendCommand();
+            }
+            else
+            {
+                _cylinder.StartRetractCommand();
+            }
+
             OnPropertyChanged(nameof(State));
         }
     }
@@ -104,6 +120,7 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     {
         await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
         await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
+        _cylinder.ClearPendingCommand();
         OnPropertyChanged(nameof(State));
     }
 

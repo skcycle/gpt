@@ -24,7 +24,8 @@ public sealed class CylinderConfigAppService(string appSettingsPath) : ICylinder
             ExtendSensorInputAddress = 0,
             RetractSensorInputAddress = 1,
             ExtendOutputAddress = 0,
-            RetractOutputAddress = 1
+            RetractOutputAddress = 1,
+            ActionTimeoutMs = 3000
         };
 
         root.CylinderMapping.Cylinders.Add(item);

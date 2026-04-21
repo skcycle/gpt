@@ -12,11 +12,11 @@ public sealed class CylinderRuntimeSyncService(Machine machine) : ICylinderRunti
         var existing = machine.Cylinders.FirstOrDefault(item => string.Equals(item.Name, cylinder.Name, StringComparison.OrdinalIgnoreCase));
         if (existing is null)
         {
-            machine.AddCylinder(new Cylinder(cylinder.Name, cylinder.ExtendSensorInputAddress, cylinder.RetractSensorInputAddress, cylinder.ExtendOutputAddress, cylinder.RetractOutputAddress, cylinder.Description));
+            machine.AddCylinder(new Cylinder(cylinder.Name, cylinder.ExtendSensorInputAddress, cylinder.RetractSensorInputAddress, cylinder.ExtendOutputAddress, cylinder.RetractOutputAddress, cylinder.Description, cylinder.ActionTimeoutMs));
             return Task.CompletedTask;
         }
 
-        existing.UpdateMetadata(cylinder.Name, cylinder.ExtendSensorInputAddress, cylinder.RetractSensorInputAddress, cylinder.ExtendOutputAddress, cylinder.RetractOutputAddress, cylinder.Description);
+        existing.UpdateMetadata(cylinder.Name, cylinder.ExtendSensorInputAddress, cylinder.RetractSensorInputAddress, cylinder.ExtendOutputAddress, cylinder.RetractOutputAddress, cylinder.Description, cylinder.ActionTimeoutMs);
         return Task.CompletedTask;
     }
 
@@ -29,7 +29,7 @@ public sealed class CylinderRuntimeSyncService(Machine machine) : ICylinderRunti
 
         foreach (var item in cylinders)
         {
-            machine.AddCylinder(new Cylinder(item.Name, item.ExtendSensorInputAddress, item.RetractSensorInputAddress, item.ExtendOutputAddress, item.RetractOutputAddress, item.Description));
+            machine.AddCylinder(new Cylinder(item.Name, item.ExtendSensorInputAddress, item.RetractSensorInputAddress, item.ExtendOutputAddress, item.RetractOutputAddress, item.Description, item.ActionTimeoutMs));
         }
 
         return Task.CompletedTask;
