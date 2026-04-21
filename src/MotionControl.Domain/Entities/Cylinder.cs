@@ -49,37 +49,48 @@ public sealed class Cylinder
         var hasExtendSensor = ExtendSensorInputAddress >= 0;
         var hasRetractSensor = RetractSensorInputAddress >= 0;
 
-        if (hasExtendSensor && hasRetractSensor && extendSensorOn && retractSensorOn)
-        {
-            State = CylinderState.Conflict;
-            return;
-        }
-
-        // 传感器到位优先于输出驱动，避免“已到位但仍显示 Extending/Retracting”
-        if (hasExtendSensor && extendSensorOn)
-        {
-            State = CylinderState.Extended;
-            if (PendingCommand == CylinderCommandType.Extend) ClearPendingCommand();
-            return;
-        }
-
-        if (hasRetractSensor && retractSensorOn)
-        {
-            State = CylinderState.Retracted;
-            if (PendingCommand == CylinderCommandType.Retract) ClearPendingCommand();
-            return;
-        }
-
-        // 双作用：未到位时再看输出方向
+        // 双控气缸：先收紧异常状态判定
         if (hasExtendSensor && hasRetractSensor)
         {
-            if (extendOutputOn && !retractOutputOn)
+            if (extendSensorOn && retractSensorOn)
+            {
+                State = CylinderState.Conflict;
+                return;
+            }
+
+            if (extendOutputOn && retractOutputOn)
+            {
+                State = CylinderState.Conflict;
+                return;
+            }
+
+            if (!extendOutputOn && !retractOutputOn && (extendSensorOn || retractSensorOn))
+            {
+                State = CylinderState.Conflict;
+                return;
+            }
+
+            if (extendSensorOn)
+            {
+                State = CylinderState.Extended;
+                if (PendingCommand == CylinderCommandType.Extend) ClearPendingCommand();
+                return;
+            }
+
+            if (retractSensorOn)
+            {
+                State = CylinderState.Retracted;
+                if (PendingCommand == CylinderCommandType.Retract) ClearPendingCommand();
+                return;
+            }
+
+            if (extendOutputOn)
             {
                 State = CylinderState.Extending;
                 return;
             }
 
-            if (retractOutputOn && !extendOutputOn)
+            if (retractOutputOn)
             {
                 State = CylinderState.Retracting;
                 return;
