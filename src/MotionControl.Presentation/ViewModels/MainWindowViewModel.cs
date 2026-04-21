@@ -19,6 +19,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private readonly Machine _machine;
     private readonly IAxisManagementAppService _axisManagementAppService;
     private readonly IIoManagementAppService _ioManagementAppService;
+    private readonly ICylinderManagementAppService _cylinderManagementAppService;
     private readonly ISystemAppService _systemAppService;
     private readonly AxisConsoleCoordinator _axisConsoleCoordinator;
     private readonly IoMonitorCoordinator _ioMonitorCoordinator;
@@ -30,6 +31,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private DateTime _lastAlarmRefreshUtc = DateTime.MinValue;
     private DateTime _lastIoRefreshUtc = DateTime.MinValue;
     private DateTime _lastIoEventRefreshUtc = DateTime.MinValue;
+    private DateTime _lastCylinderRefreshUtc = DateTime.MinValue;
     private string _currentBeijingTime = GetBeijingTimeString();
     private string _operationStatus = "Ready";
 
@@ -40,6 +42,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IAxisManagementAppService axisManagementAppService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
         IIoManagementAppService ioManagementAppService,
+        ICylinderManagementAppService cylinderManagementAppService,
         ControllerRuntimeState controllerRuntimeState,
         HomePlanRuntimeState homePlanRuntimeState,
         CommandFeedbackRuntimeState commandFeedbackRuntimeState,
@@ -49,6 +52,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _machine = machine;
         _axisManagementAppService = axisManagementAppService;
         _ioManagementAppService = ioManagementAppService;
+        _cylinderManagementAppService = cylinderManagementAppService;
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         _commandFeedbackRuntimeState.FeedbackChanged += () => RefreshViewModels(force: true);
         _systemAppService = systemAppService;
@@ -59,6 +63,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         AxisMonitor.SelectedAxisChanged += _ => RaiseAxisDeleteCanExecuteChanged();
         IoMonitor = new IoMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
         IoEventLog = new IoEventLogViewModel(ioEventRuntimeState);
+        CylinderMonitor = new CylinderMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
+        CylinderMonitor.SelectedCylinderChanged += _ => (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, CanControlAxisCommands);
         AxisParameterEditor = new AxisParameterEditorViewModel(
             axisManagementAppService,
@@ -83,6 +89,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         DeleteOutputCommand = new RelayCommand(async () => await DeleteSelectedOutputAsync(), () => IoMonitor.SelectedOutput is not null && CanEditIoConfiguration());
         SaveIoConfigCommand = new RelayCommand(async () => await SaveIoConfigAsync(), CanEditIoConfiguration);
         LoadIoConfigCommand = new RelayCommand(async () => await LoadIoConfigAsync(), CanEditIoConfiguration);
+        AddCylinderCommand = new RelayCommand(async () => await AddCylinderAsync(), CanEditIoConfiguration);
+        DeleteCylinderCommand = new RelayCommand(async () => await DeleteSelectedCylinderAsync(), () => CylinderMonitor.SelectedCylinder is not null && CanEditIoConfiguration());
+        SaveCylinderConfigCommand = new RelayCommand(async () => await SaveCylinderConfigAsync(), CanEditIoConfiguration);
+        LoadCylinderConfigCommand = new RelayCommand(async () => await LoadCylinderConfigAsync(), CanEditIoConfiguration);
         _axisConsoleCoordinator = new AxisConsoleCoordinator(AxisMonitor, AxisDebug, AxisParameterEditor);
         _ioMonitorCoordinator = new IoMonitorCoordinator(IoMonitor, (RelayCommand)DeleteInputCommand, (RelayCommand)DeleteOutputCommand);
         _ioMonitorCoordinator.Initialize();
@@ -124,6 +134,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public AxisDebugViewModel AxisDebug { get; }
     public IoMonitorViewModel IoMonitor { get; }
     public IoEventLogViewModel IoEventLog { get; }
+    public CylinderMonitorViewModel CylinderMonitor { get; }
     public AxisParameterEditorViewModel AxisParameterEditor { get; }
     public AlarmViewModel Alarm { get; }
 
@@ -138,6 +149,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public ICommand DeleteOutputCommand { get; }
     public ICommand SaveIoConfigCommand { get; }
     public ICommand LoadIoConfigCommand { get; }
+    public ICommand AddCylinderCommand { get; }
+    public ICommand DeleteCylinderCommand { get; }
+    public ICommand SaveCylinderConfigCommand { get; }
+    public ICommand LoadCylinderConfigCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -170,6 +185,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         (DeleteOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (SaveIoConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (LoadIoConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (AddCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (SaveCylinderConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (LoadCylinderConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
         var now = DateTime.UtcNow;
 
         if (force || now - _lastDashboardRefreshUtc >= TimeSpan.FromMilliseconds(500))
@@ -200,6 +219,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         {
             IoEventLog.Refresh();
             _lastIoEventRefreshUtc = now;
+        }
+
+        if (force || now - _lastCylinderRefreshUtc >= TimeSpan.FromMilliseconds(300))
+        {
+            RefreshCylinderStates();
+            CylinderMonitor.RefreshAll();
+            _lastCylinderRefreshUtc = now;
         }
     }
 
@@ -313,6 +339,47 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         RefreshViewModels(force: true);
     }
 
+    private async Task AddCylinderAsync()
+    {
+        var item = await _cylinderManagementAppService.AddCylinderAsync();
+        var cylinder = _machine.Cylinders.FirstOrDefault(c => string.Equals(c.Name, item.Name, StringComparison.OrdinalIgnoreCase));
+        if (cylinder is null)
+        {
+            OperationStatus = $"Cylinder {item.Name} 创建后未同步到运行时";
+            return;
+        }
+
+        CylinderMonitor.AddCylinder(cylinder);
+        OperationStatus = $"Cylinder {item.Name} 已新增";
+        RefreshViewModels(force: true);
+    }
+
+    private async Task DeleteSelectedCylinderAsync()
+    {
+        var selected = CylinderMonitor.SelectedCylinder;
+        if (selected is null)
+        {
+            return;
+        }
+
+        if (!UiGuards.Confirm("删除 Cylinder", $"确定删除 Cylinder {selected.Name} 吗？此操作会同时更新配置。"))
+        {
+            OperationStatus = "已取消删除 Cylinder";
+            return;
+        }
+
+        var removed = await _cylinderManagementAppService.DeleteCylinderAsync(selected.Name);
+        if (!removed)
+        {
+            OperationStatus = $"Cylinder {selected.Name} 删除失败";
+            return;
+        }
+
+        CylinderMonitor.RemoveCylinder(selected.Name);
+        OperationStatus = $"Cylinder {selected.Name} 已删除";
+        RefreshViewModels(force: true);
+    }
+
     private async Task SaveIoConfigAsync()
     {
         var items = IoMonitor.GetAllIoPoints()
@@ -366,6 +433,40 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
     }
 
+    private async Task SaveCylinderConfigAsync()
+    {
+        var items = CylinderMonitor.Cylinders
+            .Select(cylinder => new MotionControl.Infrastructure.Configuration.CylinderConfigItem
+            {
+                Name = cylinder.Name,
+                Description = cylinder.Description,
+                ExtendSensorInputAddress = cylinder.ExtendSensorInputAddress,
+                RetractSensorInputAddress = cylinder.RetractSensorInputAddress,
+                ExtendOutputAddress = cylinder.ExtendOutputAddress,
+                RetractOutputAddress = cylinder.RetractOutputAddress
+            })
+            .ToList();
+
+        try
+        {
+            await _cylinderManagementAppService.SaveCylindersAsync(items);
+            OperationStatus = $"Cylinder 配置已保存，共 {items.Count} 个气缸";
+            RefreshViewModels(force: true);
+        }
+        catch (InvalidOperationException ex)
+        {
+            OperationStatus = ex.Message;
+            System.Windows.MessageBox.Show(ex.Message, "Cylinder 配置保存失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+        }
+    }
+
+    private async Task LoadCylinderConfigAsync()
+    {
+        await _cylinderManagementAppService.LoadCylindersAsync();
+        OperationStatus = "Cylinder 配置已重新加载";
+        RefreshViewModels(force: true);
+    }
+
     private async Task LoadIoConfigAsync()
     {
         if (!UiGuards.Confirm("加载 IO 配置", "确定从 appsettings.json 重新加载 IO 配置吗？未保存修改将丢失。"))
@@ -380,6 +481,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         RefreshViewModels(force: true);
     }
 
+
+    private void RefreshCylinderStates()
+    {
+        foreach (var cylinder in _machine.Cylinders)
+        {
+            var extendSensorOn = _machine.IoPoints.FirstOrDefault(io => !io.IsOutput && io.Address == cylinder.ExtendSensorInputAddress)?.Value ?? false;
+            var retractSensorOn = _machine.IoPoints.FirstOrDefault(io => !io.IsOutput && io.Address == cylinder.RetractSensorInputAddress)?.Value ?? false;
+            var extendOutputOn = _machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == cylinder.ExtendOutputAddress)?.Value ?? false;
+            var retractOutputOn = _machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == cylinder.RetractOutputAddress)?.Value ?? false;
+            cylinder.UpdateState(extendSensorOn, retractSensorOn, extendOutputOn, retractOutputOn);
+        }
+    }
 
     public void ReportStatus(string message)
     {

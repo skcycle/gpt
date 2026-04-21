@@ -6,7 +6,10 @@ namespace MotionControl.App.Bootstrap;
 
 public static class MachineFactory
 {
-    public static Machine CreateDefaultMachine(AxisMappingOptions axisMappingOptions, IReadOnlyCollection<MotionControl.Infrastructure.Configuration.IoPointConfigItem>? ioPointConfigs = null)
+    public static Machine CreateDefaultMachine(
+        AxisMappingOptions axisMappingOptions,
+        IReadOnlyCollection<MotionControl.Infrastructure.Configuration.IoPointConfigItem>? ioPointConfigs = null,
+        IReadOnlyCollection<MotionControl.Infrastructure.Configuration.CylinderConfigItem>? cylinderConfigs = null)
     {
         var axisNames = axisMappingOptions.AxisNames;
         var axisMappings = axisMappingOptions.Axes;
@@ -45,6 +48,10 @@ public static class MachineFactory
             .Select(item => new IoPoint(item.Name, item.Address, item.IsOutput, item.Description))
             .ToArray();
 
+        var cylinders = (cylinderConfigs ?? Array.Empty<MotionControl.Infrastructure.Configuration.CylinderConfigItem>())
+            .Select(item => new Cylinder(item.Name, item.ExtendSensorInputAddress, item.RetractSensorInputAddress, item.ExtendOutputAddress, item.RetractOutputAddress, item.Description))
+            .ToArray();
+
         var alarms = new[]
         {
             new Alarm("SYS-001", "EtherCAT controller not connected", DateTime.Now, "System", "Communication", "Warning"),
@@ -54,6 +61,6 @@ public static class MachineFactory
         alarms[0].Clear();
         alarms[1].Clear();
 
-        return new Machine(axes, Array.Empty<AxisGroup>(), ioPoints, alarms);
+        return new Machine(axes, Array.Empty<AxisGroup>(), ioPoints, cylinders, alarms);
     }
 }

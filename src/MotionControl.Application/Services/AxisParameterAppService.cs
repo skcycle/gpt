@@ -120,6 +120,8 @@ public sealed class AxisParameterAppService(string appSettingsPath) : IAxisParam
     {
         public ZmcControllerConfig ZmcController { get; set; } = new();
         public AxisMappingOptions AxisMapping { get; set; } = new();
+        public IoMappingOptions IoMapping { get; set; } = new();
+        public CylinderMappingOptions CylinderMapping { get; set; } = new();
     }
 
     private sealed class ZmcControllerConfig

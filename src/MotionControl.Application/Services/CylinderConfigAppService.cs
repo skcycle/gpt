@@ -5,40 +5,37 @@ using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Application.Services;
 
-public sealed class IoConfigAppService(string appSettingsPath) : IIoConfigAppService
+public sealed class CylinderConfigAppService(string appSettingsPath) : ICylinderConfigAppService
 {
-    public async Task<IReadOnlyList<IoPointConfigItem>> LoadIoPointsAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<CylinderConfigItem>> LoadCylindersAsync(CancellationToken cancellationToken = default)
     {
         var root = await LoadRootAsync(cancellationToken);
-        return root.IoMapping.Points
-            .OrderBy(item => item.IsOutput)
-            .ThenBy(item => item.Address)
-            .ToList();
+        return root.CylinderMapping.Cylinders.OrderBy(item => item.Name).ToList();
     }
 
-    public async Task<IoPointConfigItem> AddIoPointAsync(bool isOutput, CancellationToken cancellationToken = default)
+    public async Task<CylinderConfigItem> AddCylinderAsync(CancellationToken cancellationToken = default)
     {
         var root = await LoadRootAsync(cancellationToken);
-        var points = root.IoMapping.Points.Where(point => point.IsOutput == isOutput).ToList();
-        var nextAddress = points.Count == 0 ? 0 : points.Max(point => point.Address) + 1;
-        var prefix = isOutput ? "DO" : "DI";
-        var item = new IoPointConfigItem
+        var index = root.CylinderMapping.Cylinders.Count;
+        var item = new CylinderConfigItem
         {
-            Name = $"{prefix}_{nextAddress}",
-            Address = nextAddress,
-            IsOutput = isOutput,
-            Description = string.Empty
+            Name = $"Cylinder_{index}",
+            Description = string.Empty,
+            ExtendSensorInputAddress = 0,
+            RetractSensorInputAddress = 1,
+            ExtendOutputAddress = 0,
+            RetractOutputAddress = 1
         };
 
-        root.IoMapping.Points.Add(item);
+        root.CylinderMapping.Cylinders.Add(item);
         await SaveRootAsync(root, cancellationToken);
         return item;
     }
 
-    public async Task<bool> DeleteIoPointAsync(bool isOutput, int address, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteCylinderAsync(string name, CancellationToken cancellationToken = default)
     {
         var root = await LoadRootAsync(cancellationToken);
-        var removed = root.IoMapping.Points.RemoveAll(point => point.IsOutput == isOutput && point.Address == address) > 0;
+        var removed = root.CylinderMapping.Cylinders.RemoveAll(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase)) > 0;
         if (!removed)
         {
             return false;
@@ -48,27 +45,10 @@ public sealed class IoConfigAppService(string appSettingsPath) : IIoConfigAppSer
         return true;
     }
 
-    public async Task SaveIoPointsAsync(IEnumerable<IoPointConfigItem> ioPoints, CancellationToken cancellationToken = default)
+    public async Task SaveCylindersAsync(IEnumerable<CylinderConfigItem> cylinders, CancellationToken cancellationToken = default)
     {
-        var normalized = ioPoints.OrderBy(item => item.IsOutput).ThenBy(item => item.Address).ToList();
-        var duplicatedInput = normalized.Where(item => !item.IsOutput)
-            .GroupBy(item => item.Address)
-            .FirstOrDefault(group => group.Count() > 1);
-        if (duplicatedInput is not null)
-        {
-            throw new InvalidOperationException($"DI address duplicated: {duplicatedInput.Key}");
-        }
-
-        var duplicatedOutput = normalized.Where(item => item.IsOutput)
-            .GroupBy(item => item.Address)
-            .FirstOrDefault(group => group.Count() > 1);
-        if (duplicatedOutput is not null)
-        {
-            throw new InvalidOperationException($"DO address duplicated: {duplicatedOutput.Key}");
-        }
-
         var root = await LoadRootAsync(cancellationToken);
-        root.IoMapping.Points = normalized;
+        root.CylinderMapping.Cylinders = cylinders.OrderBy(item => item.Name).ToList();
         await SaveRootAsync(root, cancellationToken);
     }
 
@@ -107,5 +87,4 @@ public sealed class IoConfigAppService(string appSettingsPath) : IIoConfigAppSer
         public int AxisCount { get; set; } = 32;
         public int PollingIntervalMs { get; set; } = 200;
     }
-
 }

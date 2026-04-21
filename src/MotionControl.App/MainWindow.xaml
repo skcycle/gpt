@@ -408,6 +408,50 @@
                 </Grid>
             </TabItem>
 
+            <TabItem Header="Cylinder Monitor">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Content="Add Cylinder" Command="{Binding AddCylinderCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
+                        <Button Content="Delete Cylinder" Command="{Binding DeleteCylinderCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
+                        <Button Content="Save Config" Command="{Binding SaveCylinderConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
+                        <Button Content="Load Config" Command="{Binding LoadCylinderConfigCommand}" Padding="10,4" MinWidth="120" />
+                    </StackPanel>
+
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding CylinderMonitor.Cylinders}"
+                              SelectedItem="{Binding CylinderMonitor.SelectedCylinder, Mode=TwoWay}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="140" />
+                            <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="160" />
+                            <DataGridTextColumn Header="Extend DI" Binding="{Binding ExtendSensorInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
+                            <DataGridTextColumn Header="Retract DI" Binding="{Binding RetractSensorInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
+                            <DataGridTextColumn Header="Extend DO" Binding="{Binding ExtendOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
+                            <DataGridTextColumn Header="Retract DO" Binding="{Binding RetractOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
+                            <DataGridTextColumn Header="State" Binding="{Binding State}" Width="110" />
+                            <DataGridTemplateColumn Header="Actions" Width="260">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Content="Extend" Command="{Binding ExtendCommand}" Width="70" Margin="0,0,6,0" />
+                                            <Button Content="Retract" Command="{Binding RetractCommand}" Width="70" Margin="0,0,6,0" />
+                                            <Button Content="Stop" Command="{Binding StopCommand}" Width="70" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
             <TabItem Header="Alarm">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>

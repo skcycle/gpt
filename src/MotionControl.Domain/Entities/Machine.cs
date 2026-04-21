@@ -6,23 +6,27 @@ public sealed class Machine
 {
     private readonly List<Axis> _axes;
     private readonly List<IoPoint> _ioPoints;
+    private readonly List<Cylinder> _cylinders;
     private readonly List<Alarm> _alarms;
 
     public Machine(
         IReadOnlyCollection<Axis> axes,
         IReadOnlyCollection<AxisGroup> groups,
         IReadOnlyCollection<IoPoint>? ioPoints = null,
+        IReadOnlyCollection<Cylinder>? cylinders = null,
         IReadOnlyCollection<Alarm>? alarms = null)
     {
         _axes = axes.ToList();
         Groups = groups;
         _ioPoints = ioPoints?.ToList() ?? new List<IoPoint>();
+        _cylinders = cylinders?.ToList() ?? new List<Cylinder>();
         _alarms = alarms?.ToList() ?? new List<Alarm>();
     }
 
     public IReadOnlyCollection<Axis> Axes => _axes;
     public IReadOnlyCollection<AxisGroup> Groups { get; }
     public IReadOnlyCollection<IoPoint> IoPoints => _ioPoints;
+    public IReadOnlyCollection<Cylinder> Cylinders => _cylinders;
     public IReadOnlyCollection<Alarm> Alarms => _alarms;
     public SystemState CurrentState { get; private set; } = SystemState.Initializing;
     public bool IsConnected { get; private set; }
@@ -72,6 +76,28 @@ public sealed class Machine
         }
 
         _ioPoints.Remove(ioPoint);
+        return true;
+    }
+
+    public void AddCylinder(Cylinder cylinder)
+    {
+        if (_cylinders.Any(existing => string.Equals(existing.Name, cylinder.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        _cylinders.Add(cylinder);
+    }
+
+    public bool RemoveCylinder(string name)
+    {
+        var cylinder = _cylinders.FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (cylinder is null)
+        {
+            return false;
+        }
+
+        _cylinders.Remove(cylinder);
         return true;
     }
 

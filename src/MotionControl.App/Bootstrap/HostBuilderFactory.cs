@@ -31,12 +31,15 @@ public static class HostBuilderFactory
                 services.Configure<ZmcControllerOptions>(context.Configuration.GetSection("ZmcController"));
                 services.Configure<AxisMappingOptions>(context.Configuration.GetSection("AxisMapping"));
                 services.Configure<IoMappingOptions>(context.Configuration.GetSection("IoMapping"));
+                services.Configure<CylinderMappingOptions>(context.Configuration.GetSection("CylinderMapping"));
 
                 var axisMappingOptions = new AxisMappingOptions();
                 context.Configuration.GetSection("AxisMapping").Bind(axisMappingOptions);
                 var ioMappingOptions = new IoMappingOptions();
                 context.Configuration.GetSection("IoMapping").Bind(ioMappingOptions);
-                services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions, ioMappingOptions.Points));
+                var cylinderMappingOptions = new CylinderMappingOptions();
+                context.Configuration.GetSection("CylinderMapping").Bind(cylinderMappingOptions);
+                services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions, ioMappingOptions.Points, cylinderMappingOptions.Cylinders));
 
                 var zmcControllerOptions = new ZmcControllerOptions();
                 context.Configuration.GetSection("ZmcController").Bind(zmcControllerOptions);
@@ -65,6 +68,9 @@ public static class HostBuilderFactory
                 services.AddSingleton<IAxisManagementAppService, AxisManagementAppService>();
                 services.AddSingleton<IIoConfigAppService>(_ => new IoConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
                 services.AddSingleton<IIoManagementAppService, IoManagementAppService>();
+                services.AddSingleton<ICylinderRuntimeSyncService, CylinderRuntimeSyncService>();
+                services.AddSingleton<ICylinderConfigAppService>(_ => new CylinderConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
+                services.AddSingleton<ICylinderManagementAppService, CylinderManagementAppService>();
 
                 services.AddSingleton<SafetyInterlockService>();
                 services.AddSingleton<ControllerRuntimeState>();
