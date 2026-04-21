@@ -68,8 +68,15 @@ public sealed class AxisViewModel : INotifyPropertyChanged
 
     private async Task ClearAlarmAsync()
     {
-        await _axisControlService.ResetAlarmAsync(_axis);
-        Refresh();
+        try
+        {
+            await _axisControlService.ResetAlarmAsync(_axis);
+            Refresh();
+        }
+        catch (InvalidOperationException ex)
+        {
+            System.Windows.MessageBox.Show(ex.Message, "报警清除失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+        }
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
