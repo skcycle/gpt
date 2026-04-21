@@ -44,6 +44,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IMotionAppService motionAppService,
         IAxisManagementAppService axisManagementAppService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
+        IAxisControlService axisControlService,
         IIoManagementAppService ioManagementAppService,
         ICylinderManagementAppService cylinderManagementAppService,
         IWorkHeadManagementAppService workHeadManagementAppService,
@@ -66,7 +67,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine, commandFeedbackRuntimeState);
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
-        AxisMonitor = new AxisMonitorViewModel(machine);
+        AxisMonitor = new AxisMonitorViewModel(machine, axisControlService);
         AxisMonitor.SelectedAxisChanged += _ => RaiseAxisDeleteCanExecuteChanged();
         IoMonitor = new IoMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
         IoEventLog = new IoEventLogViewModel(ioEventRuntimeState);

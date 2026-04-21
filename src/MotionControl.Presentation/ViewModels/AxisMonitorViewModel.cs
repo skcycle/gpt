@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Presentation.ViewModels;
@@ -10,10 +11,10 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
     private readonly Machine _machine;
     private AxisViewModel? _selectedAxis;
 
-    public AxisMonitorViewModel(Machine machine)
+    public AxisMonitorViewModel(Machine machine, AxisControlService axisControlService)
     {
         _machine = machine;
-        Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis)));
+        Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis, axisControlService)));
         _selectedAxis = Axes.FirstOrDefault();
     }
 
@@ -50,7 +51,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
 
     public AxisViewModel AddAxis(Axis axis)
     {
-        var viewModel = new AxisViewModel(axis);
+        var viewModel = new AxisViewModel(axis, GetAxisControlService());
         Axes.Add(viewModel);
         SelectedAxis = viewModel;
         return viewModel;
@@ -87,10 +88,14 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         {
             if (Axes.All(existing => existing.AxisNo != axis.Id.Value))
             {
-                Axes.Add(new AxisViewModel(axis));
+                Axes.Add(new AxisViewModel(axis, GetAxisControlService()));
             }
         }
     }
+
+    private readonly AxisControlService _axisControlService;
+
+    private AxisControlService GetAxisControlService() => _axisControlService;
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

@@ -1,16 +1,22 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
+using MotionControl.Presentation.Commands;
 
 namespace MotionControl.Presentation.ViewModels;
 
 public sealed class AxisViewModel : INotifyPropertyChanged
 {
     private readonly Axis _axis;
+    private readonly AxisControlService _axisControlService;
 
-    public AxisViewModel(Axis axis)
+    public AxisViewModel(Axis axis, AxisControlService axisControlService)
     {
         _axis = axis;
+        _axisControlService = axisControlService;
+        ClearAlarmCommand = new RelayCommand(async () => await ClearAlarmAsync(), () => HasAlarm);
     }
 
     public string Name => _axis.Name;
@@ -33,6 +39,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public double CommandPositionMm => PulseEquivalent <= 0 ? 0 : CurrentPosition / PulseEquivalent;
     public double EncoderPositionMm => PulseEquivalent <= 0 ? 0 : EncoderPosition / PulseEquivalent;
     public string SoftLimitDisplay => _axis.SoftLimit is null ? "N/A" : $"{_axis.SoftLimit.Minimum} ~ {_axis.SoftLimit.Maximum}";
+    public ICommand ClearAlarmCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -56,6 +63,13 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Name));
         OnPropertyChanged(nameof(HomeMode));
         OnPropertyChanged(nameof(ServoBinding));
+        (ClearAlarmCommand as RelayCommand)?.RaiseCanExecuteChanged();
+    }
+
+    private async Task ClearAlarmAsync()
+    {
+        await _axisControlService.ResetAlarmAsync(_axis);
+        Refresh();
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
