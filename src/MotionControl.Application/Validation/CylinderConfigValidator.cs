@@ -11,9 +11,9 @@ public static class CylinderConfigValidator
             throw new InvalidOperationException("Cylinder 名称不能为空");
         }
 
-        if (items.Any(item => item.ExtendSensorInputAddress < 0 || item.RetractSensorInputAddress < 0 || item.ExtendOutputAddress < 0 || item.RetractOutputAddress < 0))
+        if (items.Any(item => item.ExtendSensorInputAddress < -1 || item.RetractSensorInputAddress < -1 || item.ExtendOutputAddress < -1 || item.RetractOutputAddress < -1))
         {
-            throw new InvalidOperationException("Cylinder 地址不能小于 0");
+            throw new InvalidOperationException("Cylinder 地址不能小于 -1");
         }
 
         if (items.Any(item => item.ActionTimeoutMs <= 0))
@@ -29,12 +29,12 @@ public static class CylinderConfigValidator
 
         foreach (var item in items)
         {
-            if (item.ExtendSensorInputAddress == item.RetractSensorInputAddress)
+            if (item.ExtendSensorInputAddress >= 0 && item.RetractSensorInputAddress >= 0 && item.ExtendSensorInputAddress == item.RetractSensorInputAddress)
             {
                 throw new InvalidOperationException($"Cylinder {item.Name} 的 Extend DI 和 Retract DI 不能相同");
             }
 
-            if (item.ExtendOutputAddress == item.RetractOutputAddress)
+            if (item.ExtendOutputAddress >= 0 && item.RetractOutputAddress >= 0 && item.ExtendOutputAddress == item.RetractOutputAddress)
             {
                 throw new InvalidOperationException($"Cylinder {item.Name} 的 Extend DO 和 Retract DO 不能相同");
             }
@@ -50,7 +50,9 @@ public static class CylinderConfigValidator
 
     private static void ValidateDuplicateAddresses(IEnumerable<CylinderConfigItem> items, Func<CylinderConfigItem, int> selector, string label)
     {
-        var duplicate = items.GroupBy(selector)
+        var duplicate = items
+            .Where(item => selector(item) >= 0)
+            .GroupBy(selector)
             .FirstOrDefault(group => group.Count() > 1);
 
         if (duplicate is not null)
@@ -68,6 +70,7 @@ public static class CylinderConfigValidator
                 (item.Name, Address: item.ExtendOutputAddress, Role: "Extend DO"),
                 (item.Name, Address: item.RetractOutputAddress, Role: "Retract DO")
             })
+            .Where(item => item.Address >= 0)
             .GroupBy(item => item.Address)
             .FirstOrDefault(group => group.Select(item => item.Name).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1);
 
@@ -86,6 +89,7 @@ public static class CylinderConfigValidator
                 (item.Name, Address: item.ExtendSensorInputAddress, Role: "Extend DI"),
                 (item.Name, Address: item.RetractSensorInputAddress, Role: "Retract DI")
             })
+            .Where(item => item.Address >= 0)
             .GroupBy(item => item.Address)
             .FirstOrDefault(group => group.Select(item => item.Name).Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1);
 

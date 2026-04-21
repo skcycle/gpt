@@ -22,9 +22,9 @@ public sealed class CylinderConfigAppService(string appSettingsPath) : ICylinder
             Name = $"Cylinder_{index}",
             Description = string.Empty,
             ExtendSensorInputAddress = 0,
-            RetractSensorInputAddress = 1,
+            RetractSensorInputAddress = -1,
             ExtendOutputAddress = 0,
-            RetractOutputAddress = 1,
+            RetractOutputAddress = -1,
             ActionTimeoutMs = 3000
         };
 

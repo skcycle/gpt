@@ -20,8 +20,8 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         _ioControlService = ioControlService;
         _canControl = canControl;
         _cylinderEventRuntimeState = cylinderEventRuntimeState;
-        OpenCommand = new RelayCommand(async () => await SetOutputsAsync(true), () => _canControl());
-        CloseCommand = new RelayCommand(async () => await SetOutputsAsync(false), () => _canControl());
+        OpenCommand = new RelayCommand(async () => await OpenAsync(), () => _canControl() && _cylinder.ExtendOutputAddress >= 0);
+        CloseCommand = new RelayCommand(async () => await CloseAsync(), () => _canControl() && _cylinder.RetractOutputAddress >= 0);
     }
 
     public string Name
@@ -96,33 +96,46 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         (CloseCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
-    private async Task SetOutputsAsync(bool open)
+    private async Task OpenAsync()
     {
-        var first = await _ioControlService.SetOutputAsync(open ? ExtendOutputAddress : RetractOutputAddress, true);
-        var second = await _ioControlService.SetOutputAsync(open ? RetractOutputAddress : ExtendOutputAddress, false);
+        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0)
+        {
+            return;
+        }
+
+        var first = await _ioControlService.SetOutputAsync(ExtendOutputAddress, true);
+        var second = await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
         if (first.Success && second.Success)
         {
-            if (open)
+            _cylinder.StartExtendCommand();
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord
             {
-                _cylinder.StartExtendCommand();
-                _cylinderEventRuntimeState.Add(new CylinderEventRecord
-                {
-                    CylinderName = _cylinder.Name,
-                    EventType = "Command",
-                    Message = $"{_cylinder.Name} open command sent"
-                });
-            }
-            else
-            {
-                _cylinder.StartRetractCommand();
-                _cylinderEventRuntimeState.Add(new CylinderEventRecord
-                {
-                    CylinderName = _cylinder.Name,
-                    EventType = "Command",
-                    Message = $"{_cylinder.Name} close command sent"
-                });
-            }
+                CylinderName = _cylinder.Name,
+                EventType = "Command",
+                Message = $"{_cylinder.Name} open command sent"
+            });
+            OnPropertyChanged(nameof(State));
+        }
+    }
 
+    private async Task CloseAsync()
+    {
+        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0)
+        {
+            return;
+        }
+
+        var first = await _ioControlService.SetOutputAsync(RetractOutputAddress, true);
+        var second = await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
+        if (first.Success && second.Success)
+        {
+            _cylinder.StartRetractCommand();
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord
+            {
+                CylinderName = _cylinder.Name,
+                EventType = "Command",
+                Message = $"{_cylinder.Name} close command sent"
+            });
             OnPropertyChanged(nameof(State));
         }
     }

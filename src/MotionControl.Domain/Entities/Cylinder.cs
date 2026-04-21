@@ -46,13 +46,16 @@ public sealed class Cylinder
 
     public void UpdateState(bool extendSensorOn, bool retractSensorOn, bool extendOutputOn, bool retractOutputOn)
     {
-        if (extendSensorOn && retractSensorOn)
+        var hasExtendSensor = ExtendSensorInputAddress >= 0;
+        var hasRetractSensor = RetractSensorInputAddress >= 0;
+
+        if (hasExtendSensor && hasRetractSensor && extendSensorOn && retractSensorOn)
         {
             State = CylinderState.Conflict;
             return;
         }
 
-        if (extendSensorOn)
+        if (hasExtendSensor && extendSensorOn)
         {
             State = CylinderState.Extended;
             if (PendingCommand == CylinderCommandType.Extend)
@@ -62,7 +65,7 @@ public sealed class Cylinder
             return;
         }
 
-        if (retractSensorOn)
+        if (hasRetractSensor && retractSensorOn)
         {
             State = CylinderState.Retracted;
             if (PendingCommand == CylinderCommandType.Retract)
@@ -72,13 +75,33 @@ public sealed class Cylinder
             return;
         }
 
-        if (extendOutputOn && !retractOutputOn)
+        if (hasExtendSensor && !hasRetractSensor && !extendSensorOn)
+        {
+            State = CylinderState.Retracted;
+            if (PendingCommand == CylinderCommandType.Extend)
+            {
+                ClearPendingCommand();
+            }
+            return;
+        }
+
+        if (!hasExtendSensor && hasRetractSensor && !retractSensorOn)
+        {
+            State = CylinderState.Extended;
+            if (PendingCommand == CylinderCommandType.Retract)
+            {
+                ClearPendingCommand();
+            }
+            return;
+        }
+
+        if (extendOutputOn && (!hasRetractSensor || !retractOutputOn))
         {
             State = CylinderState.Extending;
             return;
         }
 
-        if (retractOutputOn && !extendOutputOn)
+        if (hasRetractSensor && retractOutputOn && (!hasExtendSensor || !extendOutputOn))
         {
             State = CylinderState.Retracting;
             return;
