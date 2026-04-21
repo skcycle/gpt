@@ -5,22 +5,21 @@ namespace MotionControl.Presentation.ViewModels;
 
 public sealed class IoEventLogViewModel
 {
-    private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
+    private readonly IoEventRuntimeState _ioEventRuntimeState;
     private IoEventItemViewModel[] _lastEvents = Array.Empty<IoEventItemViewModel>();
 
-    public IoEventLogViewModel(CommandFeedbackRuntimeState commandFeedbackRuntimeState)
+    public IoEventLogViewModel(IoEventRuntimeState ioEventRuntimeState)
     {
-        _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
+        _ioEventRuntimeState = ioEventRuntimeState;
         Events = new ObservableCollection<IoEventItemViewModel>();
-        _commandFeedbackRuntimeState.FeedbackChanged += Refresh;
+        _ioEventRuntimeState.EventsChanged += Refresh;
     }
 
     public ObservableCollection<IoEventItemViewModel> Events { get; }
 
     public void Refresh()
     {
-        var ioEvents = _commandFeedbackRuntimeState.RecentFeedback
-            .Where(f => f.CommandName is "DI" or "DO")
+        var ioEvents = _ioEventRuntimeState.RecentEvents
             .Select(f => new IoEventItemViewModel(f))
             .ToArray();
 

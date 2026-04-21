@@ -43,6 +43,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         ControllerRuntimeState controllerRuntimeState,
         HomePlanRuntimeState homePlanRuntimeState,
         CommandFeedbackRuntimeState commandFeedbackRuntimeState,
+        IoEventRuntimeState ioEventRuntimeState,
         IoControlService ioControlService)
     {
         _machine = machine;
@@ -57,7 +58,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         AxisMonitor = new AxisMonitorViewModel(machine);
         AxisMonitor.SelectedAxisChanged += _ => RaiseAxisDeleteCanExecuteChanged();
         IoMonitor = new IoMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
-        IoEventLog = new IoEventLogViewModel(commandFeedbackRuntimeState);
+        IoEventLog = new IoEventLogViewModel(ioEventRuntimeState);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, CanControlAxisCommands);
         AxisParameterEditor = new AxisParameterEditorViewModel(
             axisManagementAppService,

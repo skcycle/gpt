@@ -70,6 +70,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<ControllerRuntimeState>();
                 services.AddSingleton<HomePlanRuntimeState>();
                 services.AddSingleton<CommandFeedbackRuntimeState>();
+                services.AddSingleton<IoEventRuntimeState>();
                 services.AddSingleton<FaultRecoveryService>();
                 services.AddSingleton<AxisPollingService>();
                 services.AddSingleton<IoPollingService>();

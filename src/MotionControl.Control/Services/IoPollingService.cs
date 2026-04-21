@@ -6,7 +6,7 @@ namespace MotionControl.Control.Services;
 public sealed class IoPollingService(
     IIoController motionController,
     Machine machine,
-    CommandFeedbackRuntimeState commandFeedbackRuntimeState)
+    IoEventRuntimeState ioEventRuntimeState)
 {
     public async Task PollAsync(CancellationToken cancellationToken = default)
     {
@@ -17,10 +17,12 @@ public sealed class IoPollingService(
             if (previousValue != currentValue)
             {
                 ioPoint.Update(currentValue);
-                commandFeedbackRuntimeState.Add(new CommandFeedback
+                ioEventRuntimeState.Add(new IoEventRecord
                 {
-                    CommandName = ioPoint.IsOutput ? "DO" : "DI",
-                    Status = "Changed",
+                    Name = ioPoint.Name,
+                    Address = ioPoint.Address,
+                    IsOutput = ioPoint.IsOutput,
+                    Value = currentValue,
                     Message = $"{ioPoint.Name} -> {(currentValue ? "ON" : "OFF")}"
                 });
             }

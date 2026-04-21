@@ -4,13 +4,13 @@ namespace MotionControl.Presentation.ViewModels;
 
 public sealed class IoEventItemViewModel
 {
-    public IoEventItemViewModel(CommandFeedback feedback)
+    public IoEventItemViewModel(IoEventRecord record)
     {
-        Time = feedback.Timestamp.ToLocalTime().ToString("HH:mm:ss.fff");
-        Direction = feedback.CommandName;
-        Address = feedback.AxisNo.HasValue ? feedback.AxisNo.Value.ToString() : "-";
-        State = feedback.Status;
-        Description = feedback.Message;
+        Time = record.Timestamp.ToLocalTime().ToString("HH:mm:ss.fff");
+        Direction = record.IsOutput ? "DO" : "DI";
+        Address = record.Address.ToString();
+        State = record.Value ? "ON" : "OFF";
+        Description = record.Message;
     }
 
     public string Time { get; }
