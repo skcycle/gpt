@@ -100,9 +100,22 @@ public sealed class Cylinder
             return;
         }
 
-        // 单作用伸侧：有伸侧传感器时先看传感器，否则看输出，最后默认回缩
+        // 单作用伸侧：伸侧传感器亮但输出未驱动，按异常处理
         if (hasExtendSensor && !hasRetractSensor)
         {
+            if (extendSensorOn && !extendOutputOn)
+            {
+                State = CylinderState.Conflict;
+                return;
+            }
+
+            if (extendSensorOn)
+            {
+                State = CylinderState.Extended;
+                if (PendingCommand == CylinderCommandType.Extend) ClearPendingCommand();
+                return;
+            }
+
             if (extendOutputOn)
             {
                 State = CylinderState.Extending;
@@ -114,9 +127,22 @@ public sealed class Cylinder
             return;
         }
 
-        // 单作用缩侧：有缩侧传感器时先看传感器，否则看输出，最后默认伸出
+        // 单作用缩侧：缩侧传感器亮但输出未驱动，按异常处理
         if (!hasExtendSensor && hasRetractSensor)
         {
+            if (retractSensorOn && !retractOutputOn)
+            {
+                State = CylinderState.Conflict;
+                return;
+            }
+
+            if (retractSensorOn)
+            {
+                State = CylinderState.Retracted;
+                if (PendingCommand == CylinderCommandType.Retract) ClearPendingCommand();
+                return;
+            }
+
             if (retractOutputOn)
             {
                 State = CylinderState.Retracting;
