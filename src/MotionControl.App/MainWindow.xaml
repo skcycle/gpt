@@ -433,10 +433,46 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="140" />
                             <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="160" />
-                            <DataGridTextColumn Header="Extend DI" Binding="{Binding ExtendSensorInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
-                            <DataGridTextColumn Header="Retract DI" Binding="{Binding RetractSensorInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
-                            <DataGridTextColumn Header="Extend DO" Binding="{Binding ExtendOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
-                            <DataGridTextColumn Header="Retract DO" Binding="{Binding RetractOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
+                            <DataGridTemplateColumn Header="Extend DI" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Ellipse Width="12" Height="12" Fill="{Binding ExtendDiBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" />
+                                            <TextBlock Text="{Binding ExtendSensorInputAddress}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Retract DI" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Ellipse Width="12" Height="12" Fill="{Binding RetractDiBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" />
+                                            <TextBlock Text="{Binding RetractSensorInputAddress}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Extend DO" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Ellipse Width="12" Height="12" Fill="{Binding ExtendDoBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" />
+                                            <TextBlock Text="{Binding ExtendOutputAddress}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Retract DO" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Ellipse Width="12" Height="12" Fill="{Binding RetractDoBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" />
+                                            <TextBlock Text="{Binding RetractOutputAddress}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTextColumn Header="Timeout(ms)" Binding="{Binding ActionTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100" />
                             <DataGridTemplateColumn Header="" Width="40">
                                 <DataGridTemplateColumn.CellTemplate>

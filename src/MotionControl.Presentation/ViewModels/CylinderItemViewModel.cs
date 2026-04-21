@@ -90,6 +90,16 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         _ => new SolidColorBrush(Color.FromRgb(160, 160, 160))                      // 灰灯 - 未知/冲突
     };
 
+    public bool ExtendDiOn { get; private set; }
+    public bool RetractDiOn { get; private set; }
+    public bool ExtendDoOn { get; private set; }
+    public bool RetractDoOn { get; private set; }
+
+    public Brush ExtendDiBrush => ExtendDiOn ? new SolidColorBrush(Color.FromRgb(0, 200, 0)) : new SolidColorBrush(Color.FromRgb(100, 100, 100));
+    public Brush RetractDiBrush => RetractDiOn ? new SolidColorBrush(Color.FromRgb(0, 200, 0)) : new SolidColorBrush(Color.FromRgb(100, 100, 100));
+    public Brush ExtendDoBrush => ExtendDoOn ? new SolidColorBrush(Color.FromRgb(0, 200, 0)) : new SolidColorBrush(Color.FromRgb(100, 100, 100));
+    public Brush RetractDoBrush => RetractDoOn ? new SolidColorBrush(Color.FromRgb(0, 200, 0)) : new SolidColorBrush(Color.FromRgb(100, 100, 100));
+
     public ICommand OpenCommand { get; }
     public ICommand CloseCommand { get; }
 
@@ -109,7 +119,20 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
 
         _cylinder.UpdateState(extendSensorOn, retractSensorOn, extendOutputOn, retractOutputOn);
 
+        ExtendDiOn = extendSensorOn;
+        RetractDiOn = retractSensorOn;
+        ExtendDoOn = extendOutputOn;
+        RetractDoOn = retractOutputOn;
+
         OnPropertyChanged(nameof(Name));
+        OnPropertyChanged(nameof(ExtendDiOn));
+        OnPropertyChanged(nameof(RetractDiOn));
+        OnPropertyChanged(nameof(ExtendDoOn));
+        OnPropertyChanged(nameof(RetractDoOn));
+        OnPropertyChanged(nameof(ExtendDiBrush));
+        OnPropertyChanged(nameof(RetractDiBrush));
+        OnPropertyChanged(nameof(ExtendDoBrush));
+        OnPropertyChanged(nameof(RetractDoBrush));
         OnPropertyChanged(nameof(Description));
         OnPropertyChanged(nameof(ExtendSensorInputAddress));
         OnPropertyChanged(nameof(RetractSensorInputAddress));
