@@ -367,7 +367,7 @@
                                 <DataGridTemplateColumn Header="Toggle" Width="80" IsReadOnly="True">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="" />
+                                            <Border Width="56" Background="Transparent" HorizontalAlignment="Center" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
@@ -394,6 +394,7 @@
                                         <DataTemplate>
                                             <Button Content="Toggle"
                                                     Command="{Binding SetCommand}"
+                                                    Width="56"
                                                     Padding="4,2" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
