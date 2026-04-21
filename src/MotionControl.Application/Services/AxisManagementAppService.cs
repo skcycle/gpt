@@ -3,6 +3,11 @@ using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Application.Services;
 
+/// <summary>
+/// Axis 配置相关的用例编排服务。
+/// 负责组合配置读写与运行时同步，
+/// 使 Axis 的 Add/Delete/Load/Save 统一走应用层入口。
+/// </summary>
 public sealed class AxisManagementAppService(
     IAxisParameterAppService axisParameterAppService,
     IAxisRuntimeParameterSyncService axisRuntimeParameterSyncService) : IAxisManagementAppService

@@ -4,6 +4,10 @@ using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Application.Services;
 
+/// <summary>
+/// 负责将 IO 配置同步到 Machine 的运行时对象。
+/// 这里只处理运行时模型的增删改，不负责配置文件持久化，也不负责 UI 刷新。
+/// </summary>
 public sealed class IoRuntimeSyncService(Machine machine) : IIoRuntimeSyncService
 {
     public Task ApplyAsync(IoPointConfigItem ioPoint, CancellationToken cancellationToken = default)

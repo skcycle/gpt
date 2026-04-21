@@ -2,6 +2,11 @@ using MotionControl.Application.Interfaces;
 
 namespace MotionControl.Presentation.ViewModels;
 
+/// <summary>
+/// Axis Console 页内的联动协调器。
+/// 负责 AxisMonitor、AxisDebug、AxisParameterEditor 之间的选中同步，
+/// 不承担业务逻辑和配置持久化职责。
+/// </summary>
 public sealed class AxisConsoleCoordinator(
     AxisMonitorViewModel axisMonitor,
     AxisDebugViewModel axisDebug,

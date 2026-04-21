@@ -5,6 +5,11 @@ using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Application.Services;
 
+/// <summary>
+/// 负责将 Axis 配置同步到 Machine 的运行时对象。
+/// 当运行时 Axis 不存在时，这里负责补建对象；
+/// 当配置变化时，这里负责把参数应用到现有 Axis。
+/// </summary>
 public sealed class AxisRuntimeParameterSyncService(Machine machine) : IAxisRuntimeParameterSyncService
 {
     public Task ApplyAsync(AxisMappingItem axisMappingItem, CancellationToken cancellationToken = default)

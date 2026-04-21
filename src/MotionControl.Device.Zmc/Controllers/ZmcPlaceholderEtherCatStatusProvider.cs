@@ -3,6 +3,11 @@ using MotionControl.Device.Abstractions.Models;
 
 namespace MotionControl.Device.Zmc.Controllers;
 
+/// <summary>
+/// ZMC 下的 EtherCAT 占位状态提供者。
+/// 当前返回的是用于仿真/占位展示的从站状态，
+/// 后续如果接入真实 EtherCAT slave 查询，应替换为新的 provider 实现。
+/// </summary>
 public sealed class ZmcPlaceholderEtherCatStatusProvider : IEtherCatStatusProvider
 {
     public EtherCatControllerStatus CreateStatus(bool isConnected, int axisCount)

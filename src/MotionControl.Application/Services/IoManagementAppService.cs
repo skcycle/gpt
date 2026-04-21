@@ -3,6 +3,11 @@ using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Application.Services;
 
+/// <summary>
+/// IO 配置相关的用例编排服务。
+/// 负责组合“配置读写”和“运行时同步”，
+/// 让上层 ViewModel 不直接操作 Machine 或配置文件。
+/// </summary>
 public sealed class IoManagementAppService(
     IIoConfigAppService ioConfigAppService,
     IIoRuntimeSyncService ioRuntimeSyncService) : IIoManagementAppService
