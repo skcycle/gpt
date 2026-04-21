@@ -1,7 +1,11 @@
+using MotionControl.Application.Interfaces;
+
 namespace MotionControl.Control.Services;
 
-public sealed class CommandFeedbackRuntimeState
+public sealed class CommandFeedbackRuntimeState : IFeedbackEventPublisher
 {
+    public event Action? FeedbackChanged;
+
     public IReadOnlyList<CommandFeedback> RecentFeedback { get; private set; } = Array.Empty<CommandFeedback>();
 
     public void Add(CommandFeedback feedback)
@@ -10,6 +14,7 @@ public sealed class CommandFeedbackRuntimeState
             .Concat(new[] { feedback })
             .TakeLast(20)
             .ToArray();
+        FeedbackChanged?.Invoke();
     }
 
     public void AddStarted(string commandName, int? axisNo = null, string message = "")

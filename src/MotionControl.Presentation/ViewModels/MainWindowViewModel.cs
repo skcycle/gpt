@@ -22,6 +22,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private readonly ISystemAppService _systemAppService;
     private readonly AxisConsoleCoordinator _axisConsoleCoordinator;
     private readonly IoMonitorCoordinator _ioMonitorCoordinator;
+    private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private readonly ControllerRuntimeState _controllerRuntimeState;
     private readonly Timer _clockTimer;
     private DateTime _lastDashboardRefreshUtc = DateTime.MinValue;
@@ -47,6 +48,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _machine = machine;
         _axisManagementAppService = axisManagementAppService;
         _ioManagementAppService = ioManagementAppService;
+        _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
+        _commandFeedbackRuntimeState.FeedbackChanged += () => RefreshViewModels(force: true);
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine, commandFeedbackRuntimeState);
