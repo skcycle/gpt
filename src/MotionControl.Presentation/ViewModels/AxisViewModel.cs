@@ -17,6 +17,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         _axis = axis;
         _axisControlService = axisControlService;
         ClearAlarmCommand = new RelayCommand(async () => await ClearAlarmAsync(), () => HasAlarm);
+        ToggleServoCommand = new RelayCommand(async () => await ToggleServoAsync());
     }
 
     public string Name => _axis.Name;
@@ -27,6 +28,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public bool HasAlarm => _axis.HasAlarm;
     public bool IsHomed => _axis.IsHomed;
     public bool IsServoOn => _axis.ServoState == Domain.Enums.ServoState.On;
+    public ICommand ToggleServoCommand { get; }
     public bool PositiveSoftLimitTriggered => _axis.PositiveSoftLimitTriggered;
     public bool NegativeSoftLimitTriggered => _axis.NegativeSoftLimitTriggered;
     public bool PositiveHardLimitTriggered => _axis.PositiveLimitTriggered;
@@ -64,6 +66,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(HomeMode));
         OnPropertyChanged(nameof(ServoBinding));
         (ClearAlarmCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (ToggleServoCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
     private async Task ClearAlarmAsync()
@@ -76,6 +79,26 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         catch (InvalidOperationException ex)
         {
             System.Windows.MessageBox.Show(ex.Message, "报警清除失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+        }
+    }
+
+    private async Task ToggleServoAsync()
+    {
+        try
+        {
+            if (IsServoOn)
+            {
+                await _axisControlService.DisableAxisAsync(_axis);
+            }
+            else
+            {
+                await _axisControlService.EnableAxisAsync(_axis);
+            }
+            Refresh();
+        }
+        catch (InvalidOperationException ex)
+        {
+            System.Windows.MessageBox.Show(ex.Message, "伺服切换失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
         }
     }
 

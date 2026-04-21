@@ -166,7 +166,16 @@
                                     <DataGridTextColumn Header="WorkVel" Binding="{Binding WorkVelocity}" Width="70" />
                                     <DataGridTextColumn Header="SetupVel" Binding="{Binding SetupVelocity}" Width="70" />
                                     <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed, Mode=OneWay}" Width="55" />
-                                    <DataGridCheckBoxColumn Header="ServoOn" Binding="{Binding IsServoOn, Mode=OneWay}" Width="65" />
+                                    <DataGridTemplateColumn Header="ServoOn" Width="75">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <CheckBox IsChecked="{Binding IsServoOn, Mode=OneWay}"
+                                                          Command="{Binding ToggleServoCommand}"
+                                                          HorizontalAlignment="Center"
+                                                          VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTemplateColumn Header="Alarm" Width="60">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
