@@ -101,8 +101,8 @@ public sealed class ZmcAxisNativeFacade
             return -1;
         }
 
-        var buffer = new StringBuilder(32);
-        return ZmcNativeApi.Execute(_handle, "?SYS_TIME", buffer, 32);
+        var buffer = new StringBuilder(64);
+        return ZmcNativeApi.Execute(_handle, "?SPEED(0)", buffer, 64);
     }
 
     public string ReadAxisParameters(int axisNo)
