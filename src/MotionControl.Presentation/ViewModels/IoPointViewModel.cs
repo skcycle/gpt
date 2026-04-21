@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using System.Windows.Media;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
@@ -72,6 +73,10 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
 
     public bool Value => _value;
 
+    public Brush StatusBrush => _value
+        ? new SolidColorBrush(Color.FromRgb(0, 200, 0))   // 绿灯 - ON
+        : new SolidColorBrush(Color.FromRgb(100, 100, 100)); // 灰灯 - OFF
+
     public ICommand SetCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -86,6 +91,7 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
         var newValue = _ioPoint.Value;
         _value = newValue;
         OnPropertyChanged(nameof(Value));
+        OnPropertyChanged(nameof(StatusBrush));
         OnPropertyChanged(nameof(Name));
         OnPropertyChanged(nameof(Address));
         OnPropertyChanged(nameof(Description));
