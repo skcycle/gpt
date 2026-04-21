@@ -356,6 +356,7 @@
                         </Button>
                         <Button Content="Save" Command="{Binding SaveIoConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="100" Background="#1A5C1A" Foreground="White" />
                         <Button Content="Load" Command="{Binding LoadIoConfigCommand}" Padding="10,4" MinWidth="100" Margin="0,0,8,0" Background="#1A5C1A" Foreground="White" />
+                        <TextBlock Text="{Binding OperationStatus}" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="#E6EEF8" TextWrapping="Wrap" MaxWidth="400" />
                     </StackPanel>
 
                     <GroupBox Grid.Row="2" Header="Digital Inputs">
