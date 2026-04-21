@@ -20,6 +20,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private readonly IAxisManagementAppService _axisManagementAppService;
     private readonly IIoManagementAppService _ioManagementAppService;
     private readonly ICylinderManagementAppService _cylinderManagementAppService;
+    private readonly IWorkHeadManagementAppService _workHeadManagementAppService;
     private readonly ISystemAppService _systemAppService;
     private readonly AxisConsoleCoordinator _axisConsoleCoordinator;
     private readonly IoMonitorCoordinator _ioMonitorCoordinator;
@@ -33,6 +34,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private DateTime _lastIoRefreshUtc = DateTime.MinValue;
     private DateTime _lastIoEventRefreshUtc = DateTime.MinValue;
     private DateTime _lastCylinderRefreshUtc = DateTime.MinValue;
+    private DateTime _lastWorkHeadRefreshUtc = DateTime.MinValue;
     private string _currentBeijingTime = GetBeijingTimeString();
     private string _operationStatus = "Ready";
 
@@ -44,6 +46,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IAxisControllerParameterAppService axisControllerParameterAppService,
         IIoManagementAppService ioManagementAppService,
         ICylinderManagementAppService cylinderManagementAppService,
+        IWorkHeadManagementAppService workHeadManagementAppService,
         ControllerRuntimeState controllerRuntimeState,
         HomePlanRuntimeState homePlanRuntimeState,
         CommandFeedbackRuntimeState commandFeedbackRuntimeState,
@@ -55,6 +58,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _axisManagementAppService = axisManagementAppService;
         _ioManagementAppService = ioManagementAppService;
         _cylinderManagementAppService = cylinderManagementAppService;
+        _workHeadManagementAppService = workHeadManagementAppService;
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         _cylinderEventRuntimeState = cylinderEventRuntimeState;
         _commandFeedbackRuntimeState.FeedbackChanged += () => RefreshViewModels(force: true);
@@ -69,6 +73,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         CylinderEventLog = new CylinderEventLogViewModel(cylinderEventRuntimeState);
         CylinderMonitor = new CylinderMonitorViewModel(machine, ioControlService, cylinderEventRuntimeState, CanWriteIoOutputs);
         CylinderMonitor.SelectedCylinderChanged += _ => (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, CanControlAxisCommands);
         AxisParameterEditor = new AxisParameterEditorViewModel(
             axisManagementAppService,
@@ -97,6 +102,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         DeleteCylinderCommand = new RelayCommand(async () => await DeleteSelectedCylinderAsync(), () => CylinderMonitor.SelectedCylinder is not null && CanEditIoConfiguration());
         SaveCylinderConfigCommand = new RelayCommand(async () => await SaveCylinderConfigAsync(), CanEditIoConfiguration);
         LoadCylinderConfigCommand = new RelayCommand(async () => await LoadCylinderConfigAsync(), CanEditIoConfiguration);
+        AddWorkHeadCommand = new RelayCommand(async () => await AddWorkHeadAsync(), CanEditIoConfiguration);
+        DeleteWorkHeadCommand = new RelayCommand(async () => await DeleteSelectedWorkHeadAsync(), () => WorkHeadMonitor.SelectedWorkHead is not null && CanEditIoConfiguration());
+        SaveWorkHeadConfigCommand = new RelayCommand(async () => await SaveWorkHeadConfigAsync(), CanEditIoConfiguration);
+        LoadWorkHeadConfigCommand = new RelayCommand(async () => await LoadWorkHeadConfigAsync(), CanEditIoConfiguration);
         _axisConsoleCoordinator = new AxisConsoleCoordinator(AxisMonitor, AxisDebug, AxisParameterEditor);
         _ioMonitorCoordinator = new IoMonitorCoordinator(IoMonitor, (RelayCommand)DeleteInputCommand, (RelayCommand)DeleteOutputCommand);
         _ioMonitorCoordinator.Initialize();
@@ -139,6 +148,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public IoMonitorViewModel IoMonitor { get; }
     public IoEventLogViewModel IoEventLog { get; }
     public CylinderMonitorViewModel CylinderMonitor { get; }
+    public WorkHeadMonitorViewModel WorkHeadMonitor { get; }
     public CylinderEventLogViewModel CylinderEventLog { get; }
     public AxisParameterEditorViewModel AxisParameterEditor { get; }
     public AlarmViewModel Alarm { get; }
@@ -158,6 +168,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public ICommand DeleteCylinderCommand { get; }
     public ICommand SaveCylinderConfigCommand { get; }
     public ICommand LoadCylinderConfigCommand { get; }
+    public ICommand AddWorkHeadCommand { get; }
+    public ICommand DeleteWorkHeadCommand { get; }
+    public ICommand SaveWorkHeadConfigCommand { get; }
+    public ICommand LoadWorkHeadConfigCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -194,6 +208,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (SaveCylinderConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (LoadCylinderConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (AddWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (DeleteWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (SaveWorkHeadConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (LoadWorkHeadConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
         var now = DateTime.UtcNow;
 
         if (force || now - _lastDashboardRefreshUtc >= TimeSpan.FromMilliseconds(500))
@@ -232,6 +250,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             CylinderMonitor.RefreshAll();
             CylinderEventLog.Refresh();
             _lastCylinderRefreshUtc = now;
+        }
+
+        if (force || now - _lastWorkHeadRefreshUtc >= TimeSpan.FromMilliseconds(300))
+        {
+            WorkHeadMonitor.RefreshAll();
+            _lastWorkHeadRefreshUtc = now;
         }
     }
 
@@ -386,6 +410,43 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         RefreshViewModels(force: true);
     }
 
+    private async Task AddWorkHeadAsync()
+    {
+        var item = await _workHeadManagementAppService.AddWorkHeadAsync();
+        var workHead = _machine.WorkHeads.FirstOrDefault(c => string.Equals(c.Name, item.Name, StringComparison.OrdinalIgnoreCase));
+        if (workHead is null)
+        {
+            OperationStatus = $"WorkHead {item.Name} 创建后未同步到运行时";
+            return;
+        }
+
+        WorkHeadMonitor.AddWorkHead(workHead);
+        OperationStatus = $"WorkHead {item.Name} 已新增";
+        RefreshViewModels(force: true);
+    }
+
+    private async Task DeleteSelectedWorkHeadAsync()
+    {
+        var selected = WorkHeadMonitor.SelectedWorkHead;
+        if (selected is null) return;
+        if (!UiGuards.Confirm("删除 WorkHead", $"确定删除 WorkHead {selected.Name} 吗？此操作会同时更新配置。"))
+        {
+            OperationStatus = "已取消删除 WorkHead";
+            return;
+        }
+
+        var removed = await _workHeadManagementAppService.DeleteWorkHeadAsync(selected.Name);
+        if (!removed)
+        {
+            OperationStatus = $"WorkHead {selected.Name} 删除失败";
+            return;
+        }
+
+        WorkHeadMonitor.RemoveWorkHead(selected.Name);
+        OperationStatus = $"WorkHead {selected.Name} 已删除";
+        RefreshViewModels(force: true);
+    }
+
     private async Task SaveIoConfigAsync()
     {
         var items = IoMonitor.GetAllIoPoints()
@@ -471,6 +532,41 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     {
         await _cylinderManagementAppService.LoadCylindersAsync();
         OperationStatus = "Cylinder 配置已重新加载";
+        RefreshViewModels(force: true);
+    }
+
+    private async Task SaveWorkHeadConfigAsync()
+    {
+        var items = WorkHeadMonitor.WorkHeads.Select(workHead => new MotionControl.Infrastructure.Configuration.WorkHeadConfigItem
+        {
+            Name = workHead.Name,
+            Description = workHead.Description,
+            XAxisNo = workHead.XAxisNo,
+            YAxisNo = workHead.YAxisNo,
+            ZAxisNo = workHead.ZAxisNo,
+            RAxisNo = workHead.RAxisNo,
+            VacuumOutputAddress = workHead.VacuumOutputAddress,
+            BlowOutputAddress = workHead.BlowOutputAddress,
+            VacuumInputAddress = workHead.VacuumInputAddress
+        }).ToList();
+
+        try
+        {
+            await _workHeadManagementAppService.SaveWorkHeadsAsync(items);
+            OperationStatus = $"WorkHead 配置已保存，共 {items.Count} 个工作头";
+            RefreshViewModels(force: true);
+        }
+        catch (InvalidOperationException ex)
+        {
+            OperationStatus = ex.Message;
+            System.Windows.MessageBox.Show(ex.Message, "WorkHead 配置保存失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+        }
+    }
+
+    private async Task LoadWorkHeadConfigAsync()
+    {
+        await _workHeadManagementAppService.LoadWorkHeadsAsync();
+        OperationStatus = "WorkHead 配置已重新加载";
         RefreshViewModels(force: true);
     }
 

@@ -7,6 +7,7 @@ public sealed class Machine
     private readonly List<Axis> _axes;
     private readonly List<IoPoint> _ioPoints;
     private readonly List<Cylinder> _cylinders;
+    private readonly List<WorkHead> _workHeads;
     private readonly List<Alarm> _alarms;
 
     public Machine(
@@ -14,12 +15,14 @@ public sealed class Machine
         IReadOnlyCollection<AxisGroup> groups,
         IReadOnlyCollection<IoPoint>? ioPoints = null,
         IReadOnlyCollection<Cylinder>? cylinders = null,
+        IReadOnlyCollection<WorkHead>? workHeads = null,
         IReadOnlyCollection<Alarm>? alarms = null)
     {
         _axes = axes.ToList();
         Groups = groups;
         _ioPoints = ioPoints?.ToList() ?? new List<IoPoint>();
         _cylinders = cylinders?.ToList() ?? new List<Cylinder>();
+        _workHeads = workHeads?.ToList() ?? new List<WorkHead>();
         _alarms = alarms?.ToList() ?? new List<Alarm>();
     }
 
@@ -27,6 +30,7 @@ public sealed class Machine
     public IReadOnlyCollection<AxisGroup> Groups { get; }
     public IReadOnlyCollection<IoPoint> IoPoints => _ioPoints;
     public IReadOnlyCollection<Cylinder> Cylinders => _cylinders;
+    public IReadOnlyCollection<WorkHead> WorkHeads => _workHeads;
     public IReadOnlyCollection<Alarm> Alarms => _alarms;
     public SystemState CurrentState { get; private set; } = SystemState.Initializing;
     public bool IsConnected { get; private set; }
@@ -98,6 +102,28 @@ public sealed class Machine
         }
 
         _cylinders.Remove(cylinder);
+        return true;
+    }
+
+    public void AddWorkHead(WorkHead workHead)
+    {
+        if (_workHeads.Any(existing => string.Equals(existing.Name, workHead.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        _workHeads.Add(workHead);
+    }
+
+    public bool RemoveWorkHead(string name)
+    {
+        var workHead = _workHeads.FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (workHead is null)
+        {
+            return false;
+        }
+
+        _workHeads.Remove(workHead);
         return true;
     }
 

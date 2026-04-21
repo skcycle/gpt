@@ -32,6 +32,7 @@ public static class HostBuilderFactory
                 services.Configure<AxisMappingOptions>(context.Configuration.GetSection("AxisMapping"));
                 services.Configure<IoMappingOptions>(context.Configuration.GetSection("IoMapping"));
                 services.Configure<CylinderMappingOptions>(context.Configuration.GetSection("CylinderMapping"));
+                services.Configure<WorkHeadMappingOptions>(context.Configuration.GetSection("WorkHeadMapping"));
 
                 var axisMappingOptions = new AxisMappingOptions();
                 context.Configuration.GetSection("AxisMapping").Bind(axisMappingOptions);
@@ -39,7 +40,9 @@ public static class HostBuilderFactory
                 context.Configuration.GetSection("IoMapping").Bind(ioMappingOptions);
                 var cylinderMappingOptions = new CylinderMappingOptions();
                 context.Configuration.GetSection("CylinderMapping").Bind(cylinderMappingOptions);
-                services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions, ioMappingOptions.Points, cylinderMappingOptions.Cylinders));
+                var workHeadMappingOptions = new WorkHeadMappingOptions();
+                context.Configuration.GetSection("WorkHeadMapping").Bind(workHeadMappingOptions);
+                services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions, ioMappingOptions.Points, cylinderMappingOptions.Cylinders, workHeadMappingOptions.WorkHeads));
 
                 var zmcControllerOptions = new ZmcControllerOptions();
                 context.Configuration.GetSection("ZmcController").Bind(zmcControllerOptions);
@@ -71,6 +74,9 @@ public static class HostBuilderFactory
                 services.AddSingleton<ICylinderRuntimeSyncService, CylinderRuntimeSyncService>();
                 services.AddSingleton<ICylinderConfigAppService>(_ => new CylinderConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
                 services.AddSingleton<ICylinderManagementAppService, CylinderManagementAppService>();
+                services.AddSingleton<IWorkHeadRuntimeSyncService, WorkHeadRuntimeSyncService>();
+                services.AddSingleton<IWorkHeadConfigAppService>(_ => new WorkHeadConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
+                services.AddSingleton<IWorkHeadManagementAppService, WorkHeadManagementAppService>();
 
                 services.AddSingleton<SafetyInterlockService>();
                 services.AddSingleton<ControllerRuntimeState>();

@@ -1,0 +1,44 @@
+using MotionControl.Application.Interfaces;
+using MotionControl.Domain.Entities;
+using MotionControl.Infrastructure.Configuration;
+
+namespace MotionControl.Application.Services;
+
+public sealed class WorkHeadRuntimeSyncService(Machine machine) : IWorkHeadRuntimeSyncService
+{
+    public Task ApplyAsync(WorkHeadConfigItem workHead, CancellationToken cancellationToken = default)
+    {
+        EnsureIoPointExists(workHead.VacuumOutputAddress, true);
+        EnsureIoPointExists(workHead.BlowOutputAddress, true);
+        EnsureIoPointExists(workHead.VacuumInputAddress, false);
+
+        var existing = machine.WorkHeads.FirstOrDefault(item => string.Equals(item.Name, workHead.Name, StringComparison.OrdinalIgnoreCase));
+        if (existing is null)
+        {
+            machine.AddWorkHead(new WorkHead(workHead.Name, workHead.Description, workHead.XAxisNo, workHead.YAxisNo, workHead.ZAxisNo, workHead.RAxisNo, workHead.VacuumOutputAddress, workHead.BlowOutputAddress, workHead.VacuumInputAddress));
+            return Task.CompletedTask;
+        }
+
+        existing.UpdateMetadata(workHead.Name, workHead.Description, workHead.XAxisNo, workHead.YAxisNo, workHead.ZAxisNo, workHead.RAxisNo, workHead.VacuumOutputAddress, workHead.BlowOutputAddress, workHead.VacuumInputAddress);
+        return Task.CompletedTask;
+    }
+
+    public Task ReloadAsync(IEnumerable<WorkHeadConfigItem> workHeads, CancellationToken cancellationToken = default)
+    {
+        foreach (var item in machine.WorkHeads.ToList()) machine.RemoveWorkHead(item.Name);
+        foreach (var item in workHeads) ApplyAsync(item, cancellationToken);
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveAsync(string name, CancellationToken cancellationToken = default)
+    {
+        machine.RemoveWorkHead(name);
+        return Task.CompletedTask;
+    }
+
+    private void EnsureIoPointExists(int address, bool isOutput)
+    {
+        if (address < 0 || machine.IoPoints.Any(item => item.IsOutput == isOutput && item.Address == address)) return;
+        machine.AddIoPoint(new IoPoint($"{(isOutput ? "DO" : "DI")} {address}", address, isOutput, "Auto-created for WorkHead"));
+    }
+}

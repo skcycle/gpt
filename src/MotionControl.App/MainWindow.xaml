@@ -538,6 +538,94 @@
                 </Grid>
             </TabItem>
 
+            <TabItem Header="Work Head Monitor">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <Button Content="Add WorkHead" Command="{Binding AddWorkHeadCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
+                        <Button Content="Delete WorkHead" Command="{Binding DeleteWorkHeadCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
+                        <Button Content="Save Config" Command="{Binding SaveWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
+                        <Button Content="Load Config" Command="{Binding LoadWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
+                    </StackPanel>
+
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding WorkHeadMonitor.WorkHeads}"
+                              SelectedItem="{Binding WorkHeadMonitor.SelectedWorkHead, Mode=TwoWay}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="False"
+                              VerticalContentAlignment="Center">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="140" />
+                            <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="160" />
+                            <DataGridTextColumn Header="X Axis" Binding="{Binding XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="70" />
+                            <DataGridTextColumn Header="Y Axis" Binding="{Binding YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="70" />
+                            <DataGridTextColumn Header="Z Axis" Binding="{Binding ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="70" />
+                            <DataGridTextColumn Header="R Axis" Binding="{Binding RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="70" />
+                            <DataGridTemplateColumn Header="Vacuum DO" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Ellipse Width="12" Height="12" Fill="{Binding VacuumDoBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" />
+                                            <TextBlock Text="{Binding VacuumOutputAddress}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding VacuumOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Blow DO" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Ellipse Width="12" Height="12" Fill="{Binding BlowDoBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" />
+                                            <TextBlock Text="{Binding BlowOutputAddress}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding BlowOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Vacuum DI" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Ellipse Width="12" Height="12" Fill="{Binding VacuumDiBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" />
+                                            <TextBlock Text="{Binding VacuumInputAddress}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding VacuumInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="Actions" Width="180">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Content="Vacuum" Command="{Binding VacuumCommand}" Width="80" Margin="0,0,6,0" />
+                                            <Button Content="Blow" Command="{Binding BlowCommand}" Width="80" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
             <TabItem Header="Alarm">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>

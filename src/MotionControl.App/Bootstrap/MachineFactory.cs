@@ -9,7 +9,8 @@ public static class MachineFactory
     public static Machine CreateDefaultMachine(
         AxisMappingOptions axisMappingOptions,
         IReadOnlyCollection<MotionControl.Infrastructure.Configuration.IoPointConfigItem>? ioPointConfigs = null,
-        IReadOnlyCollection<MotionControl.Infrastructure.Configuration.CylinderConfigItem>? cylinderConfigs = null)
+        IReadOnlyCollection<MotionControl.Infrastructure.Configuration.CylinderConfigItem>? cylinderConfigs = null,
+        IReadOnlyCollection<MotionControl.Infrastructure.Configuration.WorkHeadConfigItem>? workHeadConfigs = null)
     {
         var axisNames = axisMappingOptions.AxisNames;
         var axisMappings = axisMappingOptions.Axes;
@@ -52,6 +53,10 @@ public static class MachineFactory
             .Select(item => new Cylinder(item.Name, item.ExtendSensorInputAddress, item.RetractSensorInputAddress, item.ExtendOutputAddress, item.RetractOutputAddress, item.Description, item.ActionTimeoutMs))
             .ToArray();
 
+        var workHeads = (workHeadConfigs ?? Array.Empty<MotionControl.Infrastructure.Configuration.WorkHeadConfigItem>())
+            .Select(item => new WorkHead(item.Name, item.Description, item.XAxisNo, item.YAxisNo, item.ZAxisNo, item.RAxisNo, item.VacuumOutputAddress, item.BlowOutputAddress, item.VacuumInputAddress))
+            .ToArray();
+
         var alarms = new[]
         {
             new Alarm("SYS-001", "EtherCAT controller not connected", DateTime.Now, "System", "Communication", "Warning"),
@@ -61,6 +66,6 @@ public static class MachineFactory
         alarms[0].Clear();
         alarms[1].Clear();
 
-        return new Machine(axes, Array.Empty<AxisGroup>(), ioPoints, cylinders, alarms);
+        return new Machine(axes, Array.Empty<AxisGroup>(), ioPoints, cylinders, workHeads, alarms);
     }
 }
