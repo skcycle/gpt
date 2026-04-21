@@ -12,7 +12,7 @@ public sealed class CommandFeedbackRuntimeState : IFeedbackEventPublisher
     {
         RecentFeedback = RecentFeedback
             .Concat(new[] { feedback })
-            .TakeLast(20)
+            .TakeLast(100)
             .ToArray();
         FeedbackChanged?.Invoke();
     }

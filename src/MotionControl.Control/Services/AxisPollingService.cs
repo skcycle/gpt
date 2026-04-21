@@ -33,13 +33,20 @@ public sealed class AxisPollingService(
             if (previousState != nextState)
             {
                 axis.ApplyState(nextState);
-                commandFeedbackRuntimeState.Add(new CommandFeedback
+
+                var shouldRecordRuntimeEvent = !(previousState is Domain.Enums.AxisState.Standstill && nextState is Domain.Enums.AxisState.Moving)
+                    && !(previousState is Domain.Enums.AxisState.Moving && nextState is Domain.Enums.AxisState.Standstill);
+
+                if (shouldRecordRuntimeEvent)
                 {
-                    CommandName = "AxisState",
-                    AxisNo = axis.ControllerAxisNo,
-                    Status = "Changed",
-                    Message = $"{previousState} -> {nextState}"
-                });
+                    commandFeedbackRuntimeState.Add(new CommandFeedback
+                    {
+                        CommandName = "AxisState",
+                        AxisNo = axis.ControllerAxisNo,
+                        Status = "Changed",
+                        Message = $"{previousState} -> {nextState}"
+                    });
+                }
             }
         }
     }
