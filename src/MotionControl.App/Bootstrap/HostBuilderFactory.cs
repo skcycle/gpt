@@ -54,6 +54,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<ISystemAppService, SystemAppService>();
                 services.AddSingleton<IMotionAppService, MotionAppService>();
                 services.AddSingleton<IAxisRuntimeParameterSyncService, AxisRuntimeParameterSyncService>();
+                services.AddSingleton<IIoRuntimeSyncService, IoRuntimeSyncService>();
                 services.AddSingleton<IAxisControllerParameterAppService, AxisControllerParameterAppService>();
                 services.AddSingleton<IAxisParameterAppService>(_ => new AxisParameterAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
                 services.AddSingleton<IIoConfigAppService>(_ => new IoConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
