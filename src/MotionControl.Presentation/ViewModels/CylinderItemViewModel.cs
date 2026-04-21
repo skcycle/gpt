@@ -101,6 +101,9 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     public Brush ExtendDoBrush => ExtendDoOn ? new SolidColorBrush(Color.FromRgb(0, 200, 0)) : new SolidColorBrush(Color.FromRgb(100, 100, 100));
     public Brush RetractDoBrush => RetractDoOn ? new SolidColorBrush(Color.FromRgb(0, 200, 0)) : new SolidColorBrush(Color.FromRgb(100, 100, 100));
 
+    // 诊断用：显示当前 IO 原始值
+    public string IoDiagnostic => $"DI:{ExtendDiOn},{RetractDiOn} DO:{ExtendDoOn},{RetractDoOn}";
+
     public ICommand OpenCommand { get; }
     public ICommand CloseCommand { get; }
 
@@ -134,6 +137,7 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(RetractDiBrush));
         OnPropertyChanged(nameof(ExtendDoBrush));
         OnPropertyChanged(nameof(RetractDoBrush));
+        OnPropertyChanged(nameof(IoDiagnostic));
         OnPropertyChanged(nameof(Description));
         OnPropertyChanged(nameof(ExtendSensorInputAddress));
         OnPropertyChanged(nameof(RetractSensorInputAddress));
