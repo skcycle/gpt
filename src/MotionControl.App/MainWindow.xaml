@@ -429,6 +429,7 @@
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               IsReadOnly="False"
+                              VerticalContentAlignment="Center"
                               Margin="0,0,0,12">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="140" />
