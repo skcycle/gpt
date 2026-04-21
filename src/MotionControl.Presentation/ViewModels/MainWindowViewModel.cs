@@ -14,7 +14,7 @@ using MotionControl.Presentation.Commands;
 
 namespace MotionControl.Presentation.ViewModels;
 
-public sealed class MainWindowViewModel : INotifyPropertyChanged
+public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStatusReporter
 {
     private readonly Machine _machine;
     private readonly IAxisManagementAppService _axisManagementAppService;
@@ -60,7 +60,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             axisManagementAppService,
             axisControllerParameterAppService,
             CanWriteAxisConfiguration,
-            CanAccessControllerParameters);
+            CanAccessControllerParameters,
+            this);
         Alarm = new AlarmViewModel(machine);
         EmergencyStopCommand = new RelayCommand(async () => await _systemAppService.EmergencyStopAsync());
         ClearEmergencyStopCommand = new RelayCommand(async () => await _systemAppService.ClearEmergencyStopAsync());
@@ -373,6 +374,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _ioMonitorCoordinator.AfterLoadOrReload();
         OperationStatus = "IO 配置已重新加载";
         RefreshViewModels(force: true);
+    }
+
+
+    public void ReportStatus(string message)
+    {
+        OperationStatus = message;
     }
 
     private bool CanControlAxisCommands()
