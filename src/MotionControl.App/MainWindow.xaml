@@ -167,8 +167,7 @@
                                     <DataGridTextColumn Header="SetupVel" Binding="{Binding SetupVelocity}" Width="70" />
                                     <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed, Mode=OneWay}" Width="55" />
                                     <DataGridCheckBoxColumn Header="ServoOn" Binding="{Binding IsServoOn, Mode=OneWay}" Width="65" />
-                                    <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding HasAlarm, Mode=OneWay}" Width="55" />
-                                    <DataGridCheckBoxColumn Header="FF-OK" Binding="{Binding FollowingErrorTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Alarm" Binding="{Binding FollowingErrorTriggered, Mode=OneWay}" Width="55" />
                                     <DataGridCheckBoxColumn Header="Soft-" Binding="{Binding NegativeSoftLimitTriggered, Mode=OneWay}" Width="55" />
                                     <DataGridCheckBoxColumn Header="Soft+" Binding="{Binding PositiveSoftLimitTriggered, Mode=OneWay}" Width="55" />
                                     <DataGridCheckBoxColumn Header="Hard-" Binding="{Binding NegativeHardLimitTriggered, Mode=OneWay}" Width="55" />
