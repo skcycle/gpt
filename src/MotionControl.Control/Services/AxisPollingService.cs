@@ -5,7 +5,7 @@ using MotionControl.Domain.Entities;
 namespace MotionControl.Control.Services;
 
 public sealed class AxisPollingService(
-    IMotionController motionController,
+    IAxisMotionController motionController,
     Machine machine,
     AxisStateMachine axisStateMachine,
     CommandFeedbackRuntimeState commandFeedbackRuntimeState)

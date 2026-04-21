@@ -8,7 +8,7 @@ using MotionControl.Domain.Enums;
 namespace MotionControl.Control.Services;
 
 public sealed class AxisControlService(
-    IMotionController motionController,
+    IAxisMotionController motionController,
     CommandFeedbackRuntimeState commandFeedbackRuntimeState,
     AxisStateMachine axisStateMachine) : IAxisControlService
 {

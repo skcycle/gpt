@@ -7,7 +7,7 @@ using MotionControl.Domain.Entities;
 namespace MotionControl.Control.Services;
 
 public sealed class HomingService(
-    IMotionController motionController,
+    IAxisMotionController motionController,
     IEnumerable<IHomeStrategy> homeStrategies,
     HomePlanRuntimeState homePlanRuntimeState,
     CommandFeedbackRuntimeState commandFeedbackRuntimeState,

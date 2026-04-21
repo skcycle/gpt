@@ -44,7 +44,11 @@ public static class HostBuilderFactory
                 services.AddSingleton<ZmcStatusTranslator>();
                 services.AddSingleton<ZmcAxisNativeFacade>();
 
-                services.AddSingleton<IMotionController, ZmcMotionController>();
+                services.AddSingleton<ZmcMotionController>();
+                services.AddSingleton<IAxisMotionController>(sp => sp.GetRequiredService<ZmcMotionController>());
+                services.AddSingleton<IIoController>(sp => sp.GetRequiredService<ZmcMotionController>());
+                services.AddSingleton<IEtherCatController>(sp => sp.GetRequiredService<ZmcMotionController>());
+                services.AddSingleton<ISafetyController>(sp => sp.GetRequiredService<ZmcMotionController>());
                 services.AddSingleton<IAxisControlService, AxisControlService>();
                 services.AddSingleton<IHomeStrategy, DefaultHomeStrategy>();
                 services.AddSingleton<IHomeStrategy, LimitThenIndexHomeStrategy>();

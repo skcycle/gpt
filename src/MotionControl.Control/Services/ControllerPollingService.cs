@@ -7,7 +7,7 @@ using MotionControl.Domain.Enums;
 namespace MotionControl.Control.Services;
 
 public sealed class ControllerPollingService(
-    IMotionController motionController,
+    IEtherCatController motionController,
     Machine machine,
     ControllerRuntimeState controllerRuntimeState,
     AxisPollingService axisPollingService,

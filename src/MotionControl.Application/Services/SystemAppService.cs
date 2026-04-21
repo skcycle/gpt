@@ -12,7 +12,7 @@ public sealed class SystemAppService(
     ControllerPollingService controllerPollingService,
     SystemStateMachine systemStateMachine,
     IAxisControlService axisControlService,
-    IMotionController motionController) : ISystemAppService
+    ISafetyController motionController) : ISystemAppService
 {
     public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {

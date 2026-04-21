@@ -10,7 +10,7 @@ namespace MotionControl.Device.Zmc.Controllers;
 public sealed class ZmcMotionController(
     ZmcControllerOptions options,
     ZmcStatusTranslator statusTranslator,
-    ZmcAxisNativeFacade axisNativeFacade) : IMotionController
+    ZmcAxisNativeFacade axisNativeFacade) : IAxisMotionController, IIoController, IEtherCatController, ISafetyController
 {
     private bool _isConnected;
 

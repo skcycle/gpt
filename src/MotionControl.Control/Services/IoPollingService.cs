@@ -4,7 +4,7 @@ using MotionControl.Domain.Entities;
 namespace MotionControl.Control.Services;
 
 public sealed class IoPollingService(
-    IMotionController motionController,
+    IIoController motionController,
     Machine machine,
     CommandFeedbackRuntimeState commandFeedbackRuntimeState)
 {
