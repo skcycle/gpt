@@ -89,7 +89,7 @@
                         </Border>
                     </UniformGrid>
 
-                    <GroupBox Grid.Row="1" Header="Alarm Log">
+                    <GroupBox Grid.Row="1" Header="Alarm Log" MinWidth="520">
                         <ListBox ItemsSource="{Binding Dashboard.AlarmLog}" />
                     </GroupBox>
                 </Grid>
