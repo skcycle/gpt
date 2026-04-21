@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Linq;
 using MotionControl.Application.Interfaces;
 using MotionControl.Domain.Enums;
 using MotionControl.Infrastructure.Configuration;
@@ -12,7 +11,6 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
 {
     private readonly IAxisManagementAppService _axisManagementAppService;
     private readonly IAxisControllerParameterAppService _axisControllerParameterAppService;
-    private readonly Func<IEnumerable<int>> _axisNoProvider;
     private readonly Func<bool> _canWriteParameters;
     private readonly Func<bool> _canAccessControllerParameters;
     private int _axisNo;
@@ -33,13 +31,11 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     public AxisParameterEditorViewModel(
         IAxisManagementAppService axisManagementAppService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
-        Func<IEnumerable<int>> axisNoProvider,
         Func<bool> canWriteParameters,
         Func<bool> canAccessControllerParameters)
     {
         _axisManagementAppService = axisManagementAppService;
         _axisControllerParameterAppService = axisControllerParameterAppService;
-        _axisNoProvider = axisNoProvider;
         _canWriteParameters = canWriteParameters;
         _canAccessControllerParameters = canAccessControllerParameters;
         LoadCommand = new RelayCommand(async () => await LoadAsync(), () => AxisNo >= 0);
@@ -269,13 +265,6 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         if (SoftLimitPositive.HasValue && SoftLimitNegative.HasValue && SoftLimitPositive.Value <= SoftLimitNegative.Value)
         {
             validationMessage = "SoftLimitPositive 必须大于 SoftLimitNegative";
-            return false;
-        }
-
-        var duplicateAxisExists = _axisNoProvider().Any(axisNo => axisNo == AxisNo) == false;
-        if (duplicateAxisExists)
-        {
-            validationMessage = $"Axis {AxisNo} 不存在于当前运行时列表，无法保存";
             return false;
         }
 

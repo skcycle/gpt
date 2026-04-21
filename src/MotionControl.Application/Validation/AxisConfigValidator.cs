@@ -39,5 +39,7 @@ public static class AxisConfigValidator
         {
             throw new InvalidOperationException("SoftLimitPositive 必须大于 SoftLimitNegative");
         }
+
+        // 仅用于校验，不承担持久化查询职责
     }
 }

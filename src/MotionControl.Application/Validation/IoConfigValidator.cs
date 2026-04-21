@@ -1,3 +1,4 @@
+using System.Linq;
 using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Application.Validation;

@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using MotionControl.Domain.Enums;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
@@ -58,7 +59,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         AxisParameterEditor = new AxisParameterEditorViewModel(
             axisManagementAppService,
             axisControllerParameterAppService,
-            () => _machine.Axes.Select(axis => axis.Id.Value),
             CanWriteAxisConfiguration,
             CanAccessControllerParameters);
         Alarm = new AlarmViewModel(machine);
@@ -370,19 +370,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     }
 
     private bool CanControlAxisCommands()
-        => _controllerRuntimeState.IsConnected && !_machine.IsEmergencyStopped;
+        => _controllerRuntimeState.IsConnected && _machine.CurrentState != SystemState.EmergencyStop;
 
     private bool CanWriteAxisConfiguration()
-        => AxisMonitor.SelectedAxis is not null && !_machine.IsEmergencyStopped;
+        => AxisMonitor.SelectedAxis is not null && _machine.CurrentState != SystemState.EmergencyStop;
 
     private bool CanAccessControllerParameters()
-        => AxisMonitor.SelectedAxis is not null && _controllerRuntimeState.IsConnected && !_machine.IsEmergencyStopped;
+        => AxisMonitor.SelectedAxis is not null && _controllerRuntimeState.IsConnected && _machine.CurrentState != SystemState.EmergencyStop;
 
     private bool CanWriteIoOutputs()
-        => _controllerRuntimeState.IsConnected && !_machine.IsEmergencyStopped;
+        => _controllerRuntimeState.IsConnected && _machine.CurrentState != SystemState.EmergencyStop;
 
     private bool CanEditIoConfiguration()
-        => !_machine.IsEmergencyStopped;
+        => _machine.CurrentState != SystemState.EmergencyStop;
 
     private static string GetBeijingTimeString()
     {

@@ -1,3 +1,4 @@
+using System.Linq;
 using MotionControl.Application.Interfaces;
 using MotionControl.Domain.Entities;
 using MotionControl.Infrastructure.Configuration;
