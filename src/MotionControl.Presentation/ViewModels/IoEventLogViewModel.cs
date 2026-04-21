@@ -23,7 +23,10 @@ public sealed class IoEventLogViewModel
             .Select(f => new IoEventItemViewModel(f))
             .ToArray();
 
-        if (!ioEvents.SequenceEqual(_lastEvents))
+        // Use length comparison to avoid SequenceEqual false negatives on same-content different-reference arrays
+        var newLength = ioEvents.Length;
+        var lastLength = _lastEvents.Length;
+        if (newLength != lastLength || (newLength > 0 && (lastLength == 0 || !ioEvents.SequenceEqual(_lastEvents))))
         {
             Events.Clear();
             foreach (var evt in ioEvents.TakeLast(30))
