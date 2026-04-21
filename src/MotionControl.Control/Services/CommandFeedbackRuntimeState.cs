@@ -1,8 +1,6 @@
-using MotionControl.Application.Interfaces;
-
 namespace MotionControl.Control.Services;
 
-public sealed class CommandFeedbackRuntimeState : IFeedbackEventPublisher
+public sealed class CommandFeedbackRuntimeState
 {
     public event Action? FeedbackChanged;
 
