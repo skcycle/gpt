@@ -77,7 +77,21 @@ public sealed class ZmcMotionController(
         => Task.FromResult(axisNativeFacade.RapidStop(mode) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC rapid stop failed."));
 
     public Task<DeviceResult> ResetAxisAlarmAsync(int axisNo, CancellationToken cancellationToken = default)
-        => Task.FromResult(DeviceResult.Ok());
+    {
+        var driveResult = axisNativeFacade.ClearDriveAlarm(axisNo);
+        if (driveResult != 0)
+        {
+            return Task.FromResult(DeviceResult.Fail($"驱动器报警清除失败: {driveResult}"));
+        }
+
+        var zmcResult = axisNativeFacade.ClearZmcAlarm(axisNo);
+        if (zmcResult != 0)
+        {
+            return Task.FromResult(DeviceResult.Fail($"ZMC 自身报警清除失败(DATUM): {zmcResult}"));
+        }
+
+        return Task.FromResult(DeviceResult.Ok());
+    }
 
     public Task<bool> GetIoPointValueAsync(int address, bool isOutput, CancellationToken cancellationToken = default)
     {

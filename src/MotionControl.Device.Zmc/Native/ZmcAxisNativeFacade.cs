@@ -54,6 +54,16 @@ public sealed class ZmcAxisNativeFacade
         return ExecuteCommand($"DATUM({axisNo})");
     }
 
+    public int ClearDriveAlarm(int axisNo)
+    {
+        return ExecuteCommand($"ALMCLR({axisNo})");
+    }
+
+    public int ClearZmcAlarm(int axisNo)
+    {
+        return ExecuteCommand($"DATUM({axisNo},0)");
+    }
+
     public int MoveAbsolute(int axisNo, double position, double velocity, double acceleration, double deceleration)
     {
         var setup1 = ExecuteCommand($"SPEED({axisNo})={velocity}");
