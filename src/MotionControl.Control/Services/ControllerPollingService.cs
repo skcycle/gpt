@@ -32,7 +32,6 @@ public sealed class ControllerPollingService(
             commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "SystemState", Status = "Changed", Message = $"{machine.CurrentState} -> {connectingState}" });
             machine.SetSystemState(connectingState);
         }
-        // Retry up to 3 times with a brief delay to handle transient connect failures
         using var connectCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         connectCts.CancelAfter(TimeSpan.FromSeconds(10));
         var result = DeviceResult.Fail("Connect never attempted");
@@ -118,38 +117,6 @@ public sealed class ControllerPollingService(
         catch
         {
             // 控制器断连等异常不打断轮询，让上层决定是否停止
-        }
-        finally
-        {
-            _pollLock.Release();
-        }
-    }
-}
-        await ioPollingService.PollAsync(cancellationToken);
-
-        var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
-        controllerRuntimeState.Update(controllerStatus);
-        await alarmPollingService.PollAsync(cancellationToken);
-
-        if (!await _pollLock.WaitAsync(0, cancellationToken))
-        {
-            return;
-        }
-
-        try
-        {
-            var previousSystemState = machine.CurrentState;
-            var nextSystemState = systemStateMachine.OnPolling(machine, controllerStatus);
-            if (previousSystemState != nextSystemState)
-            {
-                commandFeedbackRuntimeState.Add(new CommandFeedback
-                {
-                    CommandName = "SystemState",
-                    Status = "Changed",
-                    Message = $"{previousSystemState} -> {nextSystemState}"
-                });
-                machine.SetSystemState(nextSystemState);
-            }
         }
         finally
         {
