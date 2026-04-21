@@ -152,27 +152,37 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
 
     private async Task OpenAsync()
     {
-        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0) return;
+        if (_cylinder.ExtendOutputAddress < 0) return;
         var first = await _ioControlService.SetOutputAsync(ExtendOutputAddress, true);
-        var second = await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
-        if (first.Success && second.Success)
+        var secondSuccess = true;
+        if (_cylinder.RetractOutputAddress >= 0)
+        {
+            var second = await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
+            secondSuccess = second.Success;
+        }
+        if (first.Success && secondSuccess)
         {
             _cylinder.StartExtendCommand();
             _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} open command sent" });
-            OnPropertyChanged(nameof(State));
+            Refresh();
         }
     }
 
     private async Task CloseAsync()
     {
-        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0) return;
+        if (_cylinder.RetractOutputAddress < 0) return;
         var first = await _ioControlService.SetOutputAsync(RetractOutputAddress, true);
-        var second = await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
-        if (first.Success && second.Success)
+        var secondSuccess = true;
+        if (_cylinder.ExtendOutputAddress >= 0)
+        {
+            var second = await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
+            secondSuccess = second.Success;
+        }
+        if (first.Success && secondSuccess)
         {
             _cylinder.StartRetractCommand();
             _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} close command sent" });
-            OnPropertyChanged(nameof(State));
+            Refresh();
         }
     }
 
