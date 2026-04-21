@@ -62,9 +62,15 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     {
         if (_workHead.VacuumOutputAddress < 0) return;
         var next = !(_machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == _workHead.VacuumOutputAddress)?.Value ?? false);
+
+        if (next && _workHead.BlowOutputAddress >= 0)
+        {
+            var blowOff = await _ioControlService.SetOutputAsync(_workHead.BlowOutputAddress, false);
+            if (!blowOff.Success) return;
+        }
+
         var result = await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, next);
         if (!result.Success) return;
-        if (next && _workHead.BlowOutputAddress >= 0) await _ioControlService.SetOutputAsync(_workHead.BlowOutputAddress, false);
         Refresh();
     }
 
@@ -72,9 +78,15 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     {
         if (_workHead.BlowOutputAddress < 0) return;
         var next = !(_machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == _workHead.BlowOutputAddress)?.Value ?? false);
+
+        if (next && _workHead.VacuumOutputAddress >= 0)
+        {
+            var vacuumOff = await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, false);
+            if (!vacuumOff.Success) return;
+        }
+
         var result = await _ioControlService.SetOutputAsync(_workHead.BlowOutputAddress, next);
         if (!result.Success) return;
-        if (next && _workHead.VacuumOutputAddress >= 0) await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, false);
         Refresh();
     }
 

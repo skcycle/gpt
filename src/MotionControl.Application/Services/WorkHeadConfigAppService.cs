@@ -16,7 +16,18 @@ public sealed class WorkHeadConfigAppService(string appSettingsPath) : IWorkHead
     {
         var root = await LoadRootAsync(cancellationToken);
         var index = root.WorkHeadMapping.WorkHeads.Count;
-        var item = new WorkHeadConfigItem { Name = $"WorkHead {index + 1}" };
+        var item = new WorkHeadConfigItem
+        {
+            Name = $"WorkHead {index + 1}",
+            Description = string.Empty,
+            XAxisNo = -1,
+            YAxisNo = -1,
+            ZAxisNo = -1,
+            RAxisNo = -1,
+            VacuumOutputAddress = -1,
+            BlowOutputAddress = -1,
+            VacuumInputAddress = -1
+        };
         root.WorkHeadMapping.WorkHeads.Add(item);
         await SaveRootAsync(root, cancellationToken);
         return item;
