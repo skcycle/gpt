@@ -49,61 +49,73 @@ public sealed class Cylinder
         var hasExtendSensor = ExtendSensorInputAddress >= 0;
         var hasRetractSensor = RetractSensorInputAddress >= 0;
 
+        // 传感器冲突优先
         if (hasExtendSensor && hasRetractSensor && extendSensorOn && retractSensorOn)
         {
             State = CylinderState.Conflict;
             return;
         }
 
-        if (hasExtendSensor && extendSensorOn)
+        // 双作用气缸：有输出驱动时以输出为准
+        if (hasExtendSensor && hasRetractSensor)
         {
-            State = CylinderState.Extended;
-            if (PendingCommand == CylinderCommandType.Extend)
+            if (extendOutputOn && !retractOutputOn)
             {
-                ClearPendingCommand();
+                State = CylinderState.Extending;
+                return;
             }
+
+            if (retractOutputOn && !extendOutputOn)
+            {
+                State = CylinderState.Retracting;
+                return;
+            }
+
+            if (extendSensorOn)
+            {
+                State = CylinderState.Extended;
+                if (PendingCommand == CylinderCommandType.Extend) ClearPendingCommand();
+                return;
+            }
+
+            if (retractSensorOn)
+            {
+                State = CylinderState.Retracted;
+                if (PendingCommand == CylinderCommandType.Retract) ClearPendingCommand();
+                return;
+            }
+
+            State = CylinderState.Unknown;
             return;
         }
 
-        if (hasRetractSensor && retractSensorOn)
+        // 单作用伸侧（无缩侧传感器/输出）
+        if (!hasRetractSensor)
         {
+            if (extendOutputOn)
+            {
+                State = CylinderState.Extending;
+                return;
+            }
+
+            // 伸侧输出关闭时默认为缩回状态（弹簧复位）
             State = CylinderState.Retracted;
-            if (PendingCommand == CylinderCommandType.Retract)
-            {
-                ClearPendingCommand();
-            }
+            if (PendingCommand == CylinderCommandType.Extend) ClearPendingCommand();
             return;
         }
 
-        if (hasExtendSensor && !hasRetractSensor && !extendSensorOn)
+        // 单作用缩侧（无伸侧传感器/输出）
+        if (!hasExtendSensor)
         {
-            State = CylinderState.Retracted;
-            if (PendingCommand == CylinderCommandType.Extend)
+            if (retractOutputOn)
             {
-                ClearPendingCommand();
+                State = CylinderState.Retracting;
+                return;
             }
-            return;
-        }
 
-        if (!hasExtendSensor && hasRetractSensor && !retractSensorOn)
-        {
+            // 缩侧输出关闭时默认为伸状态
             State = CylinderState.Extended;
-            if (PendingCommand == CylinderCommandType.Retract)
-            {
-                ClearPendingCommand();
-            }
-            return;
-        }
-
-        if (extendOutputOn && (!hasRetractSensor || !retractOutputOn))
-        {
-            State = CylinderState.Extending;
-            return;
-        }
-
-        if (hasRetractSensor && retractOutputOn && (!hasExtendSensor || !extendOutputOn))
-        {
-            State = CylinderState.Retracting;
+            if (PendingCommand == CylinderCommandType.Retract) ClearPendingCommand();
             return;
         }
 
