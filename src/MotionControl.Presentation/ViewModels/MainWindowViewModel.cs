@@ -17,8 +17,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private readonly Machine _machine;
     private readonly IAxisParameterAppService _axisParameterAppService;
     private readonly IAxisRuntimeParameterSyncService _axisRuntimeParameterSyncService;
-    private readonly IIoConfigAppService _ioConfigAppService;
-    private readonly IIoRuntimeSyncService _ioRuntimeSyncService;
+    private readonly IIoManagementAppService _ioManagementAppService;
     private readonly ISystemAppService _systemAppService;
     private readonly ControllerRuntimeState _controllerRuntimeState;
     private readonly Timer _clockTimer;
@@ -36,8 +35,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         IAxisParameterAppService axisParameterAppService,
         IAxisRuntimeParameterSyncService axisRuntimeParameterSyncService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
-        IIoConfigAppService ioConfigAppService,
-        IIoRuntimeSyncService ioRuntimeSyncService,
+        IIoManagementAppService ioManagementAppService,
         ControllerRuntimeState controllerRuntimeState,
         HomePlanRuntimeState homePlanRuntimeState,
         CommandFeedbackRuntimeState commandFeedbackRuntimeState,
@@ -46,8 +44,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         _machine = machine;
         _axisParameterAppService = axisParameterAppService;
         _axisRuntimeParameterSyncService = axisRuntimeParameterSyncService;
-        _ioConfigAppService = ioConfigAppService;
-        _ioRuntimeSyncService = ioRuntimeSyncService;
+        _ioManagementAppService = ioManagementAppService;
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine, commandFeedbackRuntimeState);
@@ -241,8 +238,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     private async Task AddIoPointAsync(bool isOutput)
     {
-        var item = await _ioConfigAppService.AddIoPointAsync(isOutput);
-        await _ioRuntimeSyncService.ApplyAsync(item);
+        var item = await _ioManagementAppService.AddIoPointAsync(isOutput);
         var ioPoint = _machine.IoPoints.First(io => io.IsOutput == item.IsOutput && io.Address == item.Address);
         IoMonitor.AddIoPoint(ioPoint);
         RefreshViewModels(force: true);
@@ -256,13 +252,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
-        var removed = await _ioConfigAppService.DeleteIoPointAsync(false, selected.Address);
+        var removed = await _ioManagementAppService.DeleteIoPointAsync(false, selected.Address);
         if (!removed)
         {
             return;
         }
-
-        await _ioRuntimeSyncService.RemoveAsync(false, selected.Address);
         IoMonitor.RemoveIoPoint(false, selected.Address);
         (DeleteInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         RefreshViewModels(force: true);
@@ -276,13 +270,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
-        var removed = await _ioConfigAppService.DeleteIoPointAsync(true, selected.Address);
+        var removed = await _ioManagementAppService.DeleteIoPointAsync(true, selected.Address);
         if (!removed)
         {
             return;
         }
-
-        await _ioRuntimeSyncService.RemoveAsync(true, selected.Address);
         IoMonitor.RemoveIoPoint(true, selected.Address);
         (DeleteOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         RefreshViewModels(force: true);
@@ -300,15 +292,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             })
             .ToList();
 
-        await _ioConfigAppService.SaveIoPointsAsync(items);
-        IoMonitor.RefreshAll();
+        await _ioManagementAppService.SaveIoPointsAsync(items);
+        IoMonitor.ReloadFromMachine();
         RefreshViewModels(force: true);
     }
 
     private async Task LoadIoConfigAsync()
     {
-        var items = await _ioConfigAppService.LoadIoPointsAsync();
-        await _ioRuntimeSyncService.ReloadAsync(items);
+        await _ioManagementAppService.LoadIoPointsAsync();
 
         IoMonitor.SelectedInput = null;
         IoMonitor.SelectedOutput = null;
