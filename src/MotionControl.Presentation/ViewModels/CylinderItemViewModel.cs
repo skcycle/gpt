@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using System.Windows.Media;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
@@ -79,6 +80,16 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     }
 
     public string State => _cylinder.State.ToString();
+
+    public Brush StatusBrush => _cylinder.State switch
+    {
+        CylinderState.Extended => new SolidColorBrush(Color.FromRgb(0, 200, 0)),    // 绿灯 - 开到位
+        CylinderState.Retracted => new SolidColorBrush(Color.FromRgb(220, 60, 60)), // 红灯 - 关到位
+        CylinderState.Extending => new SolidColorBrush(Color.FromRgb(255, 200, 0)),  // 黄灯 - 伸中
+        CylinderState.Retracting => new SolidColorBrush(Color.FromRgb(255, 200, 0)), // 黄灯 - 缩中
+        _ => new SolidColorBrush(Color.FromRgb(160, 160, 160))                      // 灰灯 - 未知/冲突
+    };
+
     public ICommand OpenCommand { get; }
     public ICommand CloseCommand { get; }
 
@@ -106,6 +117,7 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(RetractOutputAddress));
         OnPropertyChanged(nameof(ActionTimeoutMs));
         OnPropertyChanged(nameof(State));
+        OnPropertyChanged(nameof(StatusBrush));
         (OpenCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (CloseCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
