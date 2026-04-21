@@ -72,7 +72,10 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
             .Take(8)
             .Select(item => $"[{item.Status}] {item.CommandName} Axis={item.AxisNo?.ToString() ?? "-"} {item.Message}")
             .ToArray();
-        if (!_lastRecentCommandFeedback.SequenceEqual(latestFeedback))
+        // Use length comparison to avoid SequenceEqual false negatives from new array references each run
+        var newLen = latestFeedback.Length;
+        var lastLen = _lastRecentCommandFeedback.Length;
+        if (newLen != lastLen || (newLen > 0 && (lastLen == 0 || !latestFeedback.SequenceEqual(_lastRecentCommandFeedback))))
         {
             RecentCommandFeedback = latestFeedback;
             _lastRecentCommandFeedback = latestFeedback;

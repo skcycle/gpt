@@ -12,6 +12,7 @@ public sealed class IoEventLogViewModel
     {
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         Events = new ObservableCollection<IoEventItemViewModel>();
+        _commandFeedbackRuntimeState.FeedbackChanged += Refresh;
     }
 
     public ObservableCollection<IoEventItemViewModel> Events { get; }
