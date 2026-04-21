@@ -52,7 +52,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
         AxisMonitor = new AxisMonitorViewModel(machine);
         AxisMonitor.SelectedAxisChanged += _ => RaiseAxisDeleteCanExecuteChanged();
-        IoMonitor = new IoMonitorViewModel(machine, ioControlService);
+        IoMonitor = new IoMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
         IoEventLog = new IoEventLogViewModel(commandFeedbackRuntimeState);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, CanControlAxisCommands);
         AxisParameterEditor = new AxisParameterEditorViewModel(
@@ -72,12 +72,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             });
         AddAxisCommand = new RelayCommand(async () => await AddAxisAsync());
         DeleteAxisCommand = new RelayCommand(async () => await DeleteSelectedAxisAsync(), () => AxisMonitor.SelectedAxis is not null);
-        AddInputCommand = new RelayCommand(async () => await AddIoPointAsync(false));
-        AddOutputCommand = new RelayCommand(async () => await AddIoPointAsync(true));
-        DeleteInputCommand = new RelayCommand(async () => await DeleteSelectedInputAsync(), () => IoMonitor.SelectedInput is not null);
-        DeleteOutputCommand = new RelayCommand(async () => await DeleteSelectedOutputAsync(), () => IoMonitor.SelectedOutput is not null);
-        SaveIoConfigCommand = new RelayCommand(async () => await SaveIoConfigAsync());
-        LoadIoConfigCommand = new RelayCommand(async () => await LoadIoConfigAsync());
+        AddInputCommand = new RelayCommand(async () => await AddIoPointAsync(false), CanEditIoConfiguration);
+        AddOutputCommand = new RelayCommand(async () => await AddIoPointAsync(true), CanEditIoConfiguration);
+        DeleteInputCommand = new RelayCommand(async () => await DeleteSelectedInputAsync(), () => IoMonitor.SelectedInput is not null && CanEditIoConfiguration());
+        DeleteOutputCommand = new RelayCommand(async () => await DeleteSelectedOutputAsync(), () => IoMonitor.SelectedOutput is not null && CanEditIoConfiguration());
+        SaveIoConfigCommand = new RelayCommand(async () => await SaveIoConfigAsync(), CanEditIoConfiguration);
+        LoadIoConfigCommand = new RelayCommand(async () => await LoadIoConfigAsync(), CanEditIoConfiguration);
         _axisConsoleCoordinator = new AxisConsoleCoordinator(AxisMonitor, AxisDebug, AxisParameterEditor);
         _ioMonitorCoordinator = new IoMonitorCoordinator(IoMonitor, (RelayCommand)DeleteInputCommand, (RelayCommand)DeleteOutputCommand);
         _ioMonitorCoordinator.Initialize();
@@ -159,8 +159,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         AxisDebug.RefreshCommandStates();
         AxisParameterEditor.RefreshCommandStates();
         RaiseAxisDeleteCanExecuteChanged();
+        (AddInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (AddOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (DeleteInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (DeleteOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (SaveIoConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (LoadIoConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
         var now = DateTime.UtcNow;
 
         if (force || now - _lastDashboardRefreshUtc >= TimeSpan.FromMilliseconds(500))
@@ -373,6 +377,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     private bool CanAccessControllerParameters()
         => AxisMonitor.SelectedAxis is not null && _controllerRuntimeState.IsConnected && !_machine.IsEmergencyStopped;
+
+    private bool CanWriteIoOutputs()
+        => _controllerRuntimeState.IsConnected && !_machine.IsEmergencyStopped;
+
+    private bool CanEditIoConfiguration()
+        => !_machine.IsEmergencyStopped;
 
     private static string GetBeijingTimeString()
     {

@@ -11,12 +11,14 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
 {
     private readonly IoPoint _ioPoint;
     private readonly IoControlService _ioControlService;
+    private readonly Func<bool> _canToggleOutput;
     private bool _value;
 
-    public IoPointViewModel(IoPoint ioPoint, IoControlService ioControlService)
+    public IoPointViewModel(IoPoint ioPoint, IoControlService ioControlService, Func<bool> canToggleOutput)
     {
         _ioPoint = ioPoint;
         _ioControlService = ioControlService;
+        _canToggleOutput = canToggleOutput;
         _value = ioPoint.Value;
         SetCommand = new RelayCommand(
             async () =>
@@ -30,7 +32,7 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
                     OnPropertyChanged(nameof(Value));
                 }
             },
-            () => IsOutput);
+            () => IsOutput && _canToggleOutput());
     }
 
     public string Name
@@ -73,6 +75,11 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
     public ICommand SetCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void RefreshCommandState()
+    {
+        (SetCommand as RelayCommand)?.RaiseCanExecuteChanged();
+    }
 
     public void Refresh()
     {
