@@ -94,9 +94,37 @@ public sealed class ControllerPollingService(
             return;
         }
 
-        _pollLock.Release();
+        try
+        {
+            await axisPollingService.PollAsync(cancellationToken);
+            await ioPollingService.PollAsync(cancellationToken);
+            var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
+            controllerRuntimeState.Update(controllerStatus);
+            await alarmPollingService.PollAsync(cancellationToken);
 
-        await axisPollingService.PollAsync(cancellationToken);
+            var previousSystemState = machine.CurrentState;
+            var nextSystemState = systemStateMachine.OnPolling(machine, controllerStatus);
+            if (previousSystemState != nextSystemState)
+            {
+                commandFeedbackRuntimeState.Add(new CommandFeedback
+                {
+                    CommandName = "SystemState",
+                    Status = "Changed",
+                    Message = $"{previousSystemState} -> {nextSystemState}"
+                });
+                machine.SetSystemState(nextSystemState);
+            }
+        }
+        catch
+        {
+            // 控制器断连等异常不打断轮询，让上层决定是否停止
+        }
+        finally
+        {
+            _pollLock.Release();
+        }
+    }
+}
         await ioPollingService.PollAsync(cancellationToken);
 
         var controllerStatus = await motionController.GetControllerStatusAsync(cancellationToken);
