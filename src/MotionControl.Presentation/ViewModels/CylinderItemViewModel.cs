@@ -10,13 +10,15 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class CylinderItemViewModel : INotifyPropertyChanged
 {
     private readonly Cylinder _cylinder;
+    private readonly Machine _machine;
     private readonly IoControlService _ioControlService;
     private readonly Func<bool> _canControl;
     private readonly CylinderEventRuntimeState _cylinderEventRuntimeState;
 
-    public CylinderItemViewModel(Cylinder cylinder, IoControlService ioControlService, CylinderEventRuntimeState cylinderEventRuntimeState, Func<bool> canControl)
+    public CylinderItemViewModel(Cylinder cylinder, Machine machine, IoControlService ioControlService, CylinderEventRuntimeState cylinderEventRuntimeState, Func<bool> canControl)
     {
         _cylinder = cylinder;
+        _machine = machine;
         _ioControlService = ioControlService;
         _canControl = canControl;
         _cylinderEventRuntimeState = cylinderEventRuntimeState;
@@ -84,6 +86,18 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
 
     public void Refresh()
     {
+        // Read current IO values and update cylinder state
+        var extendSensorOn = _machine.IoPoints
+            .FirstOrDefault(io => !io.IsOutput && io.Address == _cylinder.ExtendSensorInputAddress)?.Value ?? false;
+        var retractSensorOn = _machine.IoPoints
+            .FirstOrDefault(io => !io.IsOutput && io.Address == _cylinder.RetractSensorInputAddress)?.Value ?? false;
+        var extendOutputOn = _machine.IoPoints
+            .FirstOrDefault(io => io.IsOutput && io.Address == _cylinder.ExtendOutputAddress)?.Value ?? false;
+        var retractOutputOn = _machine.IoPoints
+            .FirstOrDefault(io => io.IsOutput && io.Address == _cylinder.RetractOutputAddress)?.Value ?? false;
+
+        _cylinder.UpdateState(extendSensorOn, retractSensorOn, extendOutputOn, retractOutputOn);
+
         OnPropertyChanged(nameof(Name));
         OnPropertyChanged(nameof(Description));
         OnPropertyChanged(nameof(ExtendSensorInputAddress));

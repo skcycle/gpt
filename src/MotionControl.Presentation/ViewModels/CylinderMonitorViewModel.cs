@@ -21,7 +21,7 @@ public sealed class CylinderMonitorViewModel : INotifyPropertyChanged
         _ioControlService = ioControlService;
         _cylinderEventRuntimeState = cylinderEventRuntimeState;
         _canControl = canControl;
-        Cylinders = new ObservableCollection<CylinderItemViewModel>(_machine.Cylinders.Select(BuildViewModel));
+        Cylinders = new ObservableCollection<CylinderItemViewModel>(_machine.Cylinders.Select(c => BuildViewModel(c)));
     }
 
     public ObservableCollection<CylinderItemViewModel> Cylinders { get; }
@@ -72,7 +72,7 @@ public sealed class CylinderMonitorViewModel : INotifyPropertyChanged
         }
     }
 
-    private CylinderItemViewModel BuildViewModel(Cylinder cylinder) => new(cylinder, _ioControlService, _cylinderEventRuntimeState, _canControl);
+    private CylinderItemViewModel BuildViewModel(Cylinder cylinder) => new(cylinder, _machine, _ioControlService, _cylinderEventRuntimeState, _canControl);
 
     private void SyncCollections()
     {
