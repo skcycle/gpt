@@ -20,9 +20,8 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         _ioControlService = ioControlService;
         _canControl = canControl;
         _cylinderEventRuntimeState = cylinderEventRuntimeState;
-        ExtendCommand = new RelayCommand(async () => await SetOutputsAsync(true), () => _canControl());
-        RetractCommand = new RelayCommand(async () => await SetOutputsAsync(false), () => _canControl());
-        StopCommand = new RelayCommand(async () => await StopAsync(), () => _canControl());
+        OpenCommand = new RelayCommand(async () => await SetOutputsAsync(true), () => _canControl());
+        CloseCommand = new RelayCommand(async () => await SetOutputsAsync(false), () => _canControl());
     }
 
     public string Name
@@ -78,9 +77,8 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     }
 
     public string State => _cylinder.State.ToString();
-    public ICommand ExtendCommand { get; }
-    public ICommand RetractCommand { get; }
-    public ICommand StopCommand { get; }
+    public ICommand OpenCommand { get; }
+    public ICommand CloseCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -94,48 +92,39 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(RetractOutputAddress));
         OnPropertyChanged(nameof(ActionTimeoutMs));
         OnPropertyChanged(nameof(State));
-        (ExtendCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        (RetractCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        (StopCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (OpenCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (CloseCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
-    private async Task SetOutputsAsync(bool extend)
+    private async Task SetOutputsAsync(bool open)
     {
-        var first = await _ioControlService.SetOutputAsync(extend ? ExtendOutputAddress : RetractOutputAddress, true);
-        var second = await _ioControlService.SetOutputAsync(extend ? RetractOutputAddress : ExtendOutputAddress, false);
+        var first = await _ioControlService.SetOutputAsync(open ? ExtendOutputAddress : RetractOutputAddress, true);
+        var second = await _ioControlService.SetOutputAsync(open ? RetractOutputAddress : ExtendOutputAddress, false);
         if (first.Success && second.Success)
         {
-            if (extend)
+            if (open)
             {
                 _cylinder.StartExtendCommand();
+                _cylinderEventRuntimeState.Add(new CylinderEventRecord
+                {
+                    CylinderName = _cylinder.Name,
+                    EventType = "Command",
+                    Message = $"{_cylinder.Name} open command sent"
+                });
             }
             else
             {
                 _cylinder.StartRetractCommand();
+                _cylinderEventRuntimeState.Add(new CylinderEventRecord
+                {
+                    CylinderName = _cylinder.Name,
+                    EventType = "Command",
+                    Message = $"{_cylinder.Name} close command sent"
+                });
             }
 
-            _cylinderEventRuntimeState.Add(new CylinderEventRecord
-            {
-                CylinderName = _cylinder.Name,
-                EventType = extend ? "Command" : "Command",
-                Message = extend ? $"{_cylinder.Name} extend command sent" : $"{_cylinder.Name} retract command sent"
-            });
             OnPropertyChanged(nameof(State));
         }
-    }
-
-    private async Task StopAsync()
-    {
-        await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
-        await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
-        _cylinder.ClearPendingCommand();
-        _cylinderEventRuntimeState.Add(new CylinderEventRecord
-        {
-            CylinderName = _cylinder.Name,
-            EventType = "Command",
-            Message = $"{_cylinder.Name} stop command sent"
-        });
-        OnPropertyChanged(nameof(State));
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

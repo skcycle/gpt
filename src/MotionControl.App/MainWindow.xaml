@@ -439,13 +439,12 @@
                             <DataGridTextColumn Header="Retract DO" Binding="{Binding RetractOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="90" />
                             <DataGridTextColumn Header="Timeout(ms)" Binding="{Binding ActionTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="100" />
                             <DataGridTextColumn Header="State" Binding="{Binding State}" Width="110" />
-                            <DataGridTemplateColumn Header="Actions" Width="260">
+                            <DataGridTemplateColumn Header="Actions" Width="180">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <Button Content="Extend" Command="{Binding ExtendCommand}" Width="70" Margin="0,0,6,0" />
-                                            <Button Content="Retract" Command="{Binding RetractCommand}" Width="70" Margin="0,0,6,0" />
-                                            <Button Content="Stop" Command="{Binding StopCommand}" Width="70" />
+                                            <Button Content="Open" Command="{Binding OpenCommand}" Width="80" Margin="0,0,6,0" />
+                                            <Button Content="Close" Command="{Binding CloseCommand}" Width="80" />
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
