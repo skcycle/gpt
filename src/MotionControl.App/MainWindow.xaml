@@ -229,14 +229,6 @@
                                 <TextBlock Text="Name" Foreground="{StaticResource SecondaryTextBrush}" />
                                 <TextBox Text="{Binding AxisParameterEditor.Name}" Margin="0,6,0,8" />
 
-                                <TextBlock Text="Group" Foreground="{StaticResource SecondaryTextBrush}" />
-                                <TextBox Text="{Binding AxisParameterEditor.Group}" Margin="0,6,0,8" />
-
-                                <CheckBox Content="Is Master" IsChecked="{Binding AxisParameterEditor.IsMaster}" Margin="0,4,0,8" />
-
-                                <TextBlock Text="Master Axis Name" Foreground="{StaticResource SecondaryTextBrush}" />
-                                <TextBox Text="{Binding AxisParameterEditor.MasterAxisName}" Margin="0,6,0,8" />
-
                                 <TextBlock Text="SoftLimit Negative" Foreground="{StaticResource SecondaryTextBrush}" />
                                 <TextBox Text="{Binding AxisParameterEditor.SoftLimitNegative}" Margin="0,6,0,8" />
 
