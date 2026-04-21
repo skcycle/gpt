@@ -43,6 +43,7 @@ public static class HostBuilderFactory
                 services.AddSingleton(zmcControllerOptions);
                 services.AddSingleton<ZmcStatusTranslator>();
                 services.AddSingleton<ZmcAxisNativeFacade>();
+                services.AddSingleton<IEtherCatStatusProvider, ZmcPlaceholderEtherCatStatusProvider>();
 
                 services.AddSingleton<ZmcMotionController>();
                 services.AddSingleton<IAxisMotionController>(sp => sp.GetRequiredService<ZmcMotionController>());

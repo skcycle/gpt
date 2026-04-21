@@ -10,7 +10,8 @@ namespace MotionControl.Device.Zmc.Controllers;
 public sealed class ZmcMotionController(
     ZmcControllerOptions options,
     ZmcStatusTranslator statusTranslator,
-    ZmcAxisNativeFacade axisNativeFacade) : IAxisMotionController, IIoController, IEtherCatController, ISafetyController
+    ZmcAxisNativeFacade axisNativeFacade,
+    IEtherCatStatusProvider etherCatStatusProvider) : IAxisMotionController, IIoController, IEtherCatController, ISafetyController
 {
     private bool _isConnected;
 
@@ -101,42 +102,6 @@ public sealed class ZmcMotionController(
     }
 
     public Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default)
-    {
-        var slaves = Enumerable.Range(1, Math.Min(options.AxisCount, 4))
-            .Select(index => new EtherCatSlaveStatus
-            {
-                SlaveNo = index,
-                Name = $"Servo-{index:00}",
-                State = _isConnected ? "OP" : "INIT",
-                ModuleType = index == 1 ? "Coupler" : "Servo",
-                ModuleState = _isConnected ? "Healthy" : "Offline",
-                TopologyPath = $"ECAT/{index:00}",
-                VendorId = index == 1 ? "ZMC" : "GenericDrive",
-                ProductCode = index == 1 ? "Coupler-01" : $"Servo-Drv-{index:00}",
-                FaultText = _isConnected ? string.Empty : "Controller offline",
-                IsOnline = _isConnected,
-                HasAlarm = false
-            })
-            .ToArray();
-
-        var onlineSlaveCount = slaves.Count(slave => slave.IsOnline);
-        var offlineSlaveCount = slaves.Length - onlineSlaveCount;
-        var alarmSlaveCount = slaves.Count(slave => slave.HasAlarm);
-
-        return Task.FromResult(new EtherCatControllerStatus
-        {
-            IsConnected = _isConnected,
-            IsOperational = _isConnected,
-            ExpectedSlaveCount = slaves.Length,
-            OnlineSlaveCount = onlineSlaveCount,
-            OfflineSlaveCount = offlineSlaveCount,
-            AlarmSlaveCount = alarmSlaveCount,
-            HasOfflineSlave = offlineSlaveCount > 0,
-            HasAnySlaveAlarm = alarmSlaveCount > 0,
-            SummaryState = !_isConnected ? "Disconnected" : alarmSlaveCount > 0 ? "Alarm" : offlineSlaveCount > 0 ? "Warning" : "Healthy",
-            NetworkState = _isConnected ? "Operational" : "Disconnected",
-            ControllerModel = "ZMC432EtherCAT",
-            Slaves = slaves
-        });
-    }
+        => Task.FromResult(etherCatStatusProvider.CreateStatus(_isConnected, options.AxisCount));
 }
+
