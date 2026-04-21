@@ -12,7 +12,8 @@ public sealed class AxisRuntimeParameterSyncService(Machine machine) : IAxisRunt
         var axis = machine.Axes.FirstOrDefault(item => item.Id.Value == axisMappingItem.AxisNo);
         if (axis is null)
         {
-            return Task.CompletedTask;
+            axis = new Axis(new AxisId(axisMappingItem.AxisNo), string.IsNullOrWhiteSpace(axisMappingItem.Name) ? $"Axis {axisMappingItem.AxisNo}" : axisMappingItem.Name, axisMappingItem.AxisNo);
+            machine.AddAxis(axis);
         }
 
         if (axisMappingItem.SoftLimitNegative.HasValue && axisMappingItem.SoftLimitPositive.HasValue)

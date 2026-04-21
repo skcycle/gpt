@@ -16,7 +16,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
     private readonly IAxisManagementAppService _axisManagementAppService;
-    private readonly IAxisRuntimeParameterSyncService _axisRuntimeParameterSyncService;
     private readonly IIoManagementAppService _ioManagementAppService;
     private readonly ISystemAppService _systemAppService;
     private readonly ControllerRuntimeState _controllerRuntimeState;
@@ -44,7 +43,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         _machine = machine;
         _axisManagementAppService = axisManagementAppService;
-        _axisRuntimeParameterSyncService = axisRuntimeParameterSyncService;
         _ioManagementAppService = ioManagementAppService;
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
@@ -197,22 +195,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
     private async Task AddAxisAsync()
     {
         var item = await _axisManagementAppService.AddAxisAsync();
-
-        var axis = new Axis(new AxisId(item.AxisNo), item.Name, item.AxisNo);
-        if (item.SoftLimitNegative.HasValue && item.SoftLimitPositive.HasValue)
-        {
-            axis.SetSoftLimit(new SoftLimit(item.SoftLimitNegative.Value, item.SoftLimitPositive.Value));
-        }
-
-        axis.SetHomeMode(item.HomeMode);
-        axis.SetServoBinding(item.ServoBinding);
-        if (item.WorkVelocity.HasValue) axis.SetWorkVelocity(item.WorkVelocity.Value);
-        if (item.SetupVelocity.HasValue) axis.SetSetupVelocity(item.SetupVelocity.Value);
-        if (item.PulseEquivalent.HasValue) axis.SetPulseEquivalent(item.PulseEquivalent.Value);
-
-        _machine.AddAxis(axis);
+        var axis = _machine.Axes.First(a => a.Id.Value == item.AxisNo);
         AxisMonitor.AddAxis(axis);
-        await _axisRuntimeParameterSyncService.ApplyAsync(item);
         await AxisParameterEditor.SyncAxisNoAsync(item.AxisNo);
         RefreshViewModels(force: true);
     }
