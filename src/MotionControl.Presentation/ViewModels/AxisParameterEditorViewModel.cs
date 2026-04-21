@@ -193,9 +193,15 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
             ServoBinding = ServoBinding
         };
 
-        await _axisManagementAppService.SaveAxisAsync(item);
-
-        StatusMessage = $"Axis {AxisNo} config saved and applied";
+        try
+        {
+            await _axisManagementAppService.SaveAxisAsync(item);
+            StatusMessage = $"Axis {AxisNo} config saved and applied";
+        }
+        catch (InvalidOperationException ex)
+        {
+            StatusMessage = ex.Message;
+        }
     }
 
     public async Task ReadControllerAsync()

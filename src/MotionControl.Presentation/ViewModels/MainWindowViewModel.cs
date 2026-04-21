@@ -328,10 +328,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
             return;
         }
 
-        await _ioManagementAppService.SaveIoPointsAsync(items);
-        _ioMonitorCoordinator.AfterLoadOrReload();
-        OperationStatus = $"IO 配置已保存，共 {items.Count} 个点位";
-        RefreshViewModels(force: true);
+        try
+        {
+            await _ioManagementAppService.SaveIoPointsAsync(items);
+            _ioMonitorCoordinator.AfterLoadOrReload();
+            OperationStatus = $"IO 配置已保存，共 {items.Count} 个点位";
+            RefreshViewModels(force: true);
+        }
+        catch (InvalidOperationException ex)
+        {
+            OperationStatus = ex.Message;
+        }
     }
 
     private async Task LoadIoConfigAsync()

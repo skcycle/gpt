@@ -1,4 +1,6 @@
+using System.Linq;
 using MotionControl.Application.Interfaces;
+using MotionControl.Application.Validation;
 using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Application.Services;
@@ -33,8 +35,10 @@ public sealed class IoManagementAppService(
 
     public async Task SaveIoPointsAsync(IEnumerable<IoPointConfigItem> ioPoints, CancellationToken cancellationToken = default)
     {
-        await ioConfigAppService.SaveIoPointsAsync(ioPoints, cancellationToken);
-        await ioRuntimeSyncService.ReloadAsync(ioPoints, cancellationToken);
+        var items = ioPoints.ToList();
+        IoConfigValidator.Validate(items);
+        await ioConfigAppService.SaveIoPointsAsync(items, cancellationToken);
+        await ioRuntimeSyncService.ReloadAsync(items, cancellationToken);
     }
 
     public async Task<IReadOnlyList<IoPointConfigItem>> LoadIoPointsAsync(CancellationToken cancellationToken = default)

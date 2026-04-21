@@ -1,4 +1,5 @@
 using MotionControl.Application.Interfaces;
+using MotionControl.Application.Validation;
 using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Application.Services;
@@ -24,6 +25,7 @@ public sealed class AxisManagementAppService(
 
     public async Task SaveAxisAsync(AxisMappingItem axisMappingItem, CancellationToken cancellationToken = default)
     {
+        AxisConfigValidator.Validate(axisMappingItem);
         await axisParameterAppService.SaveAxisParametersAsync(axisMappingItem, cancellationToken);
         await axisRuntimeParameterSyncService.ApplyAsync(axisMappingItem, cancellationToken);
     }
