@@ -12,12 +12,14 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     private readonly Cylinder _cylinder;
     private readonly IoControlService _ioControlService;
     private readonly Func<bool> _canControl;
+    private readonly CylinderEventRuntimeState _cylinderEventRuntimeState;
 
-    public CylinderItemViewModel(Cylinder cylinder, IoControlService ioControlService, Func<bool> canControl)
+    public CylinderItemViewModel(Cylinder cylinder, IoControlService ioControlService, CylinderEventRuntimeState cylinderEventRuntimeState, Func<bool> canControl)
     {
         _cylinder = cylinder;
         _ioControlService = ioControlService;
         _canControl = canControl;
+        _cylinderEventRuntimeState = cylinderEventRuntimeState;
         ExtendCommand = new RelayCommand(async () => await SetOutputsAsync(true), () => _canControl());
         RetractCommand = new RelayCommand(async () => await SetOutputsAsync(false), () => _canControl());
         StopCommand = new RelayCommand(async () => await StopAsync(), () => _canControl());
@@ -112,6 +114,12 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
                 _cylinder.StartRetractCommand();
             }
 
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord
+            {
+                CylinderName = _cylinder.Name,
+                EventType = extend ? "Command" : "Command",
+                Message = extend ? $"{_cylinder.Name} extend command sent" : $"{_cylinder.Name} retract command sent"
+            });
             OnPropertyChanged(nameof(State));
         }
     }
@@ -121,6 +129,12 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
         await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
         _cylinder.ClearPendingCommand();
+        _cylinderEventRuntimeState.Add(new CylinderEventRecord
+        {
+            CylinderName = _cylinder.Name,
+            EventType = "Command",
+            Message = $"{_cylinder.Name} stop command sent"
+        });
         OnPropertyChanged(nameof(State));
     }
 

@@ -413,6 +413,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -427,7 +428,8 @@
                               SelectedItem="{Binding CylinderMonitor.SelectedCylinder, Mode=TwoWay}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
-                              IsReadOnly="False">
+                              IsReadOnly="False"
+                              Margin="0,0,0,12">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="140" />
                             <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="160" />
@@ -450,6 +452,17 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <GroupBox Grid.Row="2" Header="Cylinder Event Log">
+                        <DataGrid ItemsSource="{Binding CylinderEventLog.Events}" AutoGenerateColumns="False" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="120" />
+                                <DataGridTextColumn Header="Cylinder" Binding="{Binding CylinderName}" Width="160" />
+                                <DataGridTextColumn Header="Type" Binding="{Binding EventType}" Width="100" />
+                                <DataGridTextColumn Header="Message" Binding="{Binding Description}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
                 </Grid>
             </TabItem>
 
