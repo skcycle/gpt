@@ -9,8 +9,7 @@ namespace MotionControl.Presentation.ViewModels;
 
 public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
 {
-    private readonly IAxisParameterAppService _axisParameterAppService;
-    private readonly IAxisRuntimeParameterSyncService _axisRuntimeParameterSyncService;
+    private readonly IAxisManagementAppService _axisManagementAppService;
     private readonly IAxisControllerParameterAppService _axisControllerParameterAppService;
     private int _axisNo;
     private string _name = string.Empty;
@@ -27,10 +26,9 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     private string _statusMessage = "Ready";
     private string _controllerParameterSnapshot = string.Empty;
 
-    public AxisParameterEditorViewModel(IAxisParameterAppService axisParameterAppService, IAxisRuntimeParameterSyncService axisRuntimeParameterSyncService, IAxisControllerParameterAppService axisControllerParameterAppService)
+    public AxisParameterEditorViewModel(IAxisManagementAppService axisManagementAppService, IAxisControllerParameterAppService axisControllerParameterAppService)
     {
-        _axisParameterAppService = axisParameterAppService;
-        _axisRuntimeParameterSyncService = axisRuntimeParameterSyncService;
+        _axisManagementAppService = axisManagementAppService;
         _axisControllerParameterAppService = axisControllerParameterAppService;
         LoadCommand = new RelayCommand(async () => await LoadAsync(), () => AxisNo >= 0);
         SaveCommand = new RelayCommand(async () => await SaveAsync(), () => AxisNo >= 0);
@@ -144,7 +142,7 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
 
     public async Task LoadAsync()
     {
-        var item = await _axisParameterAppService.LoadAxisParametersAsync(AxisNo);
+        var item = await _axisManagementAppService.LoadAxisAsync(AxisNo);
         if (item is null)
         {
             StatusMessage = $"Axis {AxisNo} config not found";
@@ -162,7 +160,6 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         PulseEquivalent = item.PulseEquivalent ?? 1000;
         HomeMode = item.HomeMode;
         ServoBinding = item.ServoBinding;
-        await _axisRuntimeParameterSyncService.ApplyAsync(item);
         StatusMessage = $"Axis {AxisNo} config loaded and applied";
     }
 
@@ -184,8 +181,7 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
             ServoBinding = ServoBinding
         };
 
-        await _axisParameterAppService.SaveAxisParametersAsync(item);
-        await _axisRuntimeParameterSyncService.ApplyAsync(item);
+        await _axisManagementAppService.SaveAxisAsync(item);
 
         StatusMessage = $"Axis {AxisNo} config saved and applied";
     }

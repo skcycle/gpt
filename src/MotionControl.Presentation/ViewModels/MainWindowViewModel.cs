@@ -32,8 +32,6 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         ISystemAppService systemAppService,
         IMotionAppService motionAppService,
         IAxisManagementAppService axisManagementAppService,
-        IAxisParameterAppService axisParameterAppService,
-        IAxisRuntimeParameterSyncService axisRuntimeParameterSyncService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
         IIoManagementAppService ioManagementAppService,
         ControllerRuntimeState controllerRuntimeState,
@@ -63,7 +61,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         };
         IoEventLog = new IoEventLogViewModel(commandFeedbackRuntimeState);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState);
-        AxisParameterEditor = new AxisParameterEditorViewModel(axisParameterAppService, axisRuntimeParameterSyncService, axisControllerParameterAppService);
+        AxisParameterEditor = new AxisParameterEditorViewModel(axisManagementAppService, axisControllerParameterAppService);
         AxisMonitor.SelectedAxisChanged += async axis => await HandleSelectedAxisChangedAsync(axis);
         AxisDebug.SelectedAxisChanged += async axisNo => await AxisParameterEditor.SyncAxisNoAsync(axisNo);
         Alarm = new AlarmViewModel(machine);
