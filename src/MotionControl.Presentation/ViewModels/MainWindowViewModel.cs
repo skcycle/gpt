@@ -15,7 +15,7 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class MainWindowViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
-    private readonly IAxisParameterAppService _axisParameterAppService;
+    private readonly IAxisManagementAppService _axisManagementAppService;
     private readonly IAxisRuntimeParameterSyncService _axisRuntimeParameterSyncService;
     private readonly IIoManagementAppService _ioManagementAppService;
     private readonly ISystemAppService _systemAppService;
@@ -32,6 +32,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         Machine machine,
         ISystemAppService systemAppService,
         IMotionAppService motionAppService,
+        IAxisManagementAppService axisManagementAppService,
         IAxisParameterAppService axisParameterAppService,
         IAxisRuntimeParameterSyncService axisRuntimeParameterSyncService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
@@ -42,7 +43,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         IoControlService ioControlService)
     {
         _machine = machine;
-        _axisParameterAppService = axisParameterAppService;
+        _axisManagementAppService = axisManagementAppService;
         _axisRuntimeParameterSyncService = axisRuntimeParameterSyncService;
         _ioManagementAppService = ioManagementAppService;
         _systemAppService = systemAppService;
@@ -195,7 +196,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
 
     private async Task AddAxisAsync()
     {
-        var item = await _axisParameterAppService.AddAxisAsync();
+        var item = await _axisManagementAppService.AddAxisAsync();
 
         var axis = new Axis(new AxisId(item.AxisNo), item.Name, item.AxisNo);
         if (item.SoftLimitNegative.HasValue && item.SoftLimitPositive.HasValue)
@@ -225,7 +226,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged
         }
 
         var axisNo = selectedAxis.AxisNo;
-        var removed = await _axisParameterAppService.DeleteAxisAsync(axisNo);
+        var removed = await _axisManagementAppService.DeleteAxisAsync(axisNo);
         if (!removed)
         {
             return;
