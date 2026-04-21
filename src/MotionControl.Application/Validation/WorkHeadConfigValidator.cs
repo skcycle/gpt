@@ -28,25 +28,43 @@ public static class WorkHeadConfigValidator
             {
                 throw new InvalidOperationException($"WorkHead {item.Name} 的 Vacuum DO 和 Blow DO 不能相同");
             }
-
-            if (item.VacuumInputAddress >= 0 && (item.VacuumInputAddress == item.VacuumOutputAddress || item.VacuumInputAddress == item.BlowOutputAddress))
-            {
-                throw new InvalidOperationException($"WorkHead {item.Name} 的 Vacuum DI 不能和 DO 重复");
-            }
         }
 
-        ValidateUnique(items.Select(i => (i.Name, i.VacuumOutputAddress, Label: "Vacuum DO")));
-        ValidateUnique(items.Select(i => (i.Name, i.BlowOutputAddress, Label: "Blow DO")));
-        ValidateUnique(items.Select(i => (i.Name, i.VacuumInputAddress, Label: "Vacuum DI")));
+        ValidateUniqueOutput(items);
+        ValidateUniqueInput(items);
     }
 
-    private static void ValidateUnique(IEnumerable<(string Name, int Address, string Label)> refs)
+    private static void ValidateUniqueOutput(IEnumerable<WorkHeadConfigItem> items)
     {
-        var duplicate = refs.Where(x => x.Address >= 0).GroupBy(x => x.Address).FirstOrDefault(g => g.Count() > 1);
+        var duplicate = items
+            .SelectMany(item => new[]
+            {
+                (item.Name, Address: item.VacuumOutputAddress, Label: "Vacuum DO"),
+                (item.Name, Address: item.BlowOutputAddress, Label: "Blow DO")
+            })
+            .Where(x => x.Address >= 0)
+            .GroupBy(x => x.Address)
+            .FirstOrDefault(g => g.Count() > 1);
+
         if (duplicate is not null)
         {
             var details = string.Join(", ", duplicate.Select(x => $"{x.Name}:{x.Label}"));
-            throw new InvalidOperationException($"WorkHead IO 地址重复: {duplicate.Key}，涉及 {details}");
+            throw new InvalidOperationException($"WorkHead DO 地址重复: {duplicate.Key}，涉及 {details}");
+        }
+    }
+
+    private static void ValidateUniqueInput(IEnumerable<WorkHeadConfigItem> items)
+    {
+        var duplicate = items
+            .Select(item => (item.Name, Address: item.VacuumInputAddress, Label: "Vacuum DI"))
+            .Where(x => x.Address >= 0)
+            .GroupBy(x => x.Address)
+            .FirstOrDefault(g => g.Count() > 1);
+
+        if (duplicate is not null)
+        {
+            var details = string.Join(", ", duplicate.Select(x => $"{x.Name}:{x.Label}"));
+            throw new InvalidOperationException($"WorkHead DI 地址重复: {duplicate.Key}，涉及 {details}");
         }
     }
 }
