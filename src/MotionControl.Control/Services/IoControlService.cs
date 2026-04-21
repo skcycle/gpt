@@ -15,18 +15,21 @@ public sealed class IoControlService(IIoController motionController, Machine mac
         }
 
         var ioPoint = machine.IoPoints.FirstOrDefault(x => x.IsOutput && x.Address == address);
-        if (ioPoint is not null)
+        if (ioPoint is null)
         {
-            ioPoint.Update(value);
-            ioEventRuntimeState.Add(new IoEventRecord
-            {
-                Name = ioPoint.Name,
-                Address = ioPoint.Address,
-                IsOutput = true,
-                Value = value,
-                Message = $"{ioPoint.Name} -> {(value ? "ON" : "OFF")}"
-            });
+            ioPoint = new IoPoint($"DO {address}", address, true);
+            machine.AddIoPoint(ioPoint);
         }
+
+        ioPoint.Update(value);
+        ioEventRuntimeState.Add(new IoEventRecord
+        {
+            Name = ioPoint.Name,
+            Address = ioPoint.Address,
+            IsOutput = true,
+            Value = value,
+            Message = $"{ioPoint.Name} -> {(value ? "ON" : "OFF")}"
+        });
 
         return result;
     }
