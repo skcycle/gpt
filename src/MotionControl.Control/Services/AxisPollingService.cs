@@ -1,6 +1,7 @@
 using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Domain.Entities;
+using MotionControl.Domain.Enums;
 
 namespace MotionControl.Control.Services;
 
@@ -34,8 +35,8 @@ public sealed class AxisPollingService(
             {
                 axis.ApplyState(nextState);
 
-                var shouldRecordRuntimeEvent = !(previousState is Domain.Enums.AxisState.Standstill && nextState is Domain.Enums.AxisState.Moving)
-                    && !(previousState is Domain.Enums.AxisState.Moving && nextState is Domain.Enums.AxisState.Standstill);
+                var shouldRecordRuntimeEvent = !(previousState is AxisState.Standstill && nextState is AxisState.Moving)
+                    && !(previousState is AxisState.Moving && nextState is AxisState.Standstill);
 
                 if (shouldRecordRuntimeEvent)
                 {
