@@ -94,6 +94,17 @@ public sealed class ZmcAxisNativeFacade
 
     public int SetOutput(int ioNo, int value) => ZmcNativeApi.DirectSetOp(_handle, ioNo, value);
 
+    public int ProbeConnection()
+    {
+        if (_handle == IntPtr.Zero)
+        {
+            return -1;
+        }
+
+        var buffer = new StringBuilder(32);
+        return ZmcNativeApi.Execute(_handle, "?SYS_TIME", buffer, 32);
+    }
+
     public string ReadAxisParameters(int axisNo)
     {
         if (_handle == IntPtr.Zero)

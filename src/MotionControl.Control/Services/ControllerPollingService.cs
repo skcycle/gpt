@@ -116,6 +116,14 @@ public sealed class ControllerPollingService(
         }
         catch
         {
+            machine.SetConnected(false);
+            controllerRuntimeState.Update(new MotionControl.Device.Abstractions.Models.EtherCatControllerStatus
+            {
+                IsConnected = false,
+                NetworkState = "Disconnected",
+                OnlineSlaveCount = 0,
+                Slaves = Array.Empty<MotionControl.Device.Abstractions.Models.EtherCatSlaveStatus>()
+            });
             // 控制器断连等异常不打断轮询，让上层决定是否停止
         }
         finally

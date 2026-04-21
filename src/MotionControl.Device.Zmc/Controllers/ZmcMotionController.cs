@@ -102,6 +102,18 @@ public sealed class ZmcMotionController(
     }
 
     public Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default)
-        => Task.FromResult(etherCatStatusProvider.CreateStatus(_isConnected, options.AxisCount));
+    {
+        if (_isConnected)
+        {
+            var probeResult = axisNativeFacade.ProbeConnection();
+            if (probeResult != 0)
+            {
+                _isConnected = false;
+                axisNativeFacade.Disconnect();
+            }
+        }
+
+        return Task.FromResult(etherCatStatusProvider.CreateStatus(_isConnected, options.AxisCount));
+    }
 }
 
