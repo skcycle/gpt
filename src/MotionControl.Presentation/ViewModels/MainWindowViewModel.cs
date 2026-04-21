@@ -550,6 +550,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             VacuumInputAddress = workHead.VacuumInputAddress
         }).ToList();
 
+        if (!UiGuards.Confirm("保存 WorkHead 配置", "确定覆盖当前 WorkHead 配置到 appsettings.json 吗？"))
+        {
+            OperationStatus = "已取消保存 WorkHead 配置";
+            return;
+        }
+
         try
         {
             await _workHeadManagementAppService.SaveWorkHeadsAsync(items);
@@ -565,6 +571,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private async Task LoadWorkHeadConfigAsync()
     {
+        if (!UiGuards.Confirm("加载 WorkHead 配置", "确定从 appsettings.json 重新加载 WorkHead 配置吗？未保存修改将丢失。"))
+        {
+            OperationStatus = "已取消加载 WorkHead 配置";
+            return;
+        }
+
         await _workHeadManagementAppService.LoadWorkHeadsAsync();
         OperationStatus = "WorkHead 配置已重新加载";
         RefreshViewModels(force: true);
