@@ -558,15 +558,16 @@
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               IsReadOnly="False"
-                              VerticalContentAlignment="Center">
+                              VerticalContentAlignment="Center"
+                              Margin="0,0,0,12">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="140" />
-                            <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="160" />
-                            <DataGridTextColumn Header="X Axis" Binding="{Binding XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="70" />
-                            <DataGridTextColumn Header="Y Axis" Binding="{Binding YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="70" />
-                            <DataGridTextColumn Header="Z Axis" Binding="{Binding ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="70" />
-                            <DataGridTextColumn Header="R Axis" Binding="{Binding RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="70" />
-                            <DataGridTemplateColumn Header="Vacuum DO" Width="100">
+                            <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="180" />
+                            <DataGridTextColumn Header="X Axis" Binding="{Binding XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
+                            <DataGridTextColumn Header="Y Axis" Binding="{Binding YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
+                            <DataGridTextColumn Header="Z Axis" Binding="{Binding ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
+                            <DataGridTextColumn Header="R Axis" Binding="{Binding RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
+                            <DataGridTemplateColumn Header="Vacuum DO" Width="105">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -581,7 +582,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Blow DO" Width="100">
+                            <DataGridTemplateColumn Header="Blow DO" Width="105">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -596,7 +597,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Vacuum DI" Width="100">
+                            <DataGridTemplateColumn Header="Vacuum DI" Width="105">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
