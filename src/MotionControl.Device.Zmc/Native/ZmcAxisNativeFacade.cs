@@ -4,6 +4,10 @@ namespace MotionControl.Device.Zmc.Native;
 
 public sealed class ZmcAxisNativeFacade
 {
+    // ZMC 在线探活命令。这里使用 ?SPEED(0)，因为它已经在现有项目链路中被验证可正常响应。
+    // 不要随意替换成未验证的查询（例如 ?SYS_TIME），否则会出现“控制器已连接但被误判为断连”的问题。
+    private const string ConnectionProbeCommand = "?SPEED(0)";
+
     private IntPtr _handle = IntPtr.Zero;
 
     public bool IsConnected => _handle != IntPtr.Zero;
@@ -102,7 +106,7 @@ public sealed class ZmcAxisNativeFacade
         }
 
         var buffer = new StringBuilder(64);
-        return ZmcNativeApi.Execute(_handle, "?SPEED(0)", buffer, 64);
+        return ZmcNativeApi.Execute(_handle, ConnectionProbeCommand, buffer, 64);
     }
 
     public string ReadAxisParameters(int axisNo)
