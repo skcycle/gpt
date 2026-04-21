@@ -28,9 +28,6 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     public bool HasAlarm => _axis.HasAlarm;
     public bool IsHomed => _axis.IsHomed;
     public bool IsServoOn => _axis.ServoState == Domain.Enums.ServoState.On;
-    private bool _pendingServoState;
-    private bool _hasPendingServoState;
-    public bool PendingServoOn => _hasPendingServoState ? _pendingServoState : IsServoOn;
     public ICommand ToggleServoCommand { get; }
     public bool PositiveSoftLimitTriggered => _axis.PositiveSoftLimitTriggered;
     public bool NegativeSoftLimitTriggered => _axis.NegativeSoftLimitTriggered;
@@ -68,7 +65,6 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Name));
         OnPropertyChanged(nameof(HomeMode));
         OnPropertyChanged(nameof(ServoBinding));
-        OnPropertyChanged(nameof(PendingServoOn));
         (ClearAlarmCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (ToggleServoCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
@@ -90,14 +86,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     {
         try
         {
-            // 先真实读取控制器当前使能状态
             var currentOn = await _axisControlService.IsServoOnAsync(_axis);
-
-            // 乐观 UI：立即翻转勾状态，不等命令返回
-            _pendingServoState = !currentOn;
-            _hasPendingServoState = true;
-            OnPropertyChanged(nameof(PendingServoOn));
-
             if (currentOn)
             {
                 await _axisControlService.DisableAxisAsync(_axis);
@@ -106,15 +95,10 @@ public sealed class AxisViewModel : INotifyPropertyChanged
             {
                 await _axisControlService.EnableAxisAsync(_axis);
             }
-
             Refresh();
-            _hasPendingServoState = false;
-            OnPropertyChanged(nameof(PendingServoOn));
         }
         catch (InvalidOperationException ex)
         {
-            _hasPendingServoState = false;
-            OnPropertyChanged(nameof(PendingServoOn));
             System.Windows.MessageBox.Show(ex.Message, "伺服切换失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
         }
     }
