@@ -50,7 +50,10 @@ public sealed class ZmcMotionController(
             axisNativeFacade.GetAxisStatus(axisNo, ref axisStatus);
         }
 
-        return Task.FromResult(statusTranslator.Translate(axisNo, dpos, mpos, speed, idle, axisStatus, homeStatus, busEnableStatus));
+        var axisEnable = 0;
+        axisNativeFacade.GetAxisEnable(axisNo, ref axisEnable);
+
+        return Task.FromResult(statusTranslator.Translate(axisNo, dpos, mpos, speed, idle, axisStatus, homeStatus, axisEnable));
     }
 
     public Task<DeviceResult> EnableAxisAsync(int axisNo, CancellationToken cancellationToken = default)
