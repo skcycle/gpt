@@ -105,6 +105,11 @@ public partial class MainWindow : Window
         if (GetCylinderItemViewModel(sender) is { } vm) { vm.ReleaseOpen(); e.Handled = true; }
     }
 
+    private void OpenButton_MouseLeave(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed && GetCylinderItemViewModel(sender) is { } vm) vm.ReleaseOpen();
+    }
+
     private void CloseButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (GetCylinderItemViewModel(sender) is { } vm) { vm.PressClose(); e.Handled = true; }
@@ -113,6 +118,11 @@ public partial class MainWindow : Window
     private void CloseButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         if (GetCylinderItemViewModel(sender) is { } vm) { vm.ReleaseClose(); e.Handled = true; }
+    }
+
+    private void CloseButton_MouseLeave(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton == MouseButtonState.Pressed && GetCylinderItemViewModel(sender) is { } vm) vm.ReleaseClose();
     }
 
     private static CylinderItemViewModel? GetCylinderItemViewModel(object sender)

@@ -179,11 +179,14 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     // 按住驱动：按下开，抬起关
     public async void PressOpen()
     {
-        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0) return;
+        if (_cylinder.ExtendOutputAddress < 0) return;
         await _ioControlService.SetOutputAsync(ExtendOutputAddress, true);
-        await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
+        if (_cylinder.RetractOutputAddress >= 0)
+        {
+            await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
+        }
         _cylinder.StartExtendCommand();
-        OnPropertyChanged(nameof(State));
+        Refresh();
     }
 
     public async void ReleaseOpen()
@@ -191,16 +194,19 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         if (_cylinder.ExtendOutputAddress < 0) return;
         await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
         _cylinder.ClearPendingCommand();
-        OnPropertyChanged(nameof(State));
+        Refresh();
     }
 
     public async void PressClose()
     {
-        if (_cylinder.ExtendOutputAddress < 0 || _cylinder.RetractOutputAddress < 0) return;
+        if (_cylinder.RetractOutputAddress < 0) return;
         await _ioControlService.SetOutputAsync(RetractOutputAddress, true);
-        await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
+        if (_cylinder.ExtendOutputAddress >= 0)
+        {
+            await _ioControlService.SetOutputAsync(ExtendOutputAddress, false);
+        }
         _cylinder.StartRetractCommand();
-        OnPropertyChanged(nameof(State));
+        Refresh();
     }
 
     public async void ReleaseClose()
@@ -208,7 +214,7 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         if (_cylinder.RetractOutputAddress < 0) return;
         await _ioControlService.SetOutputAsync(RetractOutputAddress, false);
         _cylinder.ClearPendingCommand();
-        OnPropertyChanged(nameof(State));
+        Refresh();
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
