@@ -2,7 +2,7 @@ namespace MotionControl.Domain.Entities;
 
 public sealed class WorkHead
 {
-    public WorkHead(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2)
+    public WorkHead(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs = 3000)
     {
         Name = name;
         Description = description;
@@ -17,6 +17,7 @@ public sealed class WorkHead
         GeneralOutputAddress2 = generalOutputAddress2;
         GeneralInputAddress1 = generalInputAddress1;
         GeneralInputAddress2 = generalInputAddress2;
+        VacuumTimeoutMs = vacuumTimeoutMs;
     }
 
     public string Name { get; private set; }
@@ -32,8 +33,15 @@ public sealed class WorkHead
     public int GeneralOutputAddress2 { get; private set; }
     public int GeneralInputAddress1 { get; private set; }
     public int GeneralInputAddress2 { get; private set; }
+    public int VacuumTimeoutMs { get; private set; }
 
-    public void UpdateMetadata(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2)
+    public bool PendingVacuumCommand { get; private set; }
+    public DateTime? VacuumCommandStartedAtUtc { get; private set; }
+    public bool VacuumSuccessLogged { get; set; }
+    public bool VacuumTimeoutLogged { get; set; }
+    public bool VacuumConflictLogged { get; set; }
+
+    public void UpdateMetadata(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs)
     {
         Name = name;
         Description = description;
@@ -48,5 +56,31 @@ public sealed class WorkHead
         GeneralOutputAddress2 = generalOutputAddress2;
         GeneralInputAddress1 = generalInputAddress1;
         GeneralInputAddress2 = generalInputAddress2;
+        VacuumTimeoutMs = vacuumTimeoutMs;
+    }
+
+    public void StartVacuumCommand()
+    {
+        PendingVacuumCommand = true;
+        VacuumCommandStartedAtUtc = DateTime.UtcNow;
+        VacuumSuccessLogged = false;
+        VacuumTimeoutLogged = false;
+        VacuumConflictLogged = false;
+    }
+
+    public void StopVacuumCommand()
+    {
+        PendingVacuumCommand = false;
+        VacuumCommandStartedAtUtc = null;
+        VacuumSuccessLogged = false;
+        VacuumTimeoutLogged = false;
+        VacuumConflictLogged = false;
+    }
+
+    public bool HasVacuumTimedOut(DateTime utcNow)
+    {
+        return PendingVacuumCommand
+            && VacuumCommandStartedAtUtc.HasValue
+            && utcNow - VacuumCommandStartedAtUtc.Value >= TimeSpan.FromMilliseconds(VacuumTimeoutMs);
     }
 }

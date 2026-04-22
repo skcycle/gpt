@@ -636,6 +636,7 @@
                                 <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding GeneralDi2Brush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding GeneralInputAddress2}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
                                 <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding GeneralInputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Vacuum Timeout(ms)" Binding="{Binding VacuumTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="130" />
                             <DataGridTemplateColumn Header="Actions" Width="180">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

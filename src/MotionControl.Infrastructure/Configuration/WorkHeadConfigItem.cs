@@ -15,4 +15,5 @@ public sealed class WorkHeadConfigItem
     public int GeneralOutputAddress2 { get; set; } = -1;
     public int GeneralInputAddress1 { get; set; } = -1;
     public int GeneralInputAddress2 { get; set; } = -1;
+    public int VacuumTimeoutMs { get; set; } = 3000;
 }

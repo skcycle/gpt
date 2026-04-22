@@ -16,6 +16,11 @@ public static class WorkHeadConfigValidator
             throw new InvalidOperationException("WorkHead DI/DO 地址不能小于 -1");
         }
 
+        if (items.Any(item => item.VacuumTimeoutMs <= 0))
+        {
+            throw new InvalidOperationException("WorkHead VacuumTimeoutMs 必须大于 0");
+        }
+
         var duplicateName = items.GroupBy(item => item.Name.Trim(), StringComparer.OrdinalIgnoreCase).FirstOrDefault(group => group.Count() > 1);
         if (duplicateName is not null)
         {

@@ -39,6 +39,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     public int GeneralOutputAddress2 { get => _workHead.GeneralOutputAddress2; set { if (_workHead.GeneralOutputAddress2 == value) return; UpdateMetadata(generalOutputAddress2: value); OnPropertyChanged(); } }
     public int GeneralInputAddress1 { get => _workHead.GeneralInputAddress1; set { if (_workHead.GeneralInputAddress1 == value) return; UpdateMetadata(generalInputAddress1: value); OnPropertyChanged(); } }
     public int GeneralInputAddress2 { get => _workHead.GeneralInputAddress2; set { if (_workHead.GeneralInputAddress2 == value) return; UpdateMetadata(generalInputAddress2: value); OnPropertyChanged(); } }
+    public int VacuumTimeoutMs { get => _workHead.VacuumTimeoutMs; set { if (_workHead.VacuumTimeoutMs == value) return; UpdateMetadata(vacuumTimeoutMs: value); OnPropertyChanged(); } }
 
     public bool VacuumDoOn { get; private set; }
     public bool BlowDoOn { get; private set; }
@@ -71,7 +72,9 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(VacuumDoOn)); OnPropertyChanged(nameof(BlowDoOn)); OnPropertyChanged(nameof(VacuumDiOn)); OnPropertyChanged(nameof(GeneralDo1On)); OnPropertyChanged(nameof(GeneralDo2On)); OnPropertyChanged(nameof(GeneralDi1On)); OnPropertyChanged(nameof(GeneralDi2On));
         OnPropertyChanged(nameof(VacuumDoBrush)); OnPropertyChanged(nameof(BlowDoBrush)); OnPropertyChanged(nameof(VacuumDiBrush)); OnPropertyChanged(nameof(GeneralDo1Brush)); OnPropertyChanged(nameof(GeneralDo2Brush)); OnPropertyChanged(nameof(GeneralDi1Brush)); OnPropertyChanged(nameof(GeneralDi2Brush));
         OnPropertyChanged(nameof(Name)); OnPropertyChanged(nameof(Description)); OnPropertyChanged(nameof(XAxisNo)); OnPropertyChanged(nameof(YAxisNo)); OnPropertyChanged(nameof(ZAxisNo)); OnPropertyChanged(nameof(RAxisNo));
-        OnPropertyChanged(nameof(VacuumOutputAddress)); OnPropertyChanged(nameof(BlowOutputAddress)); OnPropertyChanged(nameof(VacuumInputAddress)); OnPropertyChanged(nameof(GeneralOutputAddress1)); OnPropertyChanged(nameof(GeneralOutputAddress2)); OnPropertyChanged(nameof(GeneralInputAddress1)); OnPropertyChanged(nameof(GeneralInputAddress2));
+        OnPropertyChanged(nameof(VacuumOutputAddress)); OnPropertyChanged(nameof(BlowOutputAddress)); OnPropertyChanged(nameof(VacuumInputAddress)); OnPropertyChanged(nameof(GeneralOutputAddress1)); OnPropertyChanged(nameof(GeneralOutputAddress2)); OnPropertyChanged(nameof(GeneralInputAddress1)); OnPropertyChanged(nameof(GeneralInputAddress2)); OnPropertyChanged(nameof(VacuumTimeoutMs));
+
+        EvaluateVacuumRuntime();
         (VacuumCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (BlowCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
@@ -89,6 +92,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
 
         var result = await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, next);
         if (!result.Success) return;
+        if (next) _workHead.StartVacuumCommand(); else _workHead.StopVacuumCommand();
         _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = next ? $"{_workHead.Name} vacuum on" : $"{_workHead.Name} vacuum off" });
         Refresh();
     }
@@ -102,6 +106,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         {
             var vacuumOff = await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, false);
             if (!vacuumOff.Success) return;
+            _workHead.StopVacuumCommand();
         }
 
         var result = await _ioControlService.SetOutputAsync(_workHead.BlowOutputAddress, next);
@@ -123,7 +128,8 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         int? generalOutputAddress1 = null,
         int? generalOutputAddress2 = null,
         int? generalInputAddress1 = null,
-        int? generalInputAddress2 = null)
+        int? generalInputAddress2 = null,
+        int? vacuumTimeoutMs = null)
     {
         _workHead.UpdateMetadata(
             name ?? _workHead.Name,
@@ -138,7 +144,30 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
             generalOutputAddress1 ?? _workHead.GeneralOutputAddress1,
             generalOutputAddress2 ?? _workHead.GeneralOutputAddress2,
             generalInputAddress1 ?? _workHead.GeneralInputAddress1,
-            generalInputAddress2 ?? _workHead.GeneralInputAddress2);
+            generalInputAddress2 ?? _workHead.GeneralInputAddress2,
+            vacuumTimeoutMs ?? _workHead.VacuumTimeoutMs);
+    }
+
+    private void EvaluateVacuumRuntime()
+    {
+        if (VacuumDoOn && VacuumDiOn && _workHead.PendingVacuumCommand && !_workHead.VacuumSuccessLogged)
+        {
+            _workHead.VacuumSuccessLogged = true;
+            _workHead.StopVacuumCommand();
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Success", Message = $"{_workHead.Name} vacuum detected" });
+        }
+
+        if (!VacuumDoOn && VacuumDiOn && !_workHead.VacuumConflictLogged)
+        {
+            _workHead.VacuumConflictLogged = true;
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Conflict", Message = $"{_workHead.Name} vacuum DI on while vacuum DO off" });
+        }
+
+        if (_workHead.HasVacuumTimedOut(DateTime.UtcNow) && !_workHead.VacuumTimeoutLogged)
+        {
+            _workHead.VacuumTimeoutLogged = true;
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Timeout", Message = $"{_workHead.Name} vacuum timeout" });
+        }
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

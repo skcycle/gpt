@@ -556,7 +556,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             GeneralOutputAddress1 = workHead.GeneralOutputAddress1,
             GeneralOutputAddress2 = workHead.GeneralOutputAddress2,
             GeneralInputAddress1 = workHead.GeneralInputAddress1,
-            GeneralInputAddress2 = workHead.GeneralInputAddress2
+            GeneralInputAddress2 = workHead.GeneralInputAddress2,
+            VacuumTimeoutMs = workHead.VacuumTimeoutMs
         }).ToList();
 
         if (!UiGuards.Confirm("保存 WorkHead 配置", "确定覆盖当前 WorkHead 配置到 appsettings.json 吗？"))
