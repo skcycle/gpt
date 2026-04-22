@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using MotionControl.Domain.Enums;
 using MotionControl.Application.Interfaces;
-using MotionControl.Control.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 using MotionControl.Domain.ValueObjects;
@@ -45,7 +44,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IMotionAppService motionAppService,
         IAxisManagementAppService axisManagementAppService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
-        IAxisControlService axisControlService,
+        MotionControl.Control.Interfaces.IAxisControlService axisControlService,
         IIoManagementAppService ioManagementAppService,
         ICylinderManagementAppService cylinderManagementAppService,
         IWorkHeadManagementAppService workHeadManagementAppService,

@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using MotionControl.Control.Interfaces;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Presentation.ViewModels;
@@ -11,7 +10,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
     private readonly Machine _machine;
     private AxisViewModel? _selectedAxis;
 
-    public AxisMonitorViewModel(Machine machine, IAxisControlService axisControlService)
+    public AxisMonitorViewModel(Machine machine, MotionControl.Control.Interfaces.IAxisControlService axisControlService)
     {
         _machine = machine;
         _axisControlService = axisControlService;
@@ -94,9 +93,9 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         }
     }
 
-    private readonly IAxisControlService _axisControlService;
+    private readonly MotionControl.Control.Interfaces.IAxisControlService _axisControlService;
 
-    private IAxisControlService GetAxisControlService() => _axisControlService;
+    private MotionControl.Control.Interfaces.IAxisControlService GetAxisControlService() => _axisControlService;
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
