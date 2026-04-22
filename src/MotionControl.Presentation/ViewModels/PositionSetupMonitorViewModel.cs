@@ -40,7 +40,7 @@ public sealed class PositionSetupMonitorViewModel : INotifyPropertyChanged
             e.PropertyName == nameof(PositionSetupItemViewModel.HasSelectedPosition) ||
             string.IsNullOrEmpty(e.PropertyName))
         {
-            OnPropertyChanged(nameof(PositionSetupItemViewModel.SelectedItem) + ".SelectedPosition");
+            OnPropertyChanged("SelectedItem.SelectedPosition");
         }
     }
 
@@ -56,10 +56,6 @@ public sealed class PositionSetupMonitorViewModel : INotifyPropertyChanged
             Items.Add(new PositionSetupItemViewModel(item));
         }
         SelectedItem = Items.FirstOrDefault();
-        if (_selectedItem is not null)
-        {
-            _selectedItem.PropertyChanged += OnSelectedItemPropertyChanged;
-        }
     }
 
     public void Add(PositionSetupConfigItem item)
