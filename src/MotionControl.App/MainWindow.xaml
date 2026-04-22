@@ -662,6 +662,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -674,7 +675,7 @@
                         <TextBlock Text="{Binding OperationStatus}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" MaxWidth="500" />
                     </StackPanel>
 
-                    <Grid Grid.Row="1">
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="2*" />
                             <ColumnDefinition Width="16" />
@@ -684,7 +685,6 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
-                        <!-- Left: list -->
                         <GroupBox Header="Positions">
                             <DataGrid ItemsSource="{Binding PositionSetupMonitor.Positions}"
                                       SelectedItem="{Binding PositionSetupMonitor.SelectedPosition, Mode=TwoWay}"
@@ -698,95 +698,102 @@
                             </DataGrid>
                         </GroupBox>
 
-                        <!-- Right: two-row setup -->
                         <GroupBox Grid.Column="2" Header="Setup">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                            <Grid Margin="8">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="10" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="10" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
+                                <Grid Margin="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="10" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="10" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
 
-                                <!-- Row 1: axis config -->
-                                <UniformGrid Grid.Row="0" Columns="7">
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="Xx Axis" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.XxAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="X Axis" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="Y Axis" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="Z Axis" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="U Axis" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.UAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="V Axis" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.VAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="W Axis" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.WAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                </UniformGrid>
+                                    <UniformGrid Grid.Row="0" Columns="7">
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="Xx Axis" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.XxAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="X Axis" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="Y Axis" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="Z Axis" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="U Axis" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.UAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="V Axis" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.VAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="W Axis" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.WAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </UniformGrid>
 
-                                <!-- Row 2: positions -->
-                                <UniformGrid Grid.Row="2" Columns="7">
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="Xx Pos" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.XxPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="X Pos" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.XPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="Y Pos" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.YPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="Z Pos" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.ZPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="U Pos" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.UPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="V Pos" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.VPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Margin="6">
-                                        <TextBlock Text="W Pos" Foreground="{StaticResource SecondaryTextBrush}" />
-                                        <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.WPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                </UniformGrid>
+                                    <UniformGrid Grid.Row="2" Columns="7">
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="Xx Pos" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.XxPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="X Pos" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.XPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="Y Pos" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.YPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="Z Pos" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.ZPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="U Pos" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.UPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="V Pos" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.VPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="6">
+                                            <TextBlock Text="W Pos" Foreground="{StaticResource SecondaryTextBrush}" />
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedPosition.WPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </UniformGrid>
 
-                                <!-- Safe Z -->
-                                <Grid Grid.Row="4" Margin="6,0,6,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="160" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Safe Z" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
-                                    <TextBox Grid.Column="1" Margin="10,0,0,0" Text="{Binding PositionSetupMonitor.SelectedPosition.SafeZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <Grid Grid.Row="4" Margin="6,0,6,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="160" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Safe Z" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
+                                        <TextBox Grid.Column="1" Margin="10,0,0,0" Text="{Binding PositionSetupMonitor.SelectedPosition.SafeZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </Grid>
                                 </Grid>
-                            </Grid>
                             </ScrollViewer>
                         </GroupBox>
                     </Grid>
+
+                    <GroupBox Grid.Row="2" Header="Position Setup Event Log">
+                        <DataGrid ItemsSource="{Binding PositionSetupEventLog.Events}" AutoGenerateColumns="False" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="110" />
+                                <DataGridTextColumn Header="Position" Binding="{Binding PositionName}" Width="180" />
+                                <DataGridTextColumn Header="Event" Binding="{Binding EventType}" Width="120" />
+                                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
                 </Grid>
             </TabItem>
 

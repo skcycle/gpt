@@ -23,3 +23,27 @@ public sealed class WorkHeadEventRecord
     public string EventType { get; init; } = string.Empty;
     public string Message { get; init; } = string.Empty;
 }
+
+public sealed class PositionSetupEventRuntimeState
+{
+    public event Action? EventsChanged;
+
+    public IReadOnlyList<PositionSetupEventRecord> RecentEvents { get; private set; } = Array.Empty<PositionSetupEventRecord>();
+
+    public void Add(PositionSetupEventRecord record)
+    {
+        RecentEvents = RecentEvents
+            .Concat(new[] { record })
+            .TakeLast(200)
+            .ToArray();
+        EventsChanged?.Invoke();
+    }
+}
+
+public sealed class PositionSetupEventRecord
+{
+    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+    public string PositionName { get; init; } = string.Empty;
+    public string EventType { get; init; } = string.Empty;
+    public string Message { get; init; } = string.Empty;
+}

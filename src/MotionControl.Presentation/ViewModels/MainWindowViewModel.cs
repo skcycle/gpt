@@ -29,6 +29,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private readonly IoMonitorCoordinator _ioMonitorCoordinator;
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private readonly CylinderEventRuntimeState _cylinderEventRuntimeState;
+    private readonly PositionSetupEventRuntimeState _positionSetupEventRuntimeState;
     private readonly WorkHeadEventRuntimeState _workHeadEventRuntimeState;
     private readonly ControllerRuntimeState _controllerRuntimeState;
     private readonly Timer _clockTimer;
@@ -69,6 +70,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IoEventRuntimeState ioEventRuntimeState,
         CylinderEventRuntimeState cylinderEventRuntimeState,
         WorkHeadEventRuntimeState workHeadEventRuntimeState,
+        PositionSetupEventRuntimeState positionSetupEventRuntimeState,
         IoControlService ioControlService)
     {
         _machine = machine;
@@ -81,6 +83,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         _cylinderEventRuntimeState = cylinderEventRuntimeState;
         _workHeadEventRuntimeState = workHeadEventRuntimeState;
+        _positionSetupEventRuntimeState = positionSetupEventRuntimeState;
         _commandFeedbackRuntimeState.FeedbackChanged += () => RefreshViewModels(force: true);
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
@@ -92,6 +95,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IoEventLog = new IoEventLogViewModel(ioEventRuntimeState);
         CylinderEventLog = new CylinderEventLogViewModel(cylinderEventRuntimeState);
         WorkHeadEventLog = new WorkHeadEventLogViewModel(workHeadEventRuntimeState);
+        PositionSetupEventLog = new PositionSetupEventLogViewModel(positionSetupEventRuntimeState);
         CylinderMonitor = new CylinderMonitorViewModel(machine, ioControlService, cylinderEventRuntimeState, CanWriteIoOutputs);
         CylinderMonitor.SelectedCylinderChanged += _ => (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
         WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, motionAppService, workHeadEventRuntimeState, CanWriteIoOutputs);
@@ -220,6 +224,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public PositionSetupMonitorViewModel PositionSetupMonitor { get; }
     public CylinderEventLogViewModel CylinderEventLog { get; }
     public WorkHeadEventLogViewModel WorkHeadEventLog { get; }
+    public PositionSetupEventLogViewModel PositionSetupEventLog { get; }
     public AxisParameterEditorViewModel AxisParameterEditor { get; }
     public AlarmViewModel Alarm { get; }
 
@@ -1249,9 +1254,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private void PositionSetupEventLogRecord(string positionName, string eventType, string message)
     {
-        _workHeadEventRuntimeState.Add(new WorkHeadEventRecord
+        _positionSetupEventRuntimeState.Add(new PositionSetupEventRecord
         {
-            WorkHeadName = $"PositionSetup:{positionName}",
+            PositionName = positionName,
             EventType = eventType,
             Message = message
         });
