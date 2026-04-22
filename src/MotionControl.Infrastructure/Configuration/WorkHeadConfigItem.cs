@@ -16,6 +16,7 @@ public sealed class WorkHeadConfigItem
     public int GeneralInputAddress1 { get; set; } = -1;
     public int GeneralInputAddress2 { get; set; } = -1;
     public int VacuumTimeoutMs { get; set; } = 3000;
+    public double SafeZ { get; set; }
     public List<WorkHeadPositionConfigItem> Positions { get; set; } = new();
 }
 

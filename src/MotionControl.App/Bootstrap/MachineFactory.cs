@@ -55,7 +55,7 @@ public static class MachineFactory
 
         var workHeads = (workHeadConfigs ?? Array.Empty<MotionControl.Infrastructure.Configuration.WorkHeadConfigItem>())
             .Select(item => new WorkHead(item.Name, item.Description, item.XAxisNo, item.YAxisNo, item.ZAxisNo, item.RAxisNo, item.VacuumOutputAddress, item.BlowOutputAddress, item.VacuumInputAddress, item.GeneralOutputAddress1, item.GeneralOutputAddress2, item.GeneralInputAddress1, item.GeneralInputAddress2, item.VacuumTimeoutMs,
-                item.Positions.Select(p => new WorkHeadPosition(p.Name, p.Description, p.X, p.Y, p.Z, p.R)).ToList()))
+                item.Positions.Select(p => new WorkHeadPosition(p.Name, p.Description, p.X, p.Y, p.Z, p.R)).ToList(), item.SafeZ))
             .ToArray();
 
         var alarms = new[]

@@ -604,7 +604,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         {
             await _motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
                 workHead.ZAxisNo,
-                0,
+                workHead.SafeZ,
                 WorkHeadMoveVelocity,
                 WorkHeadMoveAcceleration,
                 WorkHeadMoveDeceleration));
@@ -804,6 +804,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             GeneralInputAddress1 = workHead.GeneralInputAddress1,
             GeneralInputAddress2 = workHead.GeneralInputAddress2,
             VacuumTimeoutMs = workHead.VacuumTimeoutMs,
+            SafeZ = workHead.SafeZ,
             Positions = workHead.Positions.Select(p => new MotionControl.Infrastructure.Configuration.WorkHeadPositionConfigItem
             {
                 Name = p.Name,

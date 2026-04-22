@@ -47,6 +47,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     public int GeneralInputAddress1 { get => _workHead.GeneralInputAddress1; set { if (_workHead.GeneralInputAddress1 == value) return; UpdateMetadata(generalInputAddress1: value); OnPropertyChanged(); } }
     public int GeneralInputAddress2 { get => _workHead.GeneralInputAddress2; set { if (_workHead.GeneralInputAddress2 == value) return; UpdateMetadata(generalInputAddress2: value); OnPropertyChanged(); } }
     public int VacuumTimeoutMs { get => _workHead.VacuumTimeoutMs; set { if (_workHead.VacuumTimeoutMs == value) return; UpdateMetadata(vacuumTimeoutMs: value); OnPropertyChanged(); } }
+    public double SafeZ { get => _workHead.SafeZ; set { if (_workHead.SafeZ == value) return; UpdateMetadata(safeZ: value); OnPropertyChanged(); } }
 
     public string PositionName
     {
@@ -135,7 +136,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(VacuumDoOn)); OnPropertyChanged(nameof(BlowDoOn)); OnPropertyChanged(nameof(VacuumDiOn)); OnPropertyChanged(nameof(GeneralDo1On)); OnPropertyChanged(nameof(GeneralDo2On)); OnPropertyChanged(nameof(GeneralDi1On)); OnPropertyChanged(nameof(GeneralDi2On));
         OnPropertyChanged(nameof(VacuumDoBrush)); OnPropertyChanged(nameof(BlowDoBrush)); OnPropertyChanged(nameof(VacuumDiBrush)); OnPropertyChanged(nameof(GeneralDo1Brush)); OnPropertyChanged(nameof(GeneralDo2Brush)); OnPropertyChanged(nameof(GeneralDi1Brush)); OnPropertyChanged(nameof(GeneralDi2Brush));
         OnPropertyChanged(nameof(Name)); OnPropertyChanged(nameof(Description)); OnPropertyChanged(nameof(XAxisNo)); OnPropertyChanged(nameof(YAxisNo)); OnPropertyChanged(nameof(ZAxisNo)); OnPropertyChanged(nameof(RAxisNo));
-        OnPropertyChanged(nameof(VacuumOutputAddress)); OnPropertyChanged(nameof(BlowOutputAddress)); OnPropertyChanged(nameof(VacuumInputAddress)); OnPropertyChanged(nameof(GeneralOutputAddress1)); OnPropertyChanged(nameof(GeneralOutputAddress2)); OnPropertyChanged(nameof(GeneralInputAddress1)); OnPropertyChanged(nameof(GeneralInputAddress2)); OnPropertyChanged(nameof(VacuumTimeoutMs));
+        OnPropertyChanged(nameof(VacuumOutputAddress)); OnPropertyChanged(nameof(BlowOutputAddress)); OnPropertyChanged(nameof(VacuumInputAddress)); OnPropertyChanged(nameof(GeneralOutputAddress1)); OnPropertyChanged(nameof(GeneralOutputAddress2)); OnPropertyChanged(nameof(GeneralInputAddress1)); OnPropertyChanged(nameof(GeneralInputAddress2)); OnPropertyChanged(nameof(VacuumTimeoutMs)); OnPropertyChanged(nameof(SafeZ));
         RaisePositionChanged();
         EvaluateVacuumRuntime();
         (VacuumCommand as RelayCommand)?.RaiseCanExecuteChanged();
@@ -205,7 +206,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         if (SelectedPosition is null) return;
         if (_workHead.ZAxisNo >= 0)
         {
-            await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, 0, 100, 100, 100));
+            await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, _workHead.SafeZ, 100, 100, 100));
         }
         var planarMoves = new List<Task>();
         if (_workHead.XAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.XAxisNo, SelectedPosition.X, 100, 100, 100)));
@@ -218,9 +219,9 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         }
     }
 
-    private void UpdateMetadata(string? name = null, string? description = null, int? xAxisNo = null, int? yAxisNo = null, int? zAxisNo = null, int? rAxisNo = null, int? vacuumOutputAddress = null, int? blowOutputAddress = null, int? vacuumInputAddress = null, int? generalOutputAddress1 = null, int? generalOutputAddress2 = null, int? generalInputAddress1 = null, int? generalInputAddress2 = null, int? vacuumTimeoutMs = null)
+    private void UpdateMetadata(string? name = null, string? description = null, int? xAxisNo = null, int? yAxisNo = null, int? zAxisNo = null, int? rAxisNo = null, int? vacuumOutputAddress = null, int? blowOutputAddress = null, int? vacuumInputAddress = null, int? generalOutputAddress1 = null, int? generalOutputAddress2 = null, int? generalInputAddress1 = null, int? generalInputAddress2 = null, int? vacuumTimeoutMs = null, double? safeZ = null)
     {
-        _workHead.UpdateMetadata(name ?? _workHead.Name, description ?? _workHead.Description, xAxisNo ?? _workHead.XAxisNo, yAxisNo ?? _workHead.YAxisNo, zAxisNo ?? _workHead.ZAxisNo, rAxisNo ?? _workHead.RAxisNo, vacuumOutputAddress ?? _workHead.VacuumOutputAddress, blowOutputAddress ?? _workHead.BlowOutputAddress, vacuumInputAddress ?? _workHead.VacuumInputAddress, generalOutputAddress1 ?? _workHead.GeneralOutputAddress1, generalOutputAddress2 ?? _workHead.GeneralOutputAddress2, generalInputAddress1 ?? _workHead.GeneralInputAddress1, generalInputAddress2 ?? _workHead.GeneralInputAddress2, vacuumTimeoutMs ?? _workHead.VacuumTimeoutMs);
+        _workHead.UpdateMetadata(name ?? _workHead.Name, description ?? _workHead.Description, xAxisNo ?? _workHead.XAxisNo, yAxisNo ?? _workHead.YAxisNo, zAxisNo ?? _workHead.ZAxisNo, rAxisNo ?? _workHead.RAxisNo, vacuumOutputAddress ?? _workHead.VacuumOutputAddress, blowOutputAddress ?? _workHead.BlowOutputAddress, vacuumInputAddress ?? _workHead.VacuumInputAddress, generalOutputAddress1 ?? _workHead.GeneralOutputAddress1, generalOutputAddress2 ?? _workHead.GeneralOutputAddress2, generalInputAddress1 ?? _workHead.GeneralInputAddress1, generalInputAddress2 ?? _workHead.GeneralInputAddress2, vacuumTimeoutMs ?? _workHead.VacuumTimeoutMs, safeZ ?? _workHead.SafeZ);
     }
 
     private void EvaluateVacuumRuntime()

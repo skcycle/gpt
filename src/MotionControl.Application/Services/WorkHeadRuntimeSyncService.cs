@@ -20,11 +20,11 @@ public sealed class WorkHeadRuntimeSyncService(Machine machine) : IWorkHeadRunti
         if (existing is null)
         {
             machine.AddWorkHead(new WorkHead(workHead.Name, workHead.Description, workHead.XAxisNo, workHead.YAxisNo, workHead.ZAxisNo, workHead.RAxisNo, workHead.VacuumOutputAddress, workHead.BlowOutputAddress, workHead.VacuumInputAddress, workHead.GeneralOutputAddress1, workHead.GeneralOutputAddress2, workHead.GeneralInputAddress1, workHead.GeneralInputAddress2, workHead.VacuumTimeoutMs,
-                workHead.Positions.Select(p => new WorkHeadPosition(p.Name, p.Description, p.X, p.Y, p.Z, p.R)).ToList()));
+                workHead.Positions.Select(p => new WorkHeadPosition(p.Name, p.Description, p.X, p.Y, p.Z, p.R)).ToList(), workHead.SafeZ));
             return Task.CompletedTask;
         }
 
-        existing.UpdateMetadata(workHead.Name, workHead.Description, workHead.XAxisNo, workHead.YAxisNo, workHead.ZAxisNo, workHead.RAxisNo, workHead.VacuumOutputAddress, workHead.BlowOutputAddress, workHead.VacuumInputAddress, workHead.GeneralOutputAddress1, workHead.GeneralOutputAddress2, workHead.GeneralInputAddress1, workHead.GeneralInputAddress2, workHead.VacuumTimeoutMs);
+        existing.UpdateMetadata(workHead.Name, workHead.Description, workHead.XAxisNo, workHead.YAxisNo, workHead.ZAxisNo, workHead.RAxisNo, workHead.VacuumOutputAddress, workHead.BlowOutputAddress, workHead.VacuumInputAddress, workHead.GeneralOutputAddress1, workHead.GeneralOutputAddress2, workHead.GeneralInputAddress1, workHead.GeneralInputAddress2, workHead.VacuumTimeoutMs, workHead.SafeZ);
         existing.Positions.Clear();
         foreach (var p in workHead.Positions)
         {

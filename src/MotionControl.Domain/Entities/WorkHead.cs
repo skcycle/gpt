@@ -2,7 +2,7 @@ namespace MotionControl.Domain.Entities;
 
 public sealed class WorkHead
 {
-    public WorkHead(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs = 3000, List<WorkHeadPosition>? positions = null)
+    public WorkHead(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs = 3000, List<WorkHeadPosition>? positions = null, double safeZ = 0)
     {
         Name = name;
         Description = description;
@@ -19,6 +19,7 @@ public sealed class WorkHead
         GeneralInputAddress2 = generalInputAddress2;
         VacuumTimeoutMs = vacuumTimeoutMs;
         Positions = positions ?? new List<WorkHeadPosition>();
+        SafeZ = safeZ;
     }
 
     public string Name { get; private set; }
@@ -35,6 +36,7 @@ public sealed class WorkHead
     public int GeneralInputAddress1 { get; private set; }
     public int GeneralInputAddress2 { get; private set; }
     public int VacuumTimeoutMs { get; private set; }
+    public double SafeZ { get; private set; }
 
     public bool PendingVacuumCommand { get; private set; }
     public DateTime? VacuumCommandStartedAtUtc { get; private set; }
@@ -45,7 +47,7 @@ public sealed class WorkHead
     public List<WorkHeadPosition> Positions { get; private set; } = new();
     public string? SelectedPositionName { get; set; }
 
-    public void UpdateMetadata(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs)
+    public void UpdateMetadata(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs, double safeZ)
     {
         Name = name;
         Description = description;
@@ -61,29 +63,11 @@ public sealed class WorkHead
         GeneralInputAddress1 = generalInputAddress1;
         GeneralInputAddress2 = generalInputAddress2;
         VacuumTimeoutMs = vacuumTimeoutMs;
+        SafeZ = safeZ;
     }
 
-    public void AddPosition(WorkHeadPosition position)
-    {
-        Positions.Add(position);
-    }
-
-    public void RemovePosition(string positionName)
-    {
-        Positions.RemoveAll(p => p.Name == positionName);
-    }
-
-    public void UpdatePosition(string originalName, string name, string description, double x, double y, double z, double r)
-    {
-        var pos = Positions.FirstOrDefault(p => p.Name == originalName);
-        if (pos is null) return;
-        pos.Name = name;
-        pos.Description = description;
-        pos.X = x;
-        pos.Y = y;
-        pos.Z = z;
-        pos.R = r;
-    }
+    public void AddPosition(WorkHeadPosition position) => Positions.Add(position);
+    public void RemovePosition(string positionName) => Positions.RemoveAll(p => p.Name == positionName);
 
     public void StartVacuumCommand()
     {
@@ -105,8 +89,6 @@ public sealed class WorkHead
 
     public bool HasVacuumTimedOut(DateTime utcNow)
     {
-        return PendingVacuumCommand
-            && VacuumCommandStartedAtUtc.HasValue
-            && utcNow - VacuumCommandStartedAtUtc.Value >= TimeSpan.FromMilliseconds(VacuumTimeoutMs);
+        return PendingVacuumCommand && VacuumCommandStartedAtUtc.HasValue && utcNow - VacuumCommandStartedAtUtc.Value >= TimeSpan.FromMilliseconds(VacuumTimeoutMs);
     }
 }
