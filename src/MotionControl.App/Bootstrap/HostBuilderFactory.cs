@@ -33,6 +33,7 @@ public static class HostBuilderFactory
                 services.Configure<IoMappingOptions>(context.Configuration.GetSection("IoMapping"));
                 services.Configure<CylinderMappingOptions>(context.Configuration.GetSection("CylinderMapping"));
                 services.Configure<WorkHeadMappingOptions>(context.Configuration.GetSection("WorkHeadMapping"));
+                services.Configure<PositionSetupMappingOptions>(context.Configuration.GetSection("PositionSetupMapping"));
 
                 var axisMappingOptions = new AxisMappingOptions();
                 context.Configuration.GetSection("AxisMapping").Bind(axisMappingOptions);
@@ -77,6 +78,8 @@ public static class HostBuilderFactory
                 services.AddSingleton<IWorkHeadRuntimeSyncService, WorkHeadRuntimeSyncService>();
                 services.AddSingleton<IWorkHeadConfigAppService>(_ => new WorkHeadConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
                 services.AddSingleton<IWorkHeadManagementAppService, WorkHeadManagementAppService>();
+                services.AddSingleton<IPositionSetupConfigAppService>(_ => new PositionSetupConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
+                services.AddSingleton<IPositionSetupManagementAppService, PositionSetupManagementAppService>();
 
                 services.AddSingleton<SafetyInterlockService>();
                 services.AddSingleton<ControllerRuntimeState>();
