@@ -36,7 +36,9 @@ public sealed class AxisPollingService(
                 axis.ApplyState(nextState);
 
                 var shouldRecordRuntimeEvent = !(previousState is AxisState.Standstill && nextState is AxisState.Moving)
-                    && !(previousState is AxisState.Moving && nextState is AxisState.Standstill);
+                    && !(previousState is AxisState.Moving && nextState is AxisState.Standstill)
+                    && !(previousState is AxisState.Standstill && nextState is AxisState.Disabled)
+                    && !(previousState is AxisState.Disabled && nextState is AxisState.Standstill);
 
                 if (shouldRecordRuntimeEvent)
                 {
