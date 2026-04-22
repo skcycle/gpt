@@ -29,7 +29,7 @@ public sealed class IoEventLogViewModel
         if (newLength != lastLength || (newLength > 0 && (lastLength == 0 || !ioEvents.SequenceEqual(_lastEvents))))
         {
             Events.Clear();
-            foreach (var evt in ioEvents.TakeLast(30))
+            foreach (var evt in ioEvents.TakeLast(30).Reverse())
             {
                 Events.Add(evt);
             }

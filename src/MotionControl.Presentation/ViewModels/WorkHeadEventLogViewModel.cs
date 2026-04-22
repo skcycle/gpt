@@ -26,7 +26,7 @@ public sealed class WorkHeadEventLogViewModel
         if (events.Length != _lastEvents.Length || (events.Length > 0 && (_lastEvents.Length == 0 || !events.SequenceEqual(_lastEvents))))
         {
             Events.Clear();
-            foreach (var item in events.TakeLast(30))
+            foreach (var item in events.TakeLast(30).Reverse())
             {
                 Events.Add(item);
             }

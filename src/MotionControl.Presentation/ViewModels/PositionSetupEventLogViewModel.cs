@@ -26,7 +26,8 @@ public sealed class PositionSetupEventLogViewModel
         if (events.Length != _lastEvents.Length || (events.Length > 0 && (_lastEvents.Length == 0 || !events.SequenceEqual(_lastEvents))))
         {
             Events.Clear();
-            foreach (var item in events.TakeLast(30))
+            // Newest first: take last 30 then reverse
+            foreach (var item in events.TakeLast(30).Reverse())
             {
                 Events.Add(item);
             }

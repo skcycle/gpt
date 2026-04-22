@@ -1,52 +1,83 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Collections.ObjectModel;
 using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Presentation.ViewModels;
 
+/// <summary>
+/// 管理 PositionSetup 父对象列表。
+/// </summary>
 public sealed class PositionSetupMonitorViewModel : INotifyPropertyChanged
 {
-    public ObservableCollection<PositionSetupItemViewModel> Positions { get; } = new();
+    public ObservableCollection<PositionSetupItemViewModel> Items { get; } = new();
 
-    private PositionSetupItemViewModel? _selectedPosition;
-    public PositionSetupItemViewModel? SelectedPosition
+    private PositionSetupItemViewModel? _selectedItem;
+    public PositionSetupItemViewModel? SelectedItem
     {
-        get => _selectedPosition;
+        get => _selectedItem;
         set
         {
-            if (_selectedPosition == value) return;
-            _selectedPosition = value;
+            if (_selectedItem == value) return;
+            if (_selectedItem is not null)
+            {
+                _selectedItem.PropertyChanged -= OnSelectedItemPropertyChanged;
+            }
+            _selectedItem = value;
             OnPropertyChanged();
+            if (_selectedItem is not null)
+            {
+                _selectedItem.PropertyChanged += OnSelectedItemPropertyChanged;
+            }
+        }
+    }
+
+    // Bubble SelectedPosition changes from the child item up so
+    // DataGrid bindings and CanExecute re-evaluate correctly.
+    private void OnSelectedItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PositionSetupItemViewModel.SelectedPosition) ||
+            e.PropertyName == nameof(PositionSetupItemViewModel.HasSelectedPosition) ||
+            string.IsNullOrEmpty(e.PropertyName))
+        {
+            OnPropertyChanged(nameof(PositionSetupItemViewModel.SelectedItem) + ".SelectedPosition");
         }
     }
 
     public void Load(IEnumerable<PositionSetupConfigItem> items)
     {
-        Positions.Clear();
+        if (_selectedItem is not null)
+        {
+            _selectedItem.PropertyChanged -= OnSelectedItemPropertyChanged;
+        }
+        Items.Clear();
         foreach (var item in items)
         {
-            Positions.Add(new PositionSetupItemViewModel(item));
+            Items.Add(new PositionSetupItemViewModel(item));
         }
-        SelectedPosition = Positions.FirstOrDefault();
+        SelectedItem = Items.FirstOrDefault();
+        if (_selectedItem is not null)
+        {
+            _selectedItem.PropertyChanged += OnSelectedItemPropertyChanged;
+        }
     }
 
     public void Add(PositionSetupConfigItem item)
     {
         var vm = new PositionSetupItemViewModel(item);
-        Positions.Add(vm);
-        SelectedPosition = vm;
+        Items.Add(vm);
+        SelectedItem = vm;
     }
 
     public void RemoveSelected()
     {
-        if (SelectedPosition is null) return;
-        var current = SelectedPosition;
-        Positions.Remove(current);
-        SelectedPosition = Positions.FirstOrDefault();
+        if (SelectedItem is null) return;
+        var current = SelectedItem;
+        Items.Remove(current);
+        SelectedItem = Items.FirstOrDefault();
     }
 
-    public IReadOnlyList<PositionSetupConfigItem> ToConfigs() => Positions.Select(item => item.ToConfig()).ToList();
+    public IReadOnlyList<PositionSetupConfigItem> ToConfigs() => Items.Select(item => item.ToConfig()).ToList();
 
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
