@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.Json;
 using MotionControl.Application.Interfaces;
 using MotionControl.Infrastructure.Configuration;
