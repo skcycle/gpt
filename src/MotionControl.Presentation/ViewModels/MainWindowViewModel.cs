@@ -89,6 +89,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         CylinderMonitor = new CylinderMonitorViewModel(machine, ioControlService, cylinderEventRuntimeState, CanWriteIoOutputs);
         CylinderMonitor.SelectedCylinderChanged += _ => (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
         WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, motionAppService, workHeadEventRuntimeState, CanWriteIoOutputs);
+        WorkHeadMonitor.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(WorkHeadMonitorViewModel.SelectedWorkHead))
+            {
+                (DeleteWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (AddWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (DeleteWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+        };
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, CanControlAxisCommands);
         AxisParameterEditor = new AxisParameterEditorViewModel(
             axisManagementAppService,
