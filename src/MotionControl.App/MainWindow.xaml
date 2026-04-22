@@ -550,6 +550,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
@@ -588,7 +589,20 @@
                         </StackPanel>
                     </GroupBox>
 
-                    <DataGrid Grid.Row="2"
+                    <GroupBox Grid.Row="2" Header="WorkHead Positions" Margin="0,0,0,12">
+                        <StackPanel Margin="8">
+                            <WrapPanel Margin="0,0,0,8">
+                                <Button Content="Add Position" Command="{Binding AddWorkHeadPositionCommand}" Width="110" Margin="0,0,8,0" />
+                                <Button Content="Delete Position" Command="{Binding DeleteWorkHeadPositionCommand}" Width="110" Margin="0,0,16,0" />
+                                <TextBlock Text="Position" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <ComboBox Width="140" ItemsSource="{Binding WorkHeadPositionNames}" SelectedItem="{Binding SelectedWorkHeadPositionName, Mode=TwoWay}" Margin="0,0,12,0" />
+                                <Button Content="Teach" Command="{Binding TeachToWorkHeadPositionCommand}" Width="80" Margin="0,0,8,0" />
+                                <Button Content="Move" Command="{Binding MoveToWorkHeadPositionCommand}" Width="80" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <DataGrid Grid.Row="3"
                               ItemsSource="{Binding WorkHeadMonitor.WorkHeads}"
                               SelectedItem="{Binding WorkHeadMonitor.SelectedWorkHead, Mode=TwoWay}"
                               AutoGenerateColumns="False"
@@ -678,7 +692,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <GroupBox Grid.Row="2" Header="Event Log" Margin="0,8,0,12">
+                    <GroupBox Grid.Row="4" Header="Event Log" Margin="0,8,0,12">
                         <ListBox ItemsSource="{Binding WorkHeadEventLog.Events}" BorderThickness="0">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>

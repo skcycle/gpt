@@ -46,6 +46,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private double _workHeadMoveVelocity = 100;
     private double _workHeadMoveAcceleration = 100;
     private double _workHeadMoveDeceleration = 100;
+    private string? _selectedWorkHeadPositionName;
 
     public MainWindowViewModel(
         Machine machine,
@@ -121,6 +122,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         LoadWorkHeadConfigCommand = new RelayCommand(async () => await LoadWorkHeadConfigAsync(), CanEditIoConfiguration);
         MoveWorkHeadCommand = new RelayCommand(async () => await MoveSelectedWorkHeadAsync(), () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName));
         TeachWorkHeadCommand = new RelayCommand(TeachSelectedWorkHeadPosition, () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName));
+        AddWorkHeadPositionCommand = new RelayCommand(AddWorkHeadPosition, () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName));
+        DeleteWorkHeadPositionCommand = new RelayCommand(DeleteWorkHeadPosition, () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) && !string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName));
+        TeachToWorkHeadPositionCommand = new RelayCommand(TeachToSelectedWorkHeadPosition, () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) && !string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName));
+        MoveToWorkHeadPositionCommand = new RelayCommand(async () => await MoveToSelectedWorkHeadPositionAsync(), () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) && !string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName));
         _axisConsoleCoordinator = new AxisConsoleCoordinator(AxisMonitor, AxisDebug, AxisParameterEditor);
         _ioMonitorCoordinator = new IoMonitorCoordinator(IoMonitor, (RelayCommand)DeleteInputCommand, (RelayCommand)DeleteOutputCommand);
         _ioMonitorCoordinator.Initialize();
@@ -145,7 +150,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     public IReadOnlyList<string> WorkHeadNames => _machine.WorkHeads.Select(item => item.Name).OrderBy(item => item).ToList();
 
-    public string? SelectedWorkHeadMotionName { get => _selectedWorkHeadMotionName; set { if (_selectedWorkHeadMotionName == value) return; _selectedWorkHeadMotionName = value; OnPropertyChanged(); (MoveWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged(); (TeachWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
+    public string? SelectedWorkHeadMotionName { get => _selectedWorkHeadMotionName; set { if (_selectedWorkHeadMotionName == value) return; _selectedWorkHeadMotionName = value; OnPropertyChanged(); (MoveWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged(); (TeachWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged(); (AddWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (DeleteWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (TeachToWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MoveToWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); OnPropertyChanged(nameof(WorkHeadPositionNames)); SelectedWorkHeadPositionName = null; } }
     public double WorkHeadTargetX { get => _workHeadTargetX; set { if (_workHeadTargetX == value) return; _workHeadTargetX = value; OnPropertyChanged(); } }
     public double WorkHeadTargetY { get => _workHeadTargetY; set { if (_workHeadTargetY == value) return; _workHeadTargetY = value; OnPropertyChanged(); } }
     public double WorkHeadTargetZ { get => _workHeadTargetZ; set { if (_workHeadTargetZ == value) return; _workHeadTargetZ = value; OnPropertyChanged(); } }
@@ -153,6 +158,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public double WorkHeadMoveVelocity { get => _workHeadMoveVelocity; set { if (_workHeadMoveVelocity == value) return; _workHeadMoveVelocity = value; OnPropertyChanged(); } }
     public double WorkHeadMoveAcceleration { get => _workHeadMoveAcceleration; set { if (_workHeadMoveAcceleration == value) return; _workHeadMoveAcceleration = value; OnPropertyChanged(); } }
     public double WorkHeadMoveDeceleration { get => _workHeadMoveDeceleration; set { if (_workHeadMoveDeceleration == value) return; _workHeadMoveDeceleration = value; OnPropertyChanged(); } }
+
+    public string? SelectedWorkHeadPositionName { get => _selectedWorkHeadPositionName; set { if (_selectedWorkHeadPositionName == value) return; _selectedWorkHeadPositionName = value; OnPropertyChanged(); (DeleteWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (TeachToWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MoveToWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
+
+    public IReadOnlyList<WorkHeadPosition> GetWorkHeadPositions(string workHeadName) =>
+        _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, workHeadName, StringComparison.OrdinalIgnoreCase))?.Positions ?? new List<WorkHeadPosition>();
     public string OperationStatus
     {
         get => _operationStatus;
@@ -201,6 +211,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public ICommand LoadWorkHeadConfigCommand { get; }
     public ICommand MoveWorkHeadCommand { get; }
     public ICommand TeachWorkHeadCommand { get; }
+    public ICommand AddWorkHeadPositionCommand { get; }
+    public ICommand DeleteWorkHeadPositionCommand { get; }
+    public ICommand TeachToWorkHeadPositionCommand { get; }
+    public ICommand MoveToWorkHeadPositionCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -479,7 +493,104 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         OperationStatus = $"WorkHead {workHead.Name} 当前坐标已 Teach";
     }
 
-    private async Task MoveSelectedWorkHeadAsync()
+    private void AddWorkHeadPosition()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName)) return;
+        var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+        if (workHead is null) return;
+
+        var index = workHead.Positions.Count + 1;
+        var name = $"Pos{index}";
+        workHead.AddPosition(new WorkHeadPosition(name, "", 0, 0, 0, 0));
+        SelectedWorkHeadPositionName = name;
+        OnPropertyChanged(nameof(WorkHeadPositionNames));
+        OperationStatus = $"已添加位置 {name}";
+    }
+
+    private void DeleteWorkHeadPosition()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) || string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName)) return;
+        var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+        if (workHead is null) return;
+
+        var name = SelectedWorkHeadPositionName;
+        workHead.RemovePosition(name);
+        SelectedWorkHeadPositionName = null;
+        OnPropertyChanged(nameof(WorkHeadPositionNames));
+        OperationStatus = $"已删除位置 {name}";
+    }
+
+    private void TeachToSelectedWorkHeadPosition()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) || string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName)) return;
+        var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+        if (workHead is null) return;
+
+        var pos = workHead.Positions.FirstOrDefault(p => p.Name == SelectedWorkHeadPositionName);
+        if (pos is null) return;
+
+        if (workHead.XAxisNo >= 0)
+        {
+            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.XAxisNo);
+            if (axis is not null) pos.X = axis.CurrentPosition;
+        }
+        if (workHead.YAxisNo >= 0)
+        {
+            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.YAxisNo);
+            if (axis is not null) pos.Y = axis.CurrentPosition;
+        }
+        if (workHead.ZAxisNo >= 0)
+        {
+            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.ZAxisNo);
+            if (axis is not null) pos.Z = axis.CurrentPosition;
+        }
+        if (workHead.RAxisNo >= 0)
+        {
+            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.RAxisNo);
+            if (axis is not null) pos.R = axis.CurrentPosition;
+        }
+
+        OnPropertyChanged(nameof(WorkHeadPositionNames));
+        OperationStatus = $"位置 {pos.Name} 坐标已更新";
+    }
+
+    private async Task MoveToSelectedWorkHeadPositionAsync()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) || string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName)) return;
+        var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+        if (workHead is null) return;
+
+        var pos = workHead.Positions.FirstOrDefault(p => p.Name == SelectedWorkHeadPositionName);
+        if (pos is null) return;
+
+        // Temporarily set targets and call the existing move logic
+        var savedX = WorkHeadTargetX;
+        var savedY = WorkHeadTargetY;
+        var savedZ = WorkHeadTargetZ;
+        var savedR = WorkHeadTargetR;
+
+        WorkHeadTargetX = pos.X;
+        WorkHeadTargetY = pos.Y;
+        WorkHeadTargetZ = pos.Z;
+        WorkHeadTargetR = pos.R;
+
+        await MoveSelectedWorkHeadAsync();
+
+        WorkHeadTargetX = savedX;
+        WorkHeadTargetY = savedY;
+        WorkHeadTargetZ = savedZ;
+        WorkHeadTargetR = savedR;
+    }
+
+    public IReadOnlyList<string> WorkHeadPositionNames
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName)) return Array.Empty<string>();
+            var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+            return workHead?.Positions.Select(p => p.Name).ToList() ?? new List<string>();
+        }
+    }
     {
         if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName))
         {
@@ -705,7 +816,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             GeneralOutputAddress2 = workHead.GeneralOutputAddress2,
             GeneralInputAddress1 = workHead.GeneralInputAddress1,
             GeneralInputAddress2 = workHead.GeneralInputAddress2,
-            VacuumTimeoutMs = workHead.VacuumTimeoutMs
+            VacuumTimeoutMs = workHead.VacuumTimeoutMs,
+            Positions = workHead.Positions.Select(p => new MotionControl.Infrastructure.Configuration.WorkHeadPositionConfigItem
+            {
+                Name = p.Name,
+                Description = p.Description,
+                X = p.X,
+                Y = p.Y,
+                Z = p.Z,
+                R = p.R
+            }).ToList()
         }).ToList();
 
         if (!UiGuards.Confirm("保存 WorkHead 配置", "确定覆盖当前 WorkHead 配置到 appsettings.json 吗？"))

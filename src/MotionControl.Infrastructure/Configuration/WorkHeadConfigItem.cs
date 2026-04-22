@@ -16,4 +16,15 @@ public sealed class WorkHeadConfigItem
     public int GeneralInputAddress1 { get; set; } = -1;
     public int GeneralInputAddress2 { get; set; } = -1;
     public int VacuumTimeoutMs { get; set; } = 3000;
+    public List<WorkHeadPositionConfigItem> Positions { get; set; } = new();
+}
+
+public class WorkHeadPositionConfigItem
+{
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public double X { get; set; }
+    public double Y { get; set; }
+    public double Z { get; set; }
+    public double R { get; set; }
 }

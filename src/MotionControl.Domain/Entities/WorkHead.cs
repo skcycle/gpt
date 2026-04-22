@@ -2,7 +2,7 @@ namespace MotionControl.Domain.Entities;
 
 public sealed class WorkHead
 {
-    public WorkHead(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs = 3000)
+    public WorkHead(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs = 3000, List<WorkHeadPosition>? positions = null)
     {
         Name = name;
         Description = description;
@@ -18,6 +18,7 @@ public sealed class WorkHead
         GeneralInputAddress1 = generalInputAddress1;
         GeneralInputAddress2 = generalInputAddress2;
         VacuumTimeoutMs = vacuumTimeoutMs;
+        Positions = positions ?? new List<WorkHeadPosition>();
     }
 
     public string Name { get; private set; }
@@ -41,6 +42,8 @@ public sealed class WorkHead
     public bool VacuumTimeoutLogged { get; set; }
     public bool VacuumConflictLogged { get; set; }
 
+    public List<WorkHeadPosition> Positions { get; private set; } = new();
+
     public void UpdateMetadata(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs)
     {
         Name = name;
@@ -57,6 +60,28 @@ public sealed class WorkHead
         GeneralInputAddress1 = generalInputAddress1;
         GeneralInputAddress2 = generalInputAddress2;
         VacuumTimeoutMs = vacuumTimeoutMs;
+    }
+
+    public void AddPosition(WorkHeadPosition position)
+    {
+        Positions.Add(position);
+    }
+
+    public void RemovePosition(string positionName)
+    {
+        Positions.RemoveAll(p => p.Name == positionName);
+    }
+
+    public void UpdatePosition(string originalName, string name, string description, double x, double y, double z, double r)
+    {
+        var pos = Positions.FirstOrDefault(p => p.Name == originalName);
+        if (pos is null) return;
+        pos.Name = name;
+        pos.Description = description;
+        pos.X = x;
+        pos.Y = y;
+        pos.Z = z;
+        pos.R = r;
     }
 
     public void StartVacuumCommand()
