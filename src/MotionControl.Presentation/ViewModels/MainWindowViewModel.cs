@@ -29,6 +29,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private readonly IoMonitorCoordinator _ioMonitorCoordinator;
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private readonly CylinderEventRuntimeState _cylinderEventRuntimeState;
+    private readonly WorkHeadEventRuntimeState _workHeadEventRuntimeState;
     private readonly ControllerRuntimeState _controllerRuntimeState;
     private readonly Timer _clockTimer;
     private DateTime _lastDashboardRefreshUtc = DateTime.MinValue;
@@ -79,6 +80,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _positionSetupManagementAppService = positionSetupManagementAppService;
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         _cylinderEventRuntimeState = cylinderEventRuntimeState;
+        _workHeadEventRuntimeState = workHeadEventRuntimeState;
         _commandFeedbackRuntimeState.FeedbackChanged += () => RefreshViewModels(force: true);
         _systemAppService = systemAppService;
         _controllerRuntimeState = controllerRuntimeState;
@@ -997,44 +999,79 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return;
         }
 
-        // 按轴映射读取当前位置
-        if (selected.XxAxisNo >= 0)
+        try
         {
-            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == selected.XxAxisNo);
-            if (axis is not null) selected.XxPosition = axis.CurrentPosition;
-        }
-        if (selected.XAxisNo >= 0)
-        {
-            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == selected.XAxisNo);
-            if (axis is not null) selected.XPosition = axis.CurrentPosition;
-        }
-        if (selected.YAxisNo >= 0)
-        {
-            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == selected.YAxisNo);
-            if (axis is not null) selected.YPosition = axis.CurrentPosition;
-        }
-        if (selected.ZAxisNo >= 0)
-        {
-            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == selected.ZAxisNo);
-            if (axis is not null) selected.ZPosition = axis.CurrentPosition;
-        }
-        if (selected.UAxisNo >= 0)
-        {
-            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == selected.UAxisNo);
-            if (axis is not null) selected.UPosition = axis.CurrentPosition;
-        }
-        if (selected.VAxisNo >= 0)
-        {
-            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == selected.VAxisNo);
-            if (axis is not null) selected.VPosition = axis.CurrentPosition;
-        }
-        if (selected.WAxisNo >= 0)
-        {
-            var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == selected.WAxisNo);
-            if (axis is not null) selected.WPosition = axis.CurrentPosition;
-        }
+            var configuredAxes = new[]
+            {
+                selected.XxAxisNo,
+                selected.XAxisNo,
+                selected.YAxisNo,
+                selected.ZAxisNo,
+                selected.UAxisNo,
+                selected.VAxisNo,
+                selected.WAxisNo
+            }.Where(axisNo => axisNo >= 0).Distinct().ToList();
 
-        OperationStatus = $"位置设定 {selected.Name} 当前坐标已 Teach";
+            if (configuredAxes.Count == 0)
+            {
+                OperationStatus = $"位置设定 {selected.Name} 没有可 Teach 的轴";
+                PositionSetupEventLogRecord(selected.Name, "Skipped", $"{selected.Name} teach skipped, no configured axes");
+                return;
+            }
+
+            var missingAxes = configuredAxes.Where(axisNo => _machine.Axes.All(axis => axis.Id.Value != axisNo)).ToList();
+            if (missingAxes.Count > 0)
+            {
+                var message = $"位置设定 {selected.Name} 存在未配置到运行时的轴: {string.Join(", ", missingAxes)}";
+                OperationStatus = message;
+                PositionSetupEventLogRecord(selected.Name, "Failed", message);
+                return;
+            }
+
+            if (selected.XxAxisNo >= 0)
+            {
+                var axis = _machine.Axes.First(item => item.Id.Value == selected.XxAxisNo);
+                selected.XxPosition = axis.CurrentPosition;
+            }
+            if (selected.XAxisNo >= 0)
+            {
+                var axis = _machine.Axes.First(item => item.Id.Value == selected.XAxisNo);
+                selected.XPosition = axis.CurrentPosition;
+            }
+            if (selected.YAxisNo >= 0)
+            {
+                var axis = _machine.Axes.First(item => item.Id.Value == selected.YAxisNo);
+                selected.YPosition = axis.CurrentPosition;
+            }
+            if (selected.ZAxisNo >= 0)
+            {
+                var axis = _machine.Axes.First(item => item.Id.Value == selected.ZAxisNo);
+                selected.ZPosition = axis.CurrentPosition;
+            }
+            if (selected.UAxisNo >= 0)
+            {
+                var axis = _machine.Axes.First(item => item.Id.Value == selected.UAxisNo);
+                selected.UPosition = axis.CurrentPosition;
+            }
+            if (selected.VAxisNo >= 0)
+            {
+                var axis = _machine.Axes.First(item => item.Id.Value == selected.VAxisNo);
+                selected.VPosition = axis.CurrentPosition;
+            }
+            if (selected.WAxisNo >= 0)
+            {
+                var axis = _machine.Axes.First(item => item.Id.Value == selected.WAxisNo);
+                selected.WPosition = axis.CurrentPosition;
+            }
+
+            OperationStatus = $"位置设定 {selected.Name} 当前坐标已 Teach";
+            PositionSetupEventLogRecord(selected.Name, "Teach", $"{selected.Name} teach completed");
+        }
+        catch (Exception ex)
+        {
+            OperationStatus = $"位置设定 {selected.Name} Teach 失败: {ex.Message}";
+            PositionSetupEventLogRecord(selected.Name, "Failed", $"{selected.Name} teach failed: {ex.Message}");
+        }
     }
 
     private async Task MoveSelectedPositionSetupAsync()
@@ -1046,72 +1083,89 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return;
         }
 
-        var configuredAxes = new[]
+        try
         {
-            selected.XxAxisNo,
-            selected.XAxisNo,
-            selected.YAxisNo,
-            selected.ZAxisNo,
-            selected.UAxisNo,
-            selected.VAxisNo,
-            selected.WAxisNo
-        }.Where(axisNo => axisNo >= 0).Distinct().ToList();
+            var configuredAxes = new[]
+            {
+                selected.XxAxisNo,
+                selected.XAxisNo,
+                selected.YAxisNo,
+                selected.ZAxisNo,
+                selected.UAxisNo,
+                selected.VAxisNo,
+                selected.WAxisNo
+            }.Where(axisNo => axisNo >= 0).Distinct().ToList();
 
-        if (configuredAxes.Count == 0)
-        {
-            OperationStatus = $"位置设定 {selected.Name} 没有可运动的轴";
-            return;
+            if (configuredAxes.Count == 0)
+            {
+                OperationStatus = $"位置设定 {selected.Name} 没有可运动的轴";
+                PositionSetupEventLogRecord(selected.Name, "Skipped", $"{selected.Name} move skipped, no configured axes");
+                return;
+            }
+
+            var missingAxes = configuredAxes.Where(axisNo => _machine.Axes.All(axis => axis.Id.Value != axisNo)).ToList();
+            if (missingAxes.Count > 0)
+            {
+                var message = $"位置设定 {selected.Name} 存在未配置到运行时的轴: {string.Join(", ", missingAxes)}";
+                OperationStatus = message;
+                PositionSetupEventLogRecord(selected.Name, "Failed", message);
+                return;
+            }
+
+            if (selected.ZAxisNo >= 0 && selected.SafeZ < selected.ZPosition)
+            {
+                var message = $"位置设定 {selected.Name} 的 SafeZ 不能低于目标 Z";
+                OperationStatus = message;
+                PositionSetupEventLogRecord(selected.Name, "Failed", message);
+                return;
+            }
+
+            MotionControl.Application.DTOs.MoveAxisCommandDto BuildMove(int axisNo, double target)
+            {
+                var axis = _machine.Axes.First(a => a.Id.Value == axisNo);
+                var vel = axis.WorkVelocity > 0 ? axis.WorkVelocity : 100;
+                var acc = axis.Acceleration > 0 ? axis.Acceleration : 100;
+                var dec = axis.Deceleration > 0 ? axis.Deceleration : 100;
+                return new MotionControl.Application.DTOs.MoveAxisCommandDto(axisNo, target, vel, acc, dec);
+            }
+
+            _commandFeedbackRuntimeState.AddStarted("PositionSetupMove", message: $"{selected.Name} started");
+            PositionSetupEventLogRecord(selected.Name, "Command", $"{selected.Name} move started");
+
+            var planarMoves = new List<Task>();
+
+            if (selected.ZAxisNo >= 0)
+            {
+                await _motionAppService.MoveAbsoluteAsync(BuildMove(selected.ZAxisNo, selected.SafeZ));
+            }
+
+            if (selected.XxAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.XxAxisNo, selected.XxPosition)));
+            if (selected.XAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.XAxisNo, selected.XPosition)));
+            if (selected.YAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.YAxisNo, selected.YPosition)));
+            if (selected.UAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.UAxisNo, selected.UPosition)));
+            if (selected.VAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.VAxisNo, selected.VPosition)));
+            if (selected.WAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.WAxisNo, selected.WPosition)));
+
+            if (planarMoves.Count > 0)
+            {
+                await Task.WhenAll(planarMoves);
+            }
+
+            if (selected.ZAxisNo >= 0)
+            {
+                await _motionAppService.MoveAbsoluteAsync(BuildMove(selected.ZAxisNo, selected.ZPosition));
+            }
+
+            OperationStatus = $"位置设定 {selected.Name} 已执行定位";
+            _commandFeedbackRuntimeState.AddSucceeded("PositionSetupMove", message: $"{selected.Name} completed");
+            PositionSetupEventLogRecord(selected.Name, "Success", $"{selected.Name} move completed");
         }
-
-        var missingAxes = configuredAxes.Where(axisNo => _machine.Axes.All(axis => axis.Id.Value != axisNo)).ToList();
-        if (missingAxes.Count > 0)
+        catch (Exception ex)
         {
-            OperationStatus = $"位置设定 {selected.Name} 存在未配置到运行时的轴: {string.Join(", ", missingAxes)}";
-            return;
+            OperationStatus = $"位置设定 {selected.Name} 运动失败: {ex.Message}";
+            _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: $"{selected.Name} failed: {ex.Message}");
+            PositionSetupEventLogRecord(selected.Name, "Failed", $"{selected.Name} move failed: {ex.Message}");
         }
-
-        if (selected.ZAxisNo >= 0 && selected.SafeZ < selected.ZPosition)
-        {
-            OperationStatus = $"位置设定 {selected.Name} 的 SafeZ 不能低于目标 Z";
-            return;
-        }
-
-        MotionControl.Application.DTOs.MoveAxisCommandDto BuildMove(int axisNo, double target)
-        {
-            var axis = _machine.Axes.First(a => a.Id.Value == axisNo);
-            var vel = axis.WorkVelocity > 0 ? axis.WorkVelocity : 100;
-            var acc = axis.Acceleration > 0 ? axis.Acceleration : 100;
-            var dec = axis.Deceleration > 0 ? axis.Deceleration : 100;
-            return new MotionControl.Application.DTOs.MoveAxisCommandDto(axisNo, target, vel, acc, dec);
-        }
-
-        var planarMoves = new List<Task>();
-
-        // 安全顺序: 若配置了 Z，则先抬到 SafeZ，再走其它轴，最后 Z 下到目标位。
-        // 若未配置 Z，则仅允许其它轴直接运动。
-        if (selected.ZAxisNo >= 0)
-        {
-            await _motionAppService.MoveAbsoluteAsync(BuildMove(selected.ZAxisNo, selected.SafeZ));
-        }
-
-        if (selected.XxAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.XxAxisNo, selected.XxPosition)));
-        if (selected.XAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.XAxisNo, selected.XPosition)));
-        if (selected.YAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.YAxisNo, selected.YPosition)));
-        if (selected.UAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.UAxisNo, selected.UPosition)));
-        if (selected.VAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.VAxisNo, selected.VPosition)));
-        if (selected.WAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(selected.WAxisNo, selected.WPosition)));
-
-        if (planarMoves.Count > 0)
-        {
-            await Task.WhenAll(planarMoves);
-        }
-
-        if (selected.ZAxisNo >= 0)
-        {
-            await _motionAppService.MoveAbsoluteAsync(BuildMove(selected.ZAxisNo, selected.ZPosition));
-        }
-
-        OperationStatus = $"位置设定 {selected.Name} 已执行定位";
     }
 
     private async Task LoadIoConfigAsync()
@@ -1188,6 +1242,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _cylinderEventRuntimeState.Add(new CylinderEventRecord
         {
             CylinderName = cylinderName,
+            EventType = eventType,
+            Message = message
+        });
+    }
+
+    private void PositionSetupEventLogRecord(string positionName, string eventType, string message)
+    {
+        _workHeadEventRuntimeState.Add(new WorkHeadEventRecord
+        {
+            WorkHeadName = $"PositionSetup:{positionName}",
             EventType = eventType,
             Message = message
         });
