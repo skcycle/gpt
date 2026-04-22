@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 
@@ -10,14 +11,16 @@ public sealed class WorkHeadMonitorViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
     private readonly IoControlService _ioControlService;
+    private readonly IMotionAppService _motionAppService;
     private readonly Func<bool> _canControl;
     private readonly WorkHeadEventRuntimeState _workHeadEventRuntimeState;
     private WorkHeadItemViewModel? _selectedWorkHead;
 
-    public WorkHeadMonitorViewModel(Machine machine, IoControlService ioControlService, WorkHeadEventRuntimeState workHeadEventRuntimeState, Func<bool> canControl)
+    public WorkHeadMonitorViewModel(Machine machine, IoControlService ioControlService, IMotionAppService motionAppService, WorkHeadEventRuntimeState workHeadEventRuntimeState, Func<bool> canControl)
     {
         _machine = machine;
         _ioControlService = ioControlService;
+        _motionAppService = motionAppService;
         _workHeadEventRuntimeState = workHeadEventRuntimeState;
         _canControl = canControl;
         WorkHeads = new ObservableCollection<WorkHeadItemViewModel>(_machine.WorkHeads.Select(BuildViewModel));
@@ -48,7 +51,7 @@ public sealed class WorkHeadMonitorViewModel : INotifyPropertyChanged
         if (SelectedWorkHead == existing) SelectedWorkHead = WorkHeads.FirstOrDefault();
     }
 
-    private WorkHeadItemViewModel BuildViewModel(WorkHead workHead) => new(workHead, _machine, _ioControlService, _workHeadEventRuntimeState, _canControl);
+    private WorkHeadItemViewModel BuildViewModel(WorkHead workHead) => new(workHead, _machine, _ioControlService, _motionAppService, _workHeadEventRuntimeState, _canControl);
     private void SyncCollections()
     {
         var sourceNames = _machine.WorkHeads.Select(item => item.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);

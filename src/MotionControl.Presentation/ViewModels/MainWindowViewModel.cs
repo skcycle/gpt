@@ -87,7 +87,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         WorkHeadEventLog = new WorkHeadEventLogViewModel(workHeadEventRuntimeState);
         CylinderMonitor = new CylinderMonitorViewModel(machine, ioControlService, cylinderEventRuntimeState, CanWriteIoOutputs);
         CylinderMonitor.SelectedCylinderChanged += _ => (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, workHeadEventRuntimeState, CanWriteIoOutputs);
+        WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, motionAppService, workHeadEventRuntimeState, CanWriteIoOutputs);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, CanControlAxisCommands);
         AxisParameterEditor = new AxisParameterEditorViewModel(
             axisManagementAppService,
@@ -122,8 +122,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         LoadWorkHeadConfigCommand = new RelayCommand(async () => await LoadWorkHeadConfigAsync(), CanEditIoConfiguration);
         MoveWorkHeadCommand = new RelayCommand(async () => await MoveSelectedWorkHeadAsync(), () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName));
         TeachWorkHeadCommand = new RelayCommand(TeachSelectedWorkHeadPosition, () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName));
-        AddWorkHeadPositionCommand = new RelayCommand(AddWorkHeadPosition, () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName));
-        DeleteWorkHeadPositionCommand = new RelayCommand(DeleteWorkHeadPosition, () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) && !string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName));
+        AddWorkHeadPositionCommand = new RelayCommand(AddWorkHeadPosition, () => WorkHeadMonitor.SelectedWorkHead is not null);
+        DeleteWorkHeadPositionCommand = new RelayCommand(DeleteWorkHeadPosition, () => WorkHeadMonitor.SelectedWorkHead is not null);
         TeachToWorkHeadPositionCommand = new RelayCommand(TeachToSelectedWorkHeadPosition, () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) && !string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName));
         MoveToWorkHeadPositionCommand = new RelayCommand(async () => await MoveToSelectedWorkHeadPositionAsync(), () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) && !string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName));
         _axisConsoleCoordinator = new AxisConsoleCoordinator(AxisMonitor, AxisDebug, AxisParameterEditor);
@@ -495,29 +495,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private void AddWorkHeadPosition()
     {
-        if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName)) return;
-        var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
-        if (workHead is null) return;
-
-        var index = workHead.Positions.Count + 1;
-        var name = $"Pos{index}";
-        workHead.AddPosition(new WorkHeadPosition(name, "", 0, 0, 0, 0));
-        SelectedWorkHeadPositionName = name;
-        OnPropertyChanged(nameof(WorkHeadPositionNames));
-        OperationStatus = $"已添加位置 {name}";
+        if (WorkHeadMonitor.SelectedWorkHead is null) return;
+        WorkHeadMonitor.SelectedWorkHead.AddPosition();
+        OperationStatus = $"{WorkHeadMonitor.SelectedWorkHead.Name} 已添加 Position";
     }
 
     private void DeleteWorkHeadPosition()
     {
-        if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) || string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName)) return;
-        var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
-        if (workHead is null) return;
-
-        var name = SelectedWorkHeadPositionName;
-        workHead.RemovePosition(name);
-        SelectedWorkHeadPositionName = null;
-        OnPropertyChanged(nameof(WorkHeadPositionNames));
-        OperationStatus = $"已删除位置 {name}";
+        if (WorkHeadMonitor.SelectedWorkHead is null) return;
+        WorkHeadMonitor.SelectedWorkHead.DeleteSelectedPosition();
+        OperationStatus = $"{WorkHeadMonitor.SelectedWorkHead.Name} 已删除 Position";
     }
 
     private void TeachToSelectedWorkHeadPosition()

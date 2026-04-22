@@ -43,6 +43,7 @@ public sealed class WorkHead
     public bool VacuumConflictLogged { get; set; }
 
     public List<WorkHeadPosition> Positions { get; private set; } = new();
+    public string? SelectedPositionName { get; set; }
 
     public void UpdateMetadata(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs)
     {
