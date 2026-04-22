@@ -550,21 +550,17 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
+                        <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="12" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12" Grid.ColumnSpan="3">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                         <Button Content="Add WorkHead" Command="{Binding AddWorkHeadCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                         <Button Content="Delete WorkHead" Command="{Binding DeleteWorkHeadCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                         <Button Content="Save Config" Command="{Binding SaveWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                         <Button Content="Load Config" Command="{Binding LoadWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                     </StackPanel>
 
-                    <DataGrid Grid.Row="1" Grid.Column="0"
+                    <DataGrid Grid.Row="1"
                               ItemsSource="{Binding WorkHeadMonitor.WorkHeads}"
                               SelectedItem="{Binding WorkHeadMonitor.SelectedWorkHead, Mode=TwoWay}"
                               AutoGenerateColumns="False"
@@ -637,9 +633,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <GridSplitter Grid.Row="1" Grid.Column="1" Width="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" />
-
-                    <GroupBox Grid.Row="1" Grid.Column="2" Header="Event Log" Margin="0,0,0,12">
+                    <GroupBox Grid.Row="2" Header="Event Log" Margin="0,8,0,12">
                         <ListBox ItemsSource="{Binding WorkHeadEventLog.Events}" BorderThickness="0">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
