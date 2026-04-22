@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using MotionControl.Domain.Enums;
 using MotionControl.Application.Interfaces;
+using MotionControl.Control.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 using MotionControl.Domain.ValueObjects;

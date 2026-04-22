@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using MotionControl.Control.Services;
+using MotionControl.Control.Interfaces;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
 
@@ -10,7 +10,7 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class AxisViewModel : INotifyPropertyChanged
 {
     private readonly Axis _axis;
-    private readonly AxisControlService _axisControlService;
+    private readonly IAxisControlService _axisControlService;
 
     public AxisViewModel(Axis axis, IAxisControlService axisControlService)
     {
