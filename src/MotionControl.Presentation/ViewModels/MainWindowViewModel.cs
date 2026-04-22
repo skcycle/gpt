@@ -578,6 +578,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return workHead?.Positions.Select(p => p.Name).ToList() ?? new List<string>();
         }
     }
+
+    private async Task MoveSelectedWorkHeadAsync()
     {
         if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName))
         {
