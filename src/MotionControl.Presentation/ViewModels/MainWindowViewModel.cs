@@ -494,19 +494,70 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return;
         }
 
-        var moves = new List<Task>();
-        if (workHead.XAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(workHead.XAxisNo, WorkHeadTargetX, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration)));
-        if (workHead.YAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(workHead.YAxisNo, WorkHeadTargetY, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration)));
-        if (workHead.ZAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(workHead.ZAxisNo, WorkHeadTargetZ, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration)));
-        if (workHead.RAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(workHead.RAxisNo, WorkHeadTargetR, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration)));
-
-        if (moves.Count == 0)
+        var hasAnyAxis = workHead.XAxisNo >= 0 || workHead.YAxisNo >= 0 || workHead.ZAxisNo >= 0 || workHead.RAxisNo >= 0;
+        if (!hasAnyAxis)
         {
             OperationStatus = $"WorkHead {workHead.Name} 没有可运动的轴";
             return;
         }
 
-        await Task.WhenAll(moves);
+        // 1. 先抬 Z 到安全位 0
+        if (workHead.ZAxisNo >= 0)
+        {
+            await _motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
+                workHead.ZAxisNo,
+                0,
+                WorkHeadMoveVelocity,
+                WorkHeadMoveAcceleration,
+                WorkHeadMoveDeceleration));
+        }
+
+        // 2. 再运动 X / Y / R
+        var planarMoves = new List<Task>();
+        if (workHead.XAxisNo >= 0)
+        {
+            planarMoves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
+                workHead.XAxisNo,
+                WorkHeadTargetX,
+                WorkHeadMoveVelocity,
+                WorkHeadMoveAcceleration,
+                WorkHeadMoveDeceleration)));
+        }
+        if (workHead.YAxisNo >= 0)
+        {
+            planarMoves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
+                workHead.YAxisNo,
+                WorkHeadTargetY,
+                WorkHeadMoveVelocity,
+                WorkHeadMoveAcceleration,
+                WorkHeadMoveDeceleration)));
+        }
+        if (workHead.RAxisNo >= 0)
+        {
+            planarMoves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
+                workHead.RAxisNo,
+                WorkHeadTargetR,
+                WorkHeadMoveVelocity,
+                WorkHeadMoveAcceleration,
+                WorkHeadMoveDeceleration)));
+        }
+
+        if (planarMoves.Count > 0)
+        {
+            await Task.WhenAll(planarMoves);
+        }
+
+        // 3. 最后 Z 下到目标位
+        if (workHead.ZAxisNo >= 0)
+        {
+            await _motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
+                workHead.ZAxisNo,
+                WorkHeadTargetZ,
+                WorkHeadMoveVelocity,
+                WorkHeadMoveAcceleration,
+                WorkHeadMoveDeceleration));
+        }
+
         OperationStatus = $"WorkHead {workHead.Name} 已执行定位";
     }
 
