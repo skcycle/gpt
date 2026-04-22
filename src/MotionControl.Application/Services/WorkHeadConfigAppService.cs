@@ -26,7 +26,11 @@ public sealed class WorkHeadConfigAppService(string appSettingsPath) : IWorkHead
             RAxisNo = -1,
             VacuumOutputAddress = -1,
             BlowOutputAddress = -1,
-            VacuumInputAddress = -1
+            VacuumInputAddress = -1,
+            GeneralOutputAddress1 = -1,
+            GeneralOutputAddress2 = -1,
+            GeneralInputAddress1 = -1,
+            GeneralInputAddress2 = -1
         };
         root.WorkHeadMapping.WorkHeads.Add(item);
         await SaveRootAsync(root, cancellationToken);

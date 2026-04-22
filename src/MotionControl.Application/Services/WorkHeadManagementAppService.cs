@@ -34,7 +34,11 @@ public sealed class WorkHeadManagementAppService(
         {
             (item.Name, Label: "Vacuum DO", Address: item.VacuumOutputAddress, IsOutput: true),
             (item.Name, Label: "Blow DO", Address: item.BlowOutputAddress, IsOutput: true),
-            (item.Name, Label: "Vacuum DI", Address: item.VacuumInputAddress, IsOutput: false)
+            (item.Name, Label: "General DO 1", Address: item.GeneralOutputAddress1, IsOutput: true),
+            (item.Name, Label: "General DO 2", Address: item.GeneralOutputAddress2, IsOutput: true),
+            (item.Name, Label: "Vacuum DI", Address: item.VacuumInputAddress, IsOutput: false),
+            (item.Name, Label: "General DI 1", Address: item.GeneralInputAddress1, IsOutput: false),
+            (item.Name, Label: "General DI 2", Address: item.GeneralInputAddress2, IsOutput: false)
         }).Where(x => x.Address >= 0 && !ioPoints.Any(io => io.IsOutput == x.IsOutput && io.Address == x.Address)).ToList();
 
         if (missingRefs.Count > 0)

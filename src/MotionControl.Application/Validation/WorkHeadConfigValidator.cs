@@ -11,7 +11,7 @@ public static class WorkHeadConfigValidator
             throw new InvalidOperationException("WorkHead 名称不能为空");
         }
 
-        if (items.Any(item => item.VacuumOutputAddress < -1 || item.BlowOutputAddress < -1 || item.VacuumInputAddress < -1))
+        if (items.Any(item => item.VacuumOutputAddress < -1 || item.BlowOutputAddress < -1 || item.VacuumInputAddress < -1 || item.GeneralOutputAddress1 < -1 || item.GeneralOutputAddress2 < -1 || item.GeneralInputAddress1 < -1 || item.GeneralInputAddress2 < -1))
         {
             throw new InvalidOperationException("WorkHead DI/DO 地址不能小于 -1");
         }
@@ -40,7 +40,9 @@ public static class WorkHeadConfigValidator
             .SelectMany(item => new[]
             {
                 (item.Name, Address: item.VacuumOutputAddress, Label: "Vacuum DO"),
-                (item.Name, Address: item.BlowOutputAddress, Label: "Blow DO")
+                (item.Name, Address: item.BlowOutputAddress, Label: "Blow DO"),
+                (item.Name, Address: item.GeneralOutputAddress1, Label: "General DO 1"),
+                (item.Name, Address: item.GeneralOutputAddress2, Label: "General DO 2")
             })
             .Where(x => x.Address >= 0)
             .GroupBy(x => x.Address)
@@ -56,7 +58,12 @@ public static class WorkHeadConfigValidator
     private static void ValidateUniqueInput(IEnumerable<WorkHeadConfigItem> items)
     {
         var duplicate = items
-            .Select(item => (item.Name, Address: item.VacuumInputAddress, Label: "Vacuum DI"))
+            .SelectMany(item => new[]
+            {
+                (item.Name, Address: item.VacuumInputAddress, Label: "Vacuum DI"),
+                (item.Name, Address: item.GeneralInputAddress1, Label: "General DI 1"),
+                (item.Name, Address: item.GeneralInputAddress2, Label: "General DI 2")
+            })
             .Where(x => x.Address >= 0)
             .GroupBy(x => x.Address)
             .FirstOrDefault(g => g.Count() > 1);

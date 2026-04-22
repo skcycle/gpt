@@ -620,6 +620,22 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="General DO 1" Width="115">
+                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding GeneralDo1Brush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding GeneralOutputAddress1}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding GeneralOutputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="General DO 2" Width="115">
+                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding GeneralDo2Brush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding GeneralOutputAddress2}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding GeneralOutputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="General DI 1" Width="115">
+                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding GeneralDi1Brush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding GeneralInputAddress1}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding GeneralInputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Header="General DI 2" Width="115">
+                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding GeneralDi2Brush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding GeneralInputAddress2}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding GeneralInputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
                             <DataGridTemplateColumn Header="Actions" Width="180">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

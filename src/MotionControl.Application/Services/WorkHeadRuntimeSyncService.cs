@@ -11,15 +11,19 @@ public sealed class WorkHeadRuntimeSyncService(Machine machine) : IWorkHeadRunti
         EnsureIoPointExists(workHead.VacuumOutputAddress, true);
         EnsureIoPointExists(workHead.BlowOutputAddress, true);
         EnsureIoPointExists(workHead.VacuumInputAddress, false);
+        EnsureIoPointExists(workHead.GeneralOutputAddress1, true);
+        EnsureIoPointExists(workHead.GeneralOutputAddress2, true);
+        EnsureIoPointExists(workHead.GeneralInputAddress1, false);
+        EnsureIoPointExists(workHead.GeneralInputAddress2, false);
 
         var existing = machine.WorkHeads.FirstOrDefault(item => string.Equals(item.Name, workHead.Name, StringComparison.OrdinalIgnoreCase));
         if (existing is null)
         {
-            machine.AddWorkHead(new WorkHead(workHead.Name, workHead.Description, workHead.XAxisNo, workHead.YAxisNo, workHead.ZAxisNo, workHead.RAxisNo, workHead.VacuumOutputAddress, workHead.BlowOutputAddress, workHead.VacuumInputAddress));
+            machine.AddWorkHead(new WorkHead(workHead.Name, workHead.Description, workHead.XAxisNo, workHead.YAxisNo, workHead.ZAxisNo, workHead.RAxisNo, workHead.VacuumOutputAddress, workHead.BlowOutputAddress, workHead.VacuumInputAddress, workHead.GeneralOutputAddress1, workHead.GeneralOutputAddress2, workHead.GeneralInputAddress1, workHead.GeneralInputAddress2));
             return Task.CompletedTask;
         }
 
-        existing.UpdateMetadata(workHead.Name, workHead.Description, workHead.XAxisNo, workHead.YAxisNo, workHead.ZAxisNo, workHead.RAxisNo, workHead.VacuumOutputAddress, workHead.BlowOutputAddress, workHead.VacuumInputAddress);
+        existing.UpdateMetadata(workHead.Name, workHead.Description, workHead.XAxisNo, workHead.YAxisNo, workHead.ZAxisNo, workHead.RAxisNo, workHead.VacuumOutputAddress, workHead.BlowOutputAddress, workHead.VacuumInputAddress, workHead.GeneralOutputAddress1, workHead.GeneralOutputAddress2, workHead.GeneralInputAddress1, workHead.GeneralInputAddress2);
         return Task.CompletedTask;
     }
 

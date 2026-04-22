@@ -11,4 +11,8 @@ public sealed class WorkHeadConfigItem
     public int VacuumOutputAddress { get; set; } = -1;
     public int BlowOutputAddress { get; set; } = -1;
     public int VacuumInputAddress { get; set; } = -1;
+    public int GeneralOutputAddress1 { get; set; } = -1;
+    public int GeneralOutputAddress2 { get; set; } = -1;
+    public int GeneralInputAddress1 { get; set; } = -1;
+    public int GeneralInputAddress2 { get; set; } = -1;
 }
