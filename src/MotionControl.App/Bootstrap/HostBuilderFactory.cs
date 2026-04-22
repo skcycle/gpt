@@ -84,6 +84,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<CommandFeedbackRuntimeState>();
                 services.AddSingleton<IoEventRuntimeState>();
                 services.AddSingleton<CylinderEventRuntimeState>();
+                services.AddSingleton<WorkHeadEventRuntimeState>();
                 services.AddSingleton<FaultRecoveryService>();
                 services.AddSingleton<AxisPollingService>();
                 services.AddSingleton<IoPollingService>();

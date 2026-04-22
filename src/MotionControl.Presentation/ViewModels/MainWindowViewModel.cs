@@ -53,6 +53,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         CommandFeedbackRuntimeState commandFeedbackRuntimeState,
         IoEventRuntimeState ioEventRuntimeState,
         CylinderEventRuntimeState cylinderEventRuntimeState,
+        WorkHeadEventRuntimeState workHeadEventRuntimeState,
         IoControlService ioControlService)
     {
         _machine = machine;
@@ -72,9 +73,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IoMonitor = new IoMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
         IoEventLog = new IoEventLogViewModel(ioEventRuntimeState);
         CylinderEventLog = new CylinderEventLogViewModel(cylinderEventRuntimeState);
+        WorkHeadEventLog = new WorkHeadEventLogViewModel(workHeadEventRuntimeState);
         CylinderMonitor = new CylinderMonitorViewModel(machine, ioControlService, cylinderEventRuntimeState, CanWriteIoOutputs);
         CylinderMonitor.SelectedCylinderChanged += _ => (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
+        WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, workHeadEventRuntimeState, CanWriteIoOutputs);
         AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, CanControlAxisCommands);
         AxisParameterEditor = new AxisParameterEditorViewModel(
             axisManagementAppService,
@@ -151,6 +153,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public CylinderMonitorViewModel CylinderMonitor { get; }
     public WorkHeadMonitorViewModel WorkHeadMonitor { get; }
     public CylinderEventLogViewModel CylinderEventLog { get; }
+    public WorkHeadEventLogViewModel WorkHeadEventLog { get; }
     public AxisParameterEditorViewModel AxisParameterEditor { get; }
     public AlarmViewModel Alarm { get; }
 
@@ -256,6 +259,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         if (force || now - _lastWorkHeadRefreshUtc >= TimeSpan.FromMilliseconds(300))
         {
             WorkHeadMonitor.RefreshAll();
+            WorkHeadEventLog.Refresh();
             _lastWorkHeadRefreshUtc = now;
         }
     }

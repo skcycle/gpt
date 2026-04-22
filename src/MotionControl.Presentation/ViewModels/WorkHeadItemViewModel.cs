@@ -14,11 +14,13 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     private readonly Machine _machine;
     private readonly IoControlService _ioControlService;
     private readonly Func<bool> _canControl;
-    public WorkHeadItemViewModel(WorkHead workHead, Machine machine, IoControlService ioControlService, Func<bool> canControl)
+    private readonly WorkHeadEventRuntimeState _workHeadEventRuntimeState;
+    public WorkHeadItemViewModel(WorkHead workHead, Machine machine, IoControlService ioControlService, WorkHeadEventRuntimeState workHeadEventRuntimeState, Func<bool> canControl)
     {
         _workHead = workHead;
         _machine = machine;
         _ioControlService = ioControlService;
+        _workHeadEventRuntimeState = workHeadEventRuntimeState;
         _canControl = canControl;
         VacuumCommand = new RelayCommand(async () => await ToggleVacuumAsync(), () => _canControl() && _workHead.VacuumOutputAddress >= 0);
         BlowCommand = new RelayCommand(async () => await ToggleBlowAsync(), () => _canControl() && _workHead.BlowOutputAddress >= 0);
@@ -71,6 +73,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
 
         var result = await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, next);
         if (!result.Success) return;
+        _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = next ? $"{_workHead.Name} vacuum on" : $"{_workHead.Name} vacuum off" });
         Refresh();
     }
 
@@ -87,6 +90,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
 
         var result = await _ioControlService.SetOutputAsync(_workHead.BlowOutputAddress, next);
         if (!result.Success) return;
+        _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = next ? $"{_workHead.Name} blow on" : $"{_workHead.Name} blow off" });
         Refresh();
     }
 

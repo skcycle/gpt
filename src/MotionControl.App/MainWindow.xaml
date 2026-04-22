@@ -551,15 +551,20 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12" Grid.ColumnSpan="3">
                         <Button Content="Add WorkHead" Command="{Binding AddWorkHeadCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                         <Button Content="Delete WorkHead" Command="{Binding DeleteWorkHeadCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                         <Button Content="Save Config" Command="{Binding SaveWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                         <Button Content="Load Config" Command="{Binding LoadWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                     </StackPanel>
 
-                    <DataGrid Grid.Row="1"
+                    <DataGrid Grid.Row="1" Grid.Column="0"
                               ItemsSource="{Binding WorkHeadMonitor.WorkHeads}"
                               SelectedItem="{Binding WorkHeadMonitor.SelectedWorkHead, Mode=TwoWay}"
                               AutoGenerateColumns="False"
@@ -631,6 +636,25 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
+
+                    <GridSplitter Grid.Row="1" Grid.Column="1" Width="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" />
+
+                    <GroupBox Grid.Row="1" Grid.Column="2" Header="Event Log" Margin="0,0,0,12">
+                        <ListBox ItemsSource="{Binding WorkHeadEventLog.Events}" BorderThickness="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="2,2,2,6">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Time}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                            <TextBlock Text="{Binding WorkHeadName}" FontWeight="SemiBold" Margin="0,0,8,0" />
+                                            <TextBlock Text="{Binding EventType}" Foreground="{StaticResource SecondaryTextBrush}" />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
                 </Grid>
             </TabItem>
 
