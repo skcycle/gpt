@@ -582,6 +582,7 @@
                                 <TextBox Width="80" Text="{Binding WorkHeadMoveAcceleration, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
                                 <TextBlock Text="Dec" VerticalAlignment="Center" Margin="0,0,6,0" />
                                 <TextBox Width="80" Text="{Binding WorkHeadMoveDeceleration, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,12,0" />
+                                <Button Content="Teach" Command="{Binding TeachWorkHeadCommand}" Width="100" Margin="0,0,8,0" />
                                 <Button Content="Move" Command="{Binding MoveWorkHeadCommand}" Width="100" />
                             </WrapPanel>
                         </StackPanel>
