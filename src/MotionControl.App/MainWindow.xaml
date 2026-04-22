@@ -549,6 +549,7 @@
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
@@ -560,7 +561,33 @@
                         <Button Content="Load Config" Command="{Binding LoadWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
                     </StackPanel>
 
-                    <DataGrid Grid.Row="1"
+                    <GroupBox Grid.Row="1" Header="WorkHead Motion" Margin="0,0,0,12">
+                        <StackPanel Margin="8">
+                            <WrapPanel Margin="0,0,0,8">
+                                <TextBlock Text="WorkHead" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <ComboBox Width="180" ItemsSource="{Binding WorkHeadNames}" SelectedItem="{Binding SelectedWorkHeadMotionName, Mode=TwoWay}" Margin="0,0,12,0" />
+                                <TextBlock Text="X" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBox Width="80" Text="{Binding WorkHeadTargetX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                                <TextBlock Text="Y" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBox Width="80" Text="{Binding WorkHeadTargetY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                                <TextBlock Text="Z" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBox Width="80" Text="{Binding WorkHeadTargetZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                                <TextBlock Text="R" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBox Width="80" Text="{Binding WorkHeadTargetR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                            </WrapPanel>
+                            <WrapPanel>
+                                <TextBlock Text="Velocity" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBox Width="80" Text="{Binding WorkHeadMoveVelocity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                                <TextBlock Text="Acc" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBox Width="80" Text="{Binding WorkHeadMoveAcceleration, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,8,0" />
+                                <TextBlock Text="Dec" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                <TextBox Width="80" Text="{Binding WorkHeadMoveDeceleration, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,12,0" />
+                                <Button Content="Move" Command="{Binding MoveWorkHeadCommand}" Width="100" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <DataGrid Grid.Row="2"
                               ItemsSource="{Binding WorkHeadMonitor.WorkHeads}"
                               SelectedItem="{Binding WorkHeadMonitor.SelectedWorkHead, Mode=TwoWay}"
                               AutoGenerateColumns="False"

@@ -17,6 +17,7 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStatusReporter
 {
     private readonly Machine _machine;
+    private readonly IMotionAppService _motionAppService;
     private readonly IAxisManagementAppService _axisManagementAppService;
     private readonly IIoManagementAppService _ioManagementAppService;
     private readonly ICylinderManagementAppService _cylinderManagementAppService;
@@ -37,6 +38,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private DateTime _lastWorkHeadRefreshUtc = DateTime.MinValue;
     private string _currentBeijingTime = GetBeijingTimeString();
     private string _operationStatus = "Ready";
+    private string? _selectedWorkHeadMotionName;
+    private double _workHeadTargetX;
+    private double _workHeadTargetY;
+    private double _workHeadTargetZ;
+    private double _workHeadTargetR;
+    private double _workHeadMoveVelocity = 100;
+    private double _workHeadMoveAcceleration = 100;
+    private double _workHeadMoveDeceleration = 100;
 
     public MainWindowViewModel(
         Machine machine,
@@ -57,6 +66,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IoControlService ioControlService)
     {
         _machine = machine;
+        _motionAppService = motionAppService;
         _axisManagementAppService = axisManagementAppService;
         _ioManagementAppService = ioManagementAppService;
         _cylinderManagementAppService = cylinderManagementAppService;
@@ -109,6 +119,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         DeleteWorkHeadCommand = new RelayCommand(async () => await DeleteSelectedWorkHeadAsync(), () => WorkHeadMonitor.SelectedWorkHead is not null && CanEditIoConfiguration());
         SaveWorkHeadConfigCommand = new RelayCommand(async () => await SaveWorkHeadConfigAsync(), CanEditIoConfiguration);
         LoadWorkHeadConfigCommand = new RelayCommand(async () => await LoadWorkHeadConfigAsync(), CanEditIoConfiguration);
+        MoveWorkHeadCommand = new RelayCommand(async () => await MoveSelectedWorkHeadAsync(), () => !string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName));
         _axisConsoleCoordinator = new AxisConsoleCoordinator(AxisMonitor, AxisDebug, AxisParameterEditor);
         _ioMonitorCoordinator = new IoMonitorCoordinator(IoMonitor, (RelayCommand)DeleteInputCommand, (RelayCommand)DeleteOutputCommand);
         _ioMonitorCoordinator.Initialize();
@@ -130,6 +141,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             OnPropertyChanged();
         }
     }
+
+    public IReadOnlyList<string> WorkHeadNames => _machine.WorkHeads.Select(item => item.Name).OrderBy(item => item).ToList();
+
+    public string? SelectedWorkHeadMotionName { get => _selectedWorkHeadMotionName; set { if (_selectedWorkHeadMotionName == value) return; _selectedWorkHeadMotionName = value; OnPropertyChanged(); (MoveWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
+    public double WorkHeadTargetX { get => _workHeadTargetX; set { if (_workHeadTargetX == value) return; _workHeadTargetX = value; OnPropertyChanged(); } }
+    public double WorkHeadTargetY { get => _workHeadTargetY; set { if (_workHeadTargetY == value) return; _workHeadTargetY = value; OnPropertyChanged(); } }
+    public double WorkHeadTargetZ { get => _workHeadTargetZ; set { if (_workHeadTargetZ == value) return; _workHeadTargetZ = value; OnPropertyChanged(); } }
+    public double WorkHeadTargetR { get => _workHeadTargetR; set { if (_workHeadTargetR == value) return; _workHeadTargetR = value; OnPropertyChanged(); } }
+    public double WorkHeadMoveVelocity { get => _workHeadMoveVelocity; set { if (_workHeadMoveVelocity == value) return; _workHeadMoveVelocity = value; OnPropertyChanged(); } }
+    public double WorkHeadMoveAcceleration { get => _workHeadMoveAcceleration; set { if (_workHeadMoveAcceleration == value) return; _workHeadMoveAcceleration = value; OnPropertyChanged(); } }
+    public double WorkHeadMoveDeceleration { get => _workHeadMoveDeceleration; set { if (_workHeadMoveDeceleration == value) return; _workHeadMoveDeceleration = value; OnPropertyChanged(); } }
     public string OperationStatus
     {
         get => _operationStatus;
@@ -176,6 +198,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public ICommand DeleteWorkHeadCommand { get; }
     public ICommand SaveWorkHeadConfigCommand { get; }
     public ICommand LoadWorkHeadConfigCommand { get; }
+    public ICommand MoveWorkHeadCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -415,6 +438,37 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         RefreshViewModels(force: true);
     }
 
+    private async Task MoveSelectedWorkHeadAsync()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName))
+        {
+            OperationStatus = "请先选择 WorkHead";
+            return;
+        }
+
+        var workHead = _machine.WorkHeads.FirstOrDefault(item => string.Equals(item.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+        if (workHead is null)
+        {
+            OperationStatus = $"未找到 WorkHead: {SelectedWorkHeadMotionName}";
+            return;
+        }
+
+        var moves = new List<Task>();
+        if (workHead.XAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(workHead.XAxisNo, WorkHeadTargetX, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration)));
+        if (workHead.YAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(workHead.YAxisNo, WorkHeadTargetY, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration)));
+        if (workHead.ZAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(workHead.ZAxisNo, WorkHeadTargetZ, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration)));
+        if (workHead.RAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(workHead.RAxisNo, WorkHeadTargetR, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration)));
+
+        if (moves.Count == 0)
+        {
+            OperationStatus = $"WorkHead {workHead.Name} 没有可运动的轴";
+            return;
+        }
+
+        await Task.WhenAll(moves);
+        OperationStatus = $"WorkHead {workHead.Name} 已执行定位";
+    }
+
     private async Task AddWorkHeadAsync()
     {
         var item = await _workHeadManagementAppService.AddWorkHeadAsync();
@@ -426,6 +480,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
 
         WorkHeadMonitor.AddWorkHead(workHead);
+        OnPropertyChanged(nameof(WorkHeadNames));
         OperationStatus = $"WorkHead {item.Name} 已新增";
         RefreshViewModels(force: true);
     }
@@ -448,6 +503,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
 
         WorkHeadMonitor.RemoveWorkHead(selected.Name);
+        OnPropertyChanged(nameof(WorkHeadNames));
         OperationStatus = $"WorkHead {selected.Name} 已删除";
         RefreshViewModels(force: true);
     }
@@ -588,6 +644,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
 
         await _workHeadManagementAppService.LoadWorkHeadsAsync();
+        OnPropertyChanged(nameof(WorkHeadNames));
         OperationStatus = "WorkHead 配置已重新加载";
         RefreshViewModels(force: true);
     }
