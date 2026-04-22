@@ -578,7 +578,8 @@
                             <DataGridTextColumn Header="Z Axis" Binding="{Binding ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
                             <DataGridTextColumn Header="R Axis" Binding="{Binding RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
                             <DataGridTextColumn Header="Safe Z" Binding="{Binding SafeZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
-                            <DataGridComboBoxColumn Header="Position Name" SelectedItemBinding="{Binding PositionSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding PositionNames}" Width="140" />
+                            <DataGridComboBoxColumn Header="Position" SelectedItemBinding="{Binding PositionSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding PositionNames}" Width="120" />
+                            <DataGridTextColumn Header="Position Name" Binding="{Binding PositionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" />
                             <DataGridTextColumn Header="Position Desc" Binding="{Binding PositionDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="140" />
                             <DataGridTextColumn Header="Pos X" Binding="{Binding PositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
                             <DataGridTextColumn Header="Pos Y" Binding="{Binding PositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
