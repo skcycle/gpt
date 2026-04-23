@@ -8,6 +8,19 @@ public sealed class CommandFeedbackRuntimeState
 
     public void Add(CommandFeedback feedback)
     {
+        var lastFeedback = RecentFeedback.LastOrDefault();
+        var isDuplicateAxisStateChange = lastFeedback is not null
+            && feedback.CommandName == "AxisState"
+            && lastFeedback.CommandName == feedback.CommandName
+            && lastFeedback.AxisNo == feedback.AxisNo
+            && lastFeedback.Status == feedback.Status
+            && lastFeedback.Message == feedback.Message;
+
+        if (isDuplicateAxisStateChange)
+        {
+            return;
+        }
+
         RecentFeedback = RecentFeedback
             .Concat(new[] { feedback })
             .TakeLast(100)
