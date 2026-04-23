@@ -254,6 +254,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
 
     private void RaisePositionChanged()
     {
+        OnPropertyChanged(nameof(Positions));
         OnPropertyChanged(nameof(PositionNames));
         OnPropertyChanged(nameof(PositionSelector));
         OnPropertyChanged(nameof(PositionName));
