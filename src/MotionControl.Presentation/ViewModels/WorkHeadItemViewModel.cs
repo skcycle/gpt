@@ -36,10 +36,10 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
 
     public string Name { get => _workHead.Name; set { if (_workHead.Name == value) return; UpdateMetadata(name: value); OnPropertyChanged(); } }
     public string Description { get => _workHead.Description; set { if (_workHead.Description == value) return; UpdateMetadata(description: value); OnPropertyChanged(); } }
-    public int XAxisNo { get => _workHead.XAxisNo; set { if (_workHead.XAxisNo == value) return; UpdateMetadata(xAxisNo: value); OnPropertyChanged(); } }
-    public int YAxisNo { get => _workHead.YAxisNo; set { if (_workHead.YAxisNo == value) return; UpdateMetadata(yAxisNo: value); OnPropertyChanged(); } }
-    public int ZAxisNo { get => _workHead.ZAxisNo; set { if (_workHead.ZAxisNo == value) return; UpdateMetadata(zAxisNo: value); OnPropertyChanged(); } }
-    public int RAxisNo { get => _workHead.RAxisNo; set { if (_workHead.RAxisNo == value) return; UpdateMetadata(rAxisNo: value); OnPropertyChanged(); } }
+    public int XAxisNo { get => _workHead.XAxisNo; set { if (_workHead.XAxisNo == value) return; UpdateMetadata(xAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsXAxisConfigured)); } }
+    public int YAxisNo { get => _workHead.YAxisNo; set { if (_workHead.YAxisNo == value) return; UpdateMetadata(yAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsYAxisConfigured)); } }
+    public int ZAxisNo { get => _workHead.ZAxisNo; set { if (_workHead.ZAxisNo == value) return; UpdateMetadata(zAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsZAxisConfigured)); } }
+    public int RAxisNo { get => _workHead.RAxisNo; set { if (_workHead.RAxisNo == value) return; UpdateMetadata(rAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsRAxisConfigured)); } }
     public int VacuumOutputAddress { get => _workHead.VacuumOutputAddress; set { if (_workHead.VacuumOutputAddress == value) return; UpdateMetadata(vacuumOutputAddress: value); OnPropertyChanged(); } }
     public int BlowOutputAddress { get => _workHead.BlowOutputAddress; set { if (_workHead.BlowOutputAddress == value) return; UpdateMetadata(blowOutputAddress: value); OnPropertyChanged(); } }
     public int VacuumInputAddress { get => _workHead.VacuumInputAddress; set { if (_workHead.VacuumInputAddress == value) return; UpdateMetadata(vacuumInputAddress: value); OnPropertyChanged(); } }
@@ -78,6 +78,11 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
             RaisePositionChanged();
         }
     }
+
+    public bool IsXAxisConfigured => XAxisNo >= 0;
+    public bool IsYAxisConfigured => YAxisNo >= 0;
+    public bool IsZAxisConfigured => ZAxisNo >= 0;
+    public bool IsRAxisConfigured => RAxisNo >= 0;
 
     public bool VacuumDoOn { get; private set; }
     public bool BlowDoOn { get; private set; }
@@ -138,6 +143,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(VacuumDoOn)); OnPropertyChanged(nameof(BlowDoOn)); OnPropertyChanged(nameof(VacuumDiOn)); OnPropertyChanged(nameof(GeneralDo1On)); OnPropertyChanged(nameof(GeneralDo2On)); OnPropertyChanged(nameof(GeneralDi1On)); OnPropertyChanged(nameof(GeneralDi2On));
         OnPropertyChanged(nameof(VacuumDoBrush)); OnPropertyChanged(nameof(BlowDoBrush)); OnPropertyChanged(nameof(VacuumDiBrush)); OnPropertyChanged(nameof(GeneralDo1Brush)); OnPropertyChanged(nameof(GeneralDo2Brush)); OnPropertyChanged(nameof(GeneralDi1Brush)); OnPropertyChanged(nameof(GeneralDi2Brush));
         OnPropertyChanged(nameof(Name)); OnPropertyChanged(nameof(Description)); OnPropertyChanged(nameof(XAxisNo)); OnPropertyChanged(nameof(YAxisNo)); OnPropertyChanged(nameof(ZAxisNo)); OnPropertyChanged(nameof(RAxisNo));
+        OnPropertyChanged(nameof(IsXAxisConfigured)); OnPropertyChanged(nameof(IsYAxisConfigured)); OnPropertyChanged(nameof(IsZAxisConfigured)); OnPropertyChanged(nameof(IsRAxisConfigured));
         OnPropertyChanged(nameof(VacuumOutputAddress)); OnPropertyChanged(nameof(BlowOutputAddress)); OnPropertyChanged(nameof(VacuumInputAddress)); OnPropertyChanged(nameof(GeneralOutputAddress1)); OnPropertyChanged(nameof(GeneralOutputAddress2)); OnPropertyChanged(nameof(GeneralInputAddress1)); OnPropertyChanged(nameof(GeneralInputAddress2)); OnPropertyChanged(nameof(VacuumTimeoutMs)); OnPropertyChanged(nameof(SafeZ));
         RaisePositionChanged();
         EvaluateVacuumRuntime();

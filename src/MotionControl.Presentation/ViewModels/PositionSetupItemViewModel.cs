@@ -40,13 +40,21 @@ public sealed class PositionSetupItemViewModel : INotifyPropertyChanged
     public double SafeZ { get => _item.SafeZ; set { if (_item.SafeZ == value) return; _item.SafeZ = value; OnPropertyChanged(); } }
 
     /// <summary>轴映射（该对象下所有位置共用）</summary>
-    public int XxAxisNo { get => _item.XxAxisNo; set { if (_item.XxAxisNo == value) return; _item.XxAxisNo = value; OnPropertyChanged(); } }
-    public int XAxisNo { get => _item.XAxisNo; set { if (_item.XAxisNo == value) return; _item.XAxisNo = value; OnPropertyChanged(); } }
-    public int YAxisNo { get => _item.YAxisNo; set { if (_item.YAxisNo == value) return; _item.YAxisNo = value; OnPropertyChanged(); } }
-    public int ZAxisNo { get => _item.ZAxisNo; set { if (_item.ZAxisNo == value) return; _item.ZAxisNo = value; OnPropertyChanged(); } }
-    public int UAxisNo { get => _item.UAxisNo; set { if (_item.UAxisNo == value) return; _item.UAxisNo = value; OnPropertyChanged(); } }
-    public int VAxisNo { get => _item.VAxisNo; set { if (_item.VAxisNo == value) return; _item.VAxisNo = value; OnPropertyChanged(); } }
-    public int WAxisNo { get => _item.WAxisNo; set { if (_item.WAxisNo == value) return; _item.WAxisNo = value; OnPropertyChanged(); } }
+    public int XxAxisNo { get => _item.XxAxisNo; set { if (_item.XxAxisNo == value) return; _item.XxAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsXxAxisConfigured)); } }
+    public int XAxisNo { get => _item.XAxisNo; set { if (_item.XAxisNo == value) return; _item.XAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsXAxisConfigured)); } }
+    public int YAxisNo { get => _item.YAxisNo; set { if (_item.YAxisNo == value) return; _item.YAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsYAxisConfigured)); } }
+    public int ZAxisNo { get => _item.ZAxisNo; set { if (_item.ZAxisNo == value) return; _item.ZAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsZAxisConfigured)); } }
+    public int UAxisNo { get => _item.UAxisNo; set { if (_item.UAxisNo == value) return; _item.UAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsUAxisConfigured)); } }
+    public int VAxisNo { get => _item.VAxisNo; set { if (_item.VAxisNo == value) return; _item.VAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsVAxisConfigured)); } }
+    public int WAxisNo { get => _item.WAxisNo; set { if (_item.WAxisNo == value) return; _item.WAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsWAxisConfigured)); } }
+
+    public bool IsXxAxisConfigured => XxAxisNo >= 0;
+    public bool IsXAxisConfigured => XAxisNo >= 0;
+    public bool IsYAxisConfigured => YAxisNo >= 0;
+    public bool IsZAxisConfigured => ZAxisNo >= 0;
+    public bool IsUAxisConfigured => UAxisNo >= 0;
+    public bool IsVAxisConfigured => VAxisNo >= 0;
+    public bool IsWAxisConfigured => WAxisNo >= 0;
 
     // ===== 子位置点集合 =====
 
@@ -99,6 +107,13 @@ public sealed class PositionSetupItemViewModel : INotifyPropertyChanged
     public void Refresh()
     {
         OnPropertyChanged(string.Empty);
+        OnPropertyChanged(nameof(IsXxAxisConfigured));
+        OnPropertyChanged(nameof(IsXAxisConfigured));
+        OnPropertyChanged(nameof(IsYAxisConfigured));
+        OnPropertyChanged(nameof(IsZAxisConfigured));
+        OnPropertyChanged(nameof(IsUAxisConfigured));
+        OnPropertyChanged(nameof(IsVAxisConfigured));
+        OnPropertyChanged(nameof(IsWAxisConfigured));
     }
 
     // 内部命令（由 MainWindowViewModel 注入，Teach/Move 操作 SelectedPosition）
