@@ -550,7 +550,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
@@ -727,16 +726,6 @@
                         </GroupBox>
                     </Grid>
 
-                    <GroupBox Grid.Row="2" Header="Work Head Event Log">
-                        <DataGrid ItemsSource="{Binding WorkHeadEventLog.Events}" AutoGenerateColumns="False" IsReadOnly="True">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="110" />
-                                <DataGridTextColumn Header="WorkHead" Binding="{Binding WorkHeadName}" Width="180" />
-                                <DataGridTextColumn Header="Event" Binding="{Binding EventType}" Width="120" />
-                                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </GroupBox>
                 </Grid>
             </TabItem>
 
@@ -745,7 +734,6 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
 
                     <!-- Toolbar -->
@@ -907,17 +895,6 @@
                         </GroupBox>
                     </Grid>
 
-                    <!-- Event log -->
-                    <GroupBox Grid.Row="2" Header="Position Setup Event Log">
-                        <DataGrid ItemsSource="{Binding PositionSetupEventLog.Events}" AutoGenerateColumns="False" IsReadOnly="True">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="110" />
-                                <DataGridTextColumn Header="Position" Binding="{Binding PositionName}" Width="180" />
-                                <DataGridTextColumn Header="Event" Binding="{Binding EventType}" Width="120" />
-                                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </GroupBox>
                 </Grid>
             </TabItem>
 
