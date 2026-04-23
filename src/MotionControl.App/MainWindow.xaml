@@ -650,22 +650,22 @@
                                     <UniformGrid Grid.Row="2" Columns="4">
                                         <StackPanel Margin="4">
                                             <TextBlock Text="X Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsXAxisConfigured}" />
                                         </StackPanel>
                                         <StackPanel Margin="4">
                                             <TextBlock Text="Y Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsYAxisConfigured}" />
                                         </StackPanel>
                                         <StackPanel Margin="4">
                                             <TextBlock Text="Z Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsZAxisConfigured}" />
                                         </StackPanel>
                                         <StackPanel Margin="4">
                                             <TextBlock Text="R Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsRAxisConfigured}" />
                                         </StackPanel>
                                     </UniformGrid>
@@ -840,37 +840,37 @@
                                     <UniformGrid Grid.Row="2" Columns="7">
                                         <StackPanel Margin="4">
                                             <TextBlock Text="Xx Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.XxPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.XxPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding PositionSetupMonitor.SelectedItem.IsXxAxisConfigured}" />
                                         </StackPanel>
                                         <StackPanel Margin="4">
                                             <TextBlock Text="X Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.XPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.XPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding PositionSetupMonitor.SelectedItem.IsXAxisConfigured}" />
                                         </StackPanel>
                                         <StackPanel Margin="4">
                                             <TextBlock Text="Y Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.YPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.YPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding PositionSetupMonitor.SelectedItem.IsYAxisConfigured}" />
                                         </StackPanel>
                                         <StackPanel Margin="4">
                                             <TextBlock Text="Z Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.ZPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.ZPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding PositionSetupMonitor.SelectedItem.IsZAxisConfigured}" />
                                         </StackPanel>
                                         <StackPanel Margin="4">
                                             <TextBlock Text="U Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.UPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.UPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding PositionSetupMonitor.SelectedItem.IsUAxisConfigured}" />
                                         </StackPanel>
                                         <StackPanel Margin="4">
                                             <TextBlock Text="V Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.VPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.VPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding PositionSetupMonitor.SelectedItem.IsVAxisConfigured}" />
                                         </StackPanel>
                                         <StackPanel Margin="4">
                                             <TextBlock Text="W Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
-                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.WPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            <TextBox Text="{Binding PositionSetupMonitor.SelectedItem.SelectedPosition.WPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
                                                      IsEnabled="{Binding PositionSetupMonitor.SelectedItem.IsWAxisConfigured}" />
                                         </StackPanel>
                                     </UniformGrid>
