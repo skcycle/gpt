@@ -36,8 +36,6 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         StopAxisCommand = new RelayCommand(async () => await StopSelectedAxisAsync(), CanExecuteAxisCommand);
         JogPositiveCommand = new RelayCommand(async () => await StartJogAsync(true), CanExecuteAxisCommand);
         JogNegativeCommand = new RelayCommand(async () => await StartJogAsync(false), CanExecuteAxisCommand);
-        StepPositiveCommand = new RelayCommand(async () => await StepMoveAsync(true), CanExecuteAxisCommand);
-        StepNegativeCommand = new RelayCommand(async () => await StepMoveAsync(false), CanExecuteAxisCommand);
     }
 
     public event Action<int>? SelectedAxisChanged;
@@ -65,8 +63,6 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             StopAxisCommand.RaiseCanExecuteChanged();
             JogPositiveCommand.RaiseCanExecuteChanged();
             JogNegativeCommand.RaiseCanExecuteChanged();
-            StepPositiveCommand.RaiseCanExecuteChanged();
-            StepNegativeCommand.RaiseCanExecuteChanged();
             SelectedAxisChanged?.Invoke(_selectedAxisNo);
         }
     }
@@ -79,8 +75,6 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         StopAxisCommand.RaiseCanExecuteChanged();
         JogPositiveCommand.RaiseCanExecuteChanged();
         JogNegativeCommand.RaiseCanExecuteChanged();
-        StepPositiveCommand.RaiseCanExecuteChanged();
-        StepNegativeCommand.RaiseCanExecuteChanged();
     }
 
     public double TargetPosition
@@ -152,8 +146,6 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     public RelayCommand StopAxisCommand { get; }
     public RelayCommand JogPositiveCommand { get; }
     public RelayCommand JogNegativeCommand { get; }
-    public RelayCommand StepPositiveCommand { get; }
-    public RelayCommand StepNegativeCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

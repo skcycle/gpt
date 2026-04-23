@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using MotionControl.Presentation.ViewModels;
@@ -6,8 +7,13 @@ namespace MotionControl.App;
 
 public partial class MainWindow : Window
 {
+    private const int JogHoldThresholdMs = 250;
+
     private readonly MainWindowViewModel? _viewModel;
     private bool _initialized;
+    private CancellationTokenSource? _jogPressCts;
+    private bool _isJogRunning;
+    private bool? _pendingJogDirection;
 
     public MainWindow()
     {
@@ -40,7 +46,7 @@ public partial class MainWindow : Window
         }
 
         e.Handled = true;
-        await _viewModel.AxisDebug.StartJogAsync(true);
+        await BeginJogPressAsync(true);
     }
 
     private async void JogNegativeButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -51,7 +57,7 @@ public partial class MainWindow : Window
         }
 
         e.Handled = true;
-        await _viewModel.AxisDebug.StartJogAsync(false);
+        await BeginJogPressAsync(false);
     }
 
     private async void JogButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -62,7 +68,7 @@ public partial class MainWindow : Window
         }
 
         e.Handled = true;
-        await _viewModel.AxisDebug.StopJogAsync();
+        await EndJogPressAsync();
     }
 
     private async void JogButton_MouseLeave(object sender, MouseEventArgs e)
@@ -72,7 +78,61 @@ public partial class MainWindow : Window
             return;
         }
 
-        await _viewModel.AxisDebug.StopJogAsync();
+        await EndJogPressAsync();
+    }
+
+    private async Task BeginJogPressAsync(bool positiveDirection)
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        _jogPressCts?.Cancel();
+        _jogPressCts?.Dispose();
+        _jogPressCts = new CancellationTokenSource();
+        _pendingJogDirection = positiveDirection;
+        _isJogRunning = false;
+
+        try
+        {
+            await Task.Delay(JogHoldThresholdMs, _jogPressCts.Token);
+            if (_pendingJogDirection.HasValue)
+            {
+                _isJogRunning = true;
+                await _viewModel.AxisDebug.StartJogAsync(_pendingJogDirection.Value);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+    private async Task EndJogPressAsync()
+    {
+        if (_viewModel is null)
+        {
+            return;
+        }
+
+        _jogPressCts?.Cancel();
+        _jogPressCts?.Dispose();
+        _jogPressCts = null;
+
+        var direction = _pendingJogDirection;
+        _pendingJogDirection = null;
+
+        if (_isJogRunning)
+        {
+            _isJogRunning = false;
+            await _viewModel.AxisDebug.StopJogAsync();
+            return;
+        }
+
+        if (direction.HasValue)
+        {
+            await _viewModel.AxisDebug.StepMoveAsync(direction.Value);
+        }
     }
 
     private void AxisMonitorDataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)

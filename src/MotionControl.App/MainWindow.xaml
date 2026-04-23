@@ -281,9 +281,6 @@
                                     <ColumnDefinition Width="12" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="12" />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock Text="Jog Step" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
@@ -292,10 +289,8 @@
                                           ItemsSource="{Binding AxisDebug.JogStepDistances}"
                                           SelectedItem="{Binding AxisDebug.JogStepDistance, Mode=TwoWay}"
                                           VerticalAlignment="Center" />
-                                <Button Grid.Column="3" Content="Step -" Command="{Binding AxisDebug.StepNegativeCommand}" Width="80" />
-                                <Button Grid.Column="4" Content="Step +" Command="{Binding AxisDebug.StepPositiveCommand}" Width="80" Margin="6,0,0,0" />
-                                <Button Grid.Column="6" x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" />
-                                <Button Grid.Column="7" x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="6,0,0,0" />
+                                <Button Grid.Column="3" x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" />
+                                <Button Grid.Column="4" x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="6,0,0,0" />
                             </Grid>
 
                             <GroupBox Header="Recent Runtime Events" Margin="0,16,0,0">
