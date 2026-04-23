@@ -8,10 +8,12 @@ namespace MotionControl.Presentation.ViewModels;
 
 public sealed class DashboardViewModel : INotifyPropertyChanged
 {
+    public sealed record RuntimeEventLogItem(string Time, string Axis, string Event, string Message);
+
     private readonly Machine _machine;
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private EtherCatControllerStatus? _controllerStatus;
-    private string[] _lastRecentCommandFeedback = Array.Empty<string>();
+    private RuntimeEventLogItem[] _lastRecentCommandFeedback = Array.Empty<RuntimeEventLogItem>();
     private string[] _lastActiveAlarmSummary = Array.Empty<string>();
     private EtherCatSlaveViewModel[] _lastEtherCatSlaves = Array.Empty<EtherCatSlaveViewModel>();
 
@@ -40,7 +42,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
     public bool EtherCatConnected => _controllerStatus?.IsConnected ?? false;
     public int EtherCatOnlineSlaveCount => _controllerStatus?.OnlineSlaveCount ?? 0;
     public IReadOnlyList<EtherCatSlaveViewModel> EtherCatSlaves { get; private set; } = Array.Empty<EtherCatSlaveViewModel>();
-    public IReadOnlyList<string> RecentCommandFeedback { get; private set; } = Array.Empty<string>();
+    public IReadOnlyList<RuntimeEventLogItem> RecentCommandFeedback { get; private set; } = Array.Empty<RuntimeEventLogItem>();
     public IReadOnlyList<string> AlarmLog { get; private set; } = Array.Empty<string>();
     public IReadOnlyList<string> ActiveAlarmSummary { get; private set; } = Array.Empty<string>();
 
@@ -71,7 +73,11 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
         var latestFeedback = _commandFeedbackRuntimeState.RecentFeedback
             .Reverse()
             .Take(8)
-            .Select(item => $"[{item.Status}] {item.CommandName} Axis={item.AxisNo?.ToString() ?? "-"} {item.Message}")
+            .Select(item => new RuntimeEventLogItem(
+                item.Timestamp.ToLocalTime().ToString("HH:mm:ss"),
+                item.AxisNo?.ToString() ?? "-",
+                $"{item.Status} / {item.CommandName}",
+                item.Message))
             .ToArray();
         // Use length comparison to avoid SequenceEqual false negatives from new array references each run
         var newLen = latestFeedback.Length;
