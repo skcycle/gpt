@@ -291,8 +291,8 @@
                                           ItemsSource="{Binding AxisDebug.JogStepDistances}"
                                           SelectedItem="{Binding AxisDebug.JogStepDistance, Mode=TwoWay}"
                                           VerticalAlignment="Center" />
-                                <Button Grid.Column="7" x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" />
-                                <Button Grid.Column="8" x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="6,0,0,0" />
+                                <Button Grid.Column="7" x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="0,0,6,0" />
+                                <Button Grid.Column="8" x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="0,0,6,0" />
                             </Grid>
 
                             <GroupBox Header="Recent Runtime Events" Margin="0,16,0,0">
