@@ -184,7 +184,14 @@
                                     <DataGridTextColumn Header="Velocity" Binding="{Binding CurrentVelocity}" Width="80" />
                                     <DataGridTextColumn Header="WorkVel" Binding="{Binding WorkVelocity}" Width="70" />
                                     <DataGridTextColumn Header="SetupVel" Binding="{Binding SetupVelocity}" Width="70" />
-                                    <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed, Mode=OneWay}" Width="55">
+                                        <DataGridCheckBoxColumn.ElementStyle>
+                                            <Style TargetType="CheckBox">
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridCheckBoxColumn.ElementStyle>
+                                    </DataGridCheckBoxColumn>
                                     <DataGridTemplateColumn Header="ServoOn" Width="75">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -205,10 +212,38 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
-                                    <DataGridCheckBoxColumn Header="Soft-" Binding="{Binding NegativeSoftLimitTriggered, Mode=OneWay}" Width="55" />
-                                    <DataGridCheckBoxColumn Header="Soft+" Binding="{Binding PositiveSoftLimitTriggered, Mode=OneWay}" Width="55" />
-                                    <DataGridCheckBoxColumn Header="Hard-" Binding="{Binding NegativeHardLimitTriggered, Mode=OneWay}" Width="55" />
-                                    <DataGridCheckBoxColumn Header="Hard+" Binding="{Binding PositiveHardLimitTriggered, Mode=OneWay}" Width="55" />
+                                    <DataGridCheckBoxColumn Header="Soft-" Binding="{Binding NegativeSoftLimitTriggered, Mode=OneWay}" Width="55">
+                                        <DataGridCheckBoxColumn.ElementStyle>
+                                            <Style TargetType="CheckBox">
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridCheckBoxColumn.ElementStyle>
+                                    </DataGridCheckBoxColumn>
+                                    <DataGridCheckBoxColumn Header="Soft+" Binding="{Binding PositiveSoftLimitTriggered, Mode=OneWay}" Width="55">
+                                        <DataGridCheckBoxColumn.ElementStyle>
+                                            <Style TargetType="CheckBox">
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridCheckBoxColumn.ElementStyle>
+                                    </DataGridCheckBoxColumn>
+                                    <DataGridCheckBoxColumn Header="Hard-" Binding="{Binding NegativeHardLimitTriggered, Mode=OneWay}" Width="55">
+                                        <DataGridCheckBoxColumn.ElementStyle>
+                                            <Style TargetType="CheckBox">
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridCheckBoxColumn.ElementStyle>
+                                    </DataGridCheckBoxColumn>
+                                    <DataGridCheckBoxColumn Header="Hard+" Binding="{Binding PositiveHardLimitTriggered, Mode=OneWay}" Width="55">
+                                        <DataGridCheckBoxColumn.ElementStyle>
+                                            <Style TargetType="CheckBox">
+                                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                                <Setter Property="VerticalAlignment" Value="Center" />
+                                            </Style>
+                                        </DataGridCheckBoxColumn.ElementStyle>
+                                    </DataGridCheckBoxColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Grid>
