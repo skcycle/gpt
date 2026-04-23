@@ -181,7 +181,6 @@
                                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="90" />
                                     <DataGridTextColumn Header="Cmd(mm)" Binding="{Binding CommandPositionMm, StringFormat=F3}" Width="90" />
                                     <DataGridTextColumn Header="Enc(mm)" Binding="{Binding EncoderPositionMm, StringFormat=F3}" Width="90" />
-                                    <DataGridTextColumn Header="Velocity" Binding="{Binding CurrentVelocity}" Width="80" />
                                     <DataGridTextColumn Header="WorkVel" Binding="{Binding WorkVelocity}" Width="70" />
                                     <DataGridTextColumn Header="SetupVel" Binding="{Binding SetupVelocity}" Width="70" />
                                     <DataGridCheckBoxColumn Header="Homed" Binding="{Binding IsHomed, Mode=OneWay}" Width="55">
