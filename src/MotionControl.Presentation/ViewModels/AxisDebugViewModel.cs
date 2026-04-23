@@ -20,6 +20,7 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     private double _velocity = 100;
     private double _acceleration = 100;
     private double _deceleration = 100;
+    private double _jogStepDistance = 1;
 
     public AxisDebugViewModel(IMotionAppService motionAppService, Machine machine, HomePlanRuntimeState homePlanRuntimeState, Func<bool> canControlAxis)
     {
@@ -35,6 +36,8 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         StopAxisCommand = new RelayCommand(async () => await StopSelectedAxisAsync(), CanExecuteAxisCommand);
         JogPositiveCommand = new RelayCommand(async () => await StartJogAsync(true), CanExecuteAxisCommand);
         JogNegativeCommand = new RelayCommand(async () => await StartJogAsync(false), CanExecuteAxisCommand);
+        StepPositiveCommand = new RelayCommand(async () => await StepMoveAsync(true), CanExecuteAxisCommand);
+        StepNegativeCommand = new RelayCommand(async () => await StepMoveAsync(false), CanExecuteAxisCommand);
     }
 
     public event Action<int>? SelectedAxisChanged;
@@ -62,6 +65,8 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             StopAxisCommand.RaiseCanExecuteChanged();
             JogPositiveCommand.RaiseCanExecuteChanged();
             JogNegativeCommand.RaiseCanExecuteChanged();
+            StepPositiveCommand.RaiseCanExecuteChanged();
+            StepNegativeCommand.RaiseCanExecuteChanged();
             SelectedAxisChanged?.Invoke(_selectedAxisNo);
         }
     }
@@ -74,6 +79,8 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         StopAxisCommand.RaiseCanExecuteChanged();
         JogPositiveCommand.RaiseCanExecuteChanged();
         JogNegativeCommand.RaiseCanExecuteChanged();
+        StepPositiveCommand.RaiseCanExecuteChanged();
+        StepNegativeCommand.RaiseCanExecuteChanged();
     }
 
     public double TargetPosition
@@ -116,6 +123,23 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
     }
 
+    public double JogStepDistance
+    {
+        get => _jogStepDistance;
+        set
+        {
+            if (_jogStepDistance == value)
+            {
+                return;
+            }
+
+            _jogStepDistance = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public IReadOnlyList<double> JogStepDistances { get; } = new[] { 0.1d, 1d, 10d };
+
     public string SelectedAxisHomeMode => SelectedAxis?.HomeMode.ToString() ?? "N/A";
     public string SelectedAxisServoBinding => SelectedAxis?.ServoBinding ?? "N/A";
     public string SelectedAxisSoftLimit => SelectedAxis?.SoftLimit is null ? "N/A" : $"{SelectedAxis.SoftLimit.Minimum} ~ {SelectedAxis.SoftLimit.Maximum}";
@@ -128,6 +152,8 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     public RelayCommand StopAxisCommand { get; }
     public RelayCommand JogPositiveCommand { get; }
     public RelayCommand JogNegativeCommand { get; }
+    public RelayCommand StepPositiveCommand { get; }
+    public RelayCommand StepNegativeCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -178,6 +204,19 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
 
         await _motionAppService.StopAxisAsync(new AxisCommandDto(SelectedAxisNo));
+    }
+
+    public async Task StepMoveAsync(bool positiveDirection)
+    {
+        if (SelectedAxis is null)
+        {
+            return;
+        }
+
+        var step = positiveDirection ? JogStepDistance : -JogStepDistance;
+        var targetPosition = SelectedAxis.CurrentPosition + step;
+        await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(SelectedAxisNo, targetPosition, Velocity, Acceleration, Deceleration));
+        TargetPosition = targetPosition;
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
