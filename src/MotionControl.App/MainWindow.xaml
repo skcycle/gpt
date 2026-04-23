@@ -31,9 +31,19 @@
                         <TextBlock Text="{Binding CurrentBeijingTime}" VerticalAlignment="Center" Margin="0,0,16,0" Foreground="White" FontWeight="SemiBold" />
                         <Ellipse Width="10" Height="10" Fill="{Binding Dashboard.ConnectionStatusColor, FallbackValue=#EF4444}" Margin="0,0,8,0" />
                         <TextBlock Text="{Binding Dashboard.ConnectionStatusText, FallbackValue=Offline}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                        <Button Content="E-STOP" Command="{Binding EmergencyStopCommand}" Margin="20,0,0,0" Padding="10,4" FontWeight="Bold" Background="#8B0000" Foreground="White" />
-                        <Button Content="CLR ESTOP" Command="{Binding ClearEmergencyStopCommand}" Margin="6,0,0,0" Padding="10,4" FontWeight="Bold" Background="#1A5C1A" Foreground="White" />
-                        <Button Content="Reconnect" Command="{Binding ReconnectCommand}" Margin="6,0,0,0" Padding="10,4" FontWeight="Bold" Background="#1A4A8B" Foreground="White" />
+                        <!-- 紧急操作按钮优化 -->
+                        <Button Content="E-STOP" Command="{Binding EmergencyStopCommand}" 
+                                Margin="20,0,0,0" MinWidth="80" MinHeight="36" Padding="14,8" 
+                                FontWeight="Bold" FontSize="13"
+                                Background="#8B0000" Foreground="White" />
+                        <Button Content="CLR ESTOP" Command="{Binding ClearEmergencyStopCommand}" 
+                                Margin="10,0,0,0" MinWidth="90" MinHeight="36" Padding="14,8" 
+                                FontWeight="Bold" FontSize="13"
+                                Background="#1A5C1A" Foreground="White" />
+                        <Button Content="Reconnect" Command="{Binding ReconnectCommand}" 
+                                Margin="10,0,0,0" MinWidth="90" MinHeight="36" Padding="14,8" 
+                                FontWeight="Bold" FontSize="13"
+                                Background="#1A4A8B" Foreground="White" />
                     </StackPanel>
                 </Border>
             </Grid>
@@ -144,8 +154,12 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
-                                    <Button Content="Add Axis" Command="{Binding AddAxisCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="100" />
-                                    <Button Content="Delete Axis" Command="{Binding DeleteAxisCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="100" />
+                                    <Button Content="Add Axis" Command="{Binding AddAxisCommand}" 
+                                            MinWidth="100" MinHeight="32" Padding="12,6"
+                                            Background="#1A4A8B" Foreground="White"/>
+                                    <Button Content="Delete Axis" Command="{Binding DeleteAxisCommand}" 
+                                            MinWidth="100" MinHeight="32" Padding="12,6" Margin="10,0,0,0"
+                                            Background="#8B0000" Foreground="White"/>
                                 </StackPanel>
                             </Grid>
 
@@ -281,9 +295,15 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <Button Content="Home" Command="{Binding AxisDebug.HomeAxisCommand}" Width="80" Margin="0,0,6,0" />
-                                <Button Grid.Column="1" Content="Move" Command="{Binding AxisDebug.MoveAxisCommand}" Width="80" Margin="0,0,6,0" />
-                                <Button Grid.Column="2" Content="Stop" Command="{Binding AxisDebug.StopAxisCommand}" Width="80" Margin="0,0,6,0" />
+                                <Button Content="Home" Command="{Binding AxisDebug.HomeAxisCommand}" 
+                                        Width="80" MinHeight="34" Padding="8,6"
+                                        Background="#1A4A8B" Foreground="White" Margin="0,0,8,0" />
+                                <Button Grid.Column="1" Content="Move" Command="{Binding AxisDebug.MoveAxisCommand}" 
+                                        Width="80" MinHeight="34" Padding="8,6"
+                                        Background="#1A5C1A" Foreground="White" Margin="0,0,8,0" />
+                                <Button Grid.Column="2" Content="Stop" Command="{Binding AxisDebug.StopAxisCommand}" 
+                                        Width="80" MinHeight="34" Padding="8,6"
+                                        Background="#8B0000" Foreground="White" Margin="0,0,16,0" />
 
                                 <TextBlock Grid.Column="4" Text="Jog Step" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
                                 <ComboBox Grid.Column="5"
@@ -297,8 +317,18 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                                <Button Grid.Column="7" x:Name="JogNegativeButton" Content="Jog -" PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="0,0,6,0" />
-                                <Button Grid.Column="8" x:Name="JogPositiveButton" Content="Jog +" PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" MouseLeave="JogButton_MouseLeave" Width="80" Margin="0,0,6,0" />
+                                <Button Grid.Column="7" x:Name="JogNegativeButton" Content="Jog -" 
+                                        PreviewMouseLeftButtonDown="JogNegativeButton_PreviewMouseLeftButtonDown" 
+                                        PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" 
+                                        MouseLeave="JogButton_MouseLeave" 
+                                        Width="80" MinHeight="34" Padding="8,6"
+                                        Background="#4A4A8B" Foreground="White" />
+                                <Button Grid.Column="8" x:Name="JogPositiveButton" Content="Jog +" 
+                                        PreviewMouseLeftButtonDown="JogPositiveButton_PreviewMouseLeftButtonDown" 
+                                        PreviewMouseLeftButtonUp="JogButton_PreviewMouseLeftButtonUp" 
+                                        MouseLeave="JogButton_MouseLeave" 
+                                        Width="80" MinHeight="34" Padding="8,6" Margin="8,0,0,0"
+                                        Background="#4A4A8B" Foreground="White" />
                             </Grid>
 
                             <GroupBox Header="Recent Runtime Events" Margin="0,16,0,0">
@@ -356,12 +386,26 @@
                                 <TextBlock Text="Servo Binding" Foreground="{StaticResource SecondaryTextBrush}" />
                                 <TextBox Text="{Binding AxisParameterEditor.ServoBinding}" Margin="0,6,0,12" />
 
-                                <WrapPanel>
-                                    <Button Content="Load Config" Command="{Binding AxisParameterEditor.LoadCommand}" Width="120" Margin="0,0,8,0" />
-                                    <Button Content="Save Config" Command="{Binding AxisParameterEditor.SaveCommand}" Width="120" Margin="0,0,8,0" />
-                                    <Button Content="Read Ctrl" Command="{Binding AxisParameterEditor.ReadControllerCommand}" Width="120" Margin="0,0,8,0" />
-                                    <Button Content="Write Ctrl" Command="{Binding AxisParameterEditor.WriteControllerCommand}" Width="120" Margin="0,0,8,0" />
-                                </WrapPanel>
+                                <!-- 参数操作按钮优化 -->
+                                <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="8" Padding="10,8" Margin="0,0,0,12">
+                                    <WrapPanel>
+                                        <!-- 配置管理组 -->
+                                        <Button Content="Load Config" Command="{Binding AxisParameterEditor.LoadCommand}" 
+                                                Width="110" MinHeight="32" Padding="10,6" Margin="0,0,10,0"
+                                                Background="#1A5C1A" Foreground="White" />
+                                        <Button Content="Save Config" Command="{Binding AxisParameterEditor.SaveCommand}" 
+                                                Width="110" MinHeight="32" Padding="10,6" Margin="0,0,20,0"
+                                                Background="#1A5C1A" Foreground="White" />
+                                        
+                                        <!-- 控制器操作组 -->
+                                        <Button Content="Read Ctrl" Command="{Binding AxisParameterEditor.ReadControllerCommand}" 
+                                                Width="110" MinHeight="32" Padding="10,6" Margin="0,0,10,0"
+                                                Background="#1A4A8B" Foreground="White" />
+                                        <Button Content="Write Ctrl" Command="{Binding AxisParameterEditor.WriteControllerCommand}" 
+                                                Width="110" MinHeight="32" Padding="10,6"
+                                                Background="#1A4A8B" Foreground="White" />
+                                    </WrapPanel>
+                                </Border>
 
                                 <TextBlock Text="{Binding AxisParameterEditor.ControllerParameterSnapshot}" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" />
                             </StackPanel>
@@ -385,43 +429,85 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,0,0,4">
-                        <Button Content="Add DI" Command="{Binding AddInputCommand}" Padding="10,4" Margin="0,0,8,0" Background="#1A4A8B" Foreground="White" />
-                        <Button Content="Delete DI" Command="{Binding DeleteInputCommand}" Padding="10,4" Margin="0,0,16,0" Background="#8B0000" Foreground="White">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="#8B0000" />
-                                    <Setter Property="Foreground" Value="White" />
-                                    <Style.Triggers>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="Background" Value="#5A1E1E" />
-                                            <Setter Property="Foreground" Value="#E6EEF8" />
-                                            <Setter Property="Opacity" Value="0.75" />
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                        <Button Content="Add DO" Command="{Binding AddOutputCommand}" Padding="10,4" Margin="0,0,8,0" Background="#1A4A8B" Foreground="White" />
-                        <Button Content="Delete DO" Command="{Binding DeleteOutputCommand}" Padding="10,4" Margin="0,0,16,0" Background="#8B0000" Foreground="White">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Background" Value="#8B0000" />
-                                    <Setter Property="Foreground" Value="White" />
-                                    <Style.Triggers>
-                                        <Trigger Property="IsEnabled" Value="False">
-                                            <Setter Property="Background" Value="#5A1E1E" />
-                                            <Setter Property="Foreground" Value="#E6EEF8" />
-                                            <Setter Property="Opacity" Value="0.75" />
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                        <Button Content="Save" Command="{Binding SaveIoConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="100" Background="#1A5C1A" Foreground="White" />
-                        <Button Content="Load" Command="{Binding LoadIoConfigCommand}" Padding="10,4" MinWidth="100" Margin="0,0,8,0" Background="#1A5C1A" Foreground="White" />
-                        <TextBlock Text="{Binding OperationStatus}" VerticalAlignment="Center" Margin="8,0,0,0" Foreground="#E6EEF8" TextWrapping="Wrap" MaxWidth="400" />
-                    </StackPanel>
+                    <!-- IO监控工具栏优化 -->
+                    <Border Grid.Row="0" Grid.ColumnSpan="3" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="10" Padding="12,10" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <!-- DI操作组 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                    <Button Content="Add DI" Command="{Binding AddInputCommand}" 
+                                            MinWidth="80" MinHeight="32" Padding="12,6"
+                                            Background="#1A4A8B" Foreground="White"/>
+                                    <Button Content="Delete DI" Command="{Binding DeleteInputCommand}" 
+                                            MinWidth="80" MinHeight="32" Padding="12,6" Margin="8,0,0,0"
+                                            Background="#8B0000" Foreground="White">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Background" Value="#8B0000" />
+                                                <Setter Property="Foreground" Value="White" />
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter Property="Background" Value="#5A1E1E" />
+                                                        <Setter Property="Foreground" Value="#E6EEF8" />
+                                                        <Setter Property="Opacity" Value="0.75" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                                
+                                <!-- 分隔线 -->
+                                <Rectangle Width="1" Fill="#4A4A4A" Margin="0,4" Opacity="0.5"/>
+                                
+                                <!-- DO操作组 -->
+                                <StackPanel Orientation="Horizontal" Margin="16,0,16,0">
+                                    <Button Content="Add DO" Command="{Binding AddOutputCommand}" 
+                                            MinWidth="80" MinHeight="32" Padding="12,6"
+                                            Background="#1A4A8B" Foreground="White"/>
+                                    <Button Content="Delete DO" Command="{Binding DeleteOutputCommand}" 
+                                            MinWidth="80" MinHeight="32" Padding="12,6" Margin="8,0,0,0"
+                                            Background="#8B0000" Foreground="White">
+                                        <Button.Style>
+                                            <Style TargetType="Button">
+                                                <Setter Property="Background" Value="#8B0000" />
+                                                <Setter Property="Foreground" Value="White" />
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter Property="Background" Value="#5A1E1E" />
+                                                        <Setter Property="Foreground" Value="#E6EEF8" />
+                                                        <Setter Property="Opacity" Value="0.75" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </StackPanel>
+                                
+                                <!-- 分隔线 -->
+                                <Rectangle Width="1" Fill="#4A4A4A" Margin="0,4" Opacity="0.5"/>
+                                
+                                <!-- 配置操作组 -->
+                                <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
+                                    <Button Content="Save" Command="{Binding SaveIoConfigCommand}" 
+                                            MinWidth="80" MinHeight="32" Padding="12,6"
+                                            Background="#1A5C1A" Foreground="White"/>
+                                    <Button Content="Load" Command="{Binding LoadIoConfigCommand}" 
+                                            MinWidth="80" MinHeight="32" Padding="12,6" Margin="8,0,0,0"
+                                            Background="#1A5C1A" Foreground="White"/>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <TextBlock Grid.Column="1" Text="{Binding OperationStatus}" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Right"
+                                       Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" MaxWidth="400" Margin="16,0,0,0"/>
+                        </Grid>
+                    </Border>
 
                     <GroupBox Grid.Row="2" Header="Digital Inputs">
                         <DataGrid ItemsSource="{Binding IoMonitor.Inputs}" SelectedItem="{Binding IoMonitor.SelectedInput, Mode=TwoWay}" AutoGenerateColumns="False" IsReadOnly="False">
@@ -498,12 +584,33 @@
                         <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <Button Content="Add Cylinder" Command="{Binding AddCylinderCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                        <Button Content="Delete Cylinder" Command="{Binding DeleteCylinderCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                        <Button Content="Save Config" Command="{Binding SaveCylinderConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                        <Button Content="Load Config" Command="{Binding LoadCylinderConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                    </StackPanel>
+                    <!-- 优化后的按钮工具栏 -->
+                    <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="10" Padding="12,10" Margin="0,0,0,12">
+                        <StackPanel Orientation="Horizontal">
+                            <!-- 管理操作组 -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,20,0">
+                                <Button Content="Add Cylinder" Command="{Binding AddCylinderCommand}" 
+                                        MinWidth="100" MinHeight="32" Padding="12,6"
+                                        Background="#1A4A8B" Foreground="White"/>
+                                <Button Content="Delete Cylinder" Command="{Binding DeleteCylinderCommand}" 
+                                        MinWidth="100" MinHeight="32" Padding="12,6" Margin="10,0,0,0"
+                                        Background="#8B0000" Foreground="White"/>
+                            </StackPanel>
+                            
+                            <!-- 分隔线 -->
+                            <Rectangle Width="1" Fill="#4A4A4A" Margin="0,4" Opacity="0.5"/>
+                            
+                            <!-- 配置操作组 -->
+                            <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
+                                <Button Content="Save Config" Command="{Binding SaveCylinderConfigCommand}" 
+                                        MinWidth="100" MinHeight="32" Padding="12,6"
+                                        Background="#1A5C1A" Foreground="White"/>
+                                <Button Content="Load Config" Command="{Binding LoadCylinderConfigCommand}" 
+                                        MinWidth="100" MinHeight="32" Padding="12,6" Margin="10,0,0,0"
+                                        Background="#1A5C1A" Foreground="White"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
                     <DataGrid Grid.Row="1"
                               ItemsSource="{Binding CylinderMonitor.Cylinders}"
@@ -619,18 +726,57 @@
                         <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <Button Content="Add Object" Command="{Binding AddWorkHeadCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="90" />
-                        <Button Content="Delete Object" Command="{Binding DeleteWorkHeadCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="100" />
-                        <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
-                        <Button Content="Add Position" Command="{Binding AddWorkHeadPositionCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="95" />
-                        <Button Content="Delete Position" Command="{Binding DeleteWorkHeadPositionCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="105" />
-                        <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
-                        <Button Content="Save" Command="{Binding SaveWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
-                        <Button Content="Load" Command="{Binding LoadWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
-                        <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
-                        <TextBlock Text="{Binding OperationStatus}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" MaxWidth="400" />
-                    </StackPanel>
+                    <!-- Work Head工具栏优化 -->
+                    <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="10" Padding="12,10" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <!-- 对象管理组 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                    <Button Content="Add Object" Command="{Binding AddWorkHeadCommand}" 
+                                            MinWidth="90" MinHeight="32" Padding="12,6"
+                                            Background="#1A4A8B" Foreground="White"/>
+                                    <Button Content="Delete Object" Command="{Binding DeleteWorkHeadCommand}" 
+                                            MinWidth="90" MinHeight="32" Padding="12,6" Margin="8,0,0,0"
+                                            Background="#8B0000" Foreground="White"/>
+                                </StackPanel>
+                                
+                                <!-- 分隔线 -->
+                                <Rectangle Width="1" Fill="#4A4A4A" Margin="0,4" Opacity="0.5"/>
+                                
+                                <!-- 位置管理组 -->
+                                <StackPanel Orientation="Horizontal" Margin="16,0,16,0">
+                                    <Button Content="Add Position" Command="{Binding AddWorkHeadPositionCommand}" 
+                                            MinWidth="90" MinHeight="32" Padding="12,6"
+                                            Background="#1A4A8B" Foreground="White"/>
+                                    <Button Content="Delete Position" Command="{Binding DeleteWorkHeadPositionCommand}" 
+                                            MinWidth="90" MinHeight="32" Padding="12,6" Margin="8,0,0,0"
+                                            Background="#8B0000" Foreground="White"/>
+                                </StackPanel>
+                                
+                                <!-- 分隔线 -->
+                                <Rectangle Width="1" Fill="#4A4A4A" Margin="0,4" Opacity="0.5"/>
+                                
+                                <!-- 配置组 -->
+                                <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
+                                    <Button Content="Save" Command="{Binding SaveWorkHeadConfigCommand}" 
+                                            MinWidth="70" MinHeight="32" Padding="12,6"
+                                            Background="#1A5C1A" Foreground="White"/>
+                                    <Button Content="Load" Command="{Binding LoadWorkHeadConfigCommand}" 
+                                            MinWidth="70" MinHeight="32" Padding="12,6" Margin="8,0,0,0"
+                                            Background="#1A5C1A" Foreground="White"/>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <TextBlock Grid.Column="1" Text="{Binding OperationStatus}" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Right"
+                                       Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" MaxWidth="400" Margin="16,0,0,0"/>
+                        </Grid>
+                    </Border>
 
                     <Grid Grid.Row="1" Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
@@ -782,11 +928,20 @@
                                         </StackPanel>
                                     </UniformGrid>
 
+                                    <!-- Work Head操作按钮优化 -->
                                     <StackPanel Grid.Row="8" Orientation="Horizontal" Margin="4,0,4,4">
-                                        <Button Content="Teach" Command="{Binding WorkHeadMonitor.SelectedWorkHead.TeachPositionCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
-                                        <Button Content="Move" Command="{Binding WorkHeadMonitor.SelectedWorkHead.MovePositionCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
-                                        <Button Content="Vacuum" Command="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="90" />
-                                        <Button Content="Blow" Command="{Binding WorkHeadMonitor.SelectedWorkHead.BlowCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
+                                        <Button Content="Teach" Command="{Binding WorkHeadMonitor.SelectedWorkHead.TeachPositionCommand}" 
+                                                MinWidth="80" MinHeight="34" Padding="12,6"
+                                                Background="#1A4A8B" Foreground="White" Margin="0,0,10,0" />
+                                        <Button Content="Move" Command="{Binding WorkHeadMonitor.SelectedWorkHead.MovePositionCommand}" 
+                                                MinWidth="80" MinHeight="34" Padding="12,6"
+                                                Background="#1A5C1A" Foreground="White" Margin="0,0,10,0" />
+                                        <Button Content="Vacuum" Command="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumCommand}" 
+                                                MinWidth="90" MinHeight="34" Padding="12,6"
+                                                Background="#4A1A8B" Foreground="White" Margin="0,0,10,0" />
+                                        <Button Content="Blow" Command="{Binding WorkHeadMonitor.SelectedWorkHead.BlowCommand}" 
+                                                MinWidth="80" MinHeight="34" Padding="12,6"
+                                                Background="#8B4A00" Foreground="White" />
                                     </StackPanel>
                                 </Grid>
                             </ScrollViewer>
@@ -814,19 +969,57 @@
                         <RowDefinition Height="220" />
                     </Grid.RowDefinitions>
 
-                    <!-- Toolbar -->
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <Button Content="Add Object" Command="{Binding AddPositionSetupCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="90" />
-                        <Button Content="Delete Object" Command="{Binding DeletePositionSetupCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="100" />
-                        <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
-                        <Button Content="Add Position" Command="{Binding AddPositionSetupPositionCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="95" />
-                        <Button Content="Delete Position" Command="{Binding DeletePositionSetupPositionCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="105" />
-                        <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
-                        <Button Content="Save" Command="{Binding SavePositionSetupConfigCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
-                        <Button Content="Load" Command="{Binding LoadPositionSetupConfigCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
-                        <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
-                        <TextBlock Text="{Binding OperationStatus}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" MaxWidth="400" />
-                    </StackPanel>
+                    <!-- Position Setup工具栏优化 -->
+                    <Border Background="{StaticResource PanelBackgroundBrush}" CornerRadius="10" Padding="12,10" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                <!-- 对象管理组 -->
+                                <StackPanel Orientation="Horizontal" Margin="0,0,16,0">
+                                    <Button Content="Add Object" Command="{Binding AddPositionSetupCommand}" 
+                                            MinWidth="90" MinHeight="32" Padding="12,6"
+                                            Background="#1A4A8B" Foreground="White"/>
+                                    <Button Content="Delete Object" Command="{Binding DeletePositionSetupCommand}" 
+                                            MinWidth="90" MinHeight="32" Padding="12,6" Margin="8,0,0,0"
+                                            Background="#8B0000" Foreground="White"/>
+                                </StackPanel>
+                                
+                                <!-- 分隔线 -->
+                                <Rectangle Width="1" Fill="#4A4A4A" Margin="0,4" Opacity="0.5"/>
+                                
+                                <!-- 位置管理组 -->
+                                <StackPanel Orientation="Horizontal" Margin="16,0,16,0">
+                                    <Button Content="Add Position" Command="{Binding AddPositionSetupPositionCommand}" 
+                                            MinWidth="90" MinHeight="32" Padding="12,6"
+                                            Background="#1A4A8B" Foreground="White"/>
+                                    <Button Content="Delete Position" Command="{Binding DeletePositionSetupPositionCommand}" 
+                                            MinWidth="90" MinHeight="32" Padding="12,6" Margin="8,0,0,0"
+                                            Background="#8B0000" Foreground="White"/>
+                                </StackPanel>
+                                
+                                <!-- 分隔线 -->
+                                <Rectangle Width="1" Fill="#4A4A4A" Margin="0,4" Opacity="0.5"/>
+                                
+                                <!-- 配置组 -->
+                                <StackPanel Orientation="Horizontal" Margin="16,0,0,0">
+                                    <Button Content="Save" Command="{Binding SavePositionSetupConfigCommand}" 
+                                            MinWidth="70" MinHeight="32" Padding="12,6"
+                                            Background="#1A5C1A" Foreground="White"/>
+                                    <Button Content="Load" Command="{Binding LoadPositionSetupConfigCommand}" 
+                                            MinWidth="70" MinHeight="32" Padding="12,6" Margin="8,0,0,0"
+                                            Background="#1A5C1A" Foreground="White"/>
+                                </StackPanel>
+                            </StackPanel>
+                            
+                            <TextBlock Grid.Column="1" Text="{Binding OperationStatus}" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Right"
+                                       Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" MaxWidth="400" Margin="16,0,0,0"/>
+                        </Grid>
+                    </Border>
 
                     <!-- Main area: Objects | Positions | Setup -->
                     <Grid Grid.Row="1" Margin="0,0,0,12">
@@ -964,9 +1157,14 @@
                                         <TextBox Grid.Column="4" Margin="10,0,0,0" Text="{Binding PositionSetupMonitor.SelectedItem.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     </Grid>
 
+                                    <!-- Position Setup操作按钮优化 -->
                                     <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="4,0,4,4">
-                                        <Button Content="Teach" Command="{Binding TeachPositionSetupCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
-                                        <Button Content="Move" Command="{Binding MovePositionSetupCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
+                                        <Button Content="Teach" Command="{Binding TeachPositionSetupCommand}" 
+                                                MinWidth="80" MinHeight="34" Padding="12,6"
+                                                Background="#1A4A8B" Foreground="White" Margin="0,0,10,0" />
+                                        <Button Content="Move" Command="{Binding MovePositionSetupCommand}" 
+                                                MinWidth="80" MinHeight="34" Padding="12,6"
+                                                Background="#1A5C1A" Foreground="White" />
                                     </StackPanel>
                                 </Grid>
                             </ScrollViewer>
