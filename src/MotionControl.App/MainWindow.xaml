@@ -724,7 +724,7 @@
                                         <Button Content="Teach" Command="{Binding WorkHeadMonitor.SelectedWorkHead.TeachPositionCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
                                         <Button Content="Move" Command="{Binding WorkHeadMonitor.SelectedWorkHead.MovePositionCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
                                         <Button Content="Vacuum" Command="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="90" />
-                                        <Button Content="Blow" Command="{Binding WorkHeadMonitor.SelectedWorkHead.BlowCommand}" Padding="10,4" MinWidth="80" />
+                                        <Button Content="Blow" Command="{Binding WorkHeadMonitor.SelectedWorkHead.BlowCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
                                     </StackPanel>
                                 </Grid>
                             </ScrollViewer>
@@ -904,7 +904,7 @@
 
                                     <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="4,0,4,4">
                                         <Button Content="Teach" Command="{Binding TeachPositionSetupCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
-                                        <Button Content="Move" Command="{Binding MovePositionSetupCommand}" Padding="10,4" MinWidth="80" />
+                                        <Button Content="Move" Command="{Binding MovePositionSetupCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
                                     </StackPanel>
                                 </Grid>
                             </ScrollViewer>
