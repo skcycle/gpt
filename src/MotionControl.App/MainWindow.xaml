@@ -621,6 +621,8 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="10" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="10" />
+                                        <RowDefinition Height="Auto" />
                                     </Grid.RowDefinitions>
 
                                     <UniformGrid Grid.Row="0" Columns="4">
@@ -713,6 +715,13 @@
                                             <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                         </StackPanel>
                                     </UniformGrid>
+
+                                    <StackPanel Grid.Row="8" Orientation="Horizontal" Margin="4,0,4,4">
+                                        <Button Content="Teach" Command="{Binding WorkHeadMonitor.SelectedWorkHead.TeachPositionCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
+                                        <Button Content="Move" Command="{Binding WorkHeadMonitor.SelectedWorkHead.MovePositionCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
+                                        <Button Content="Vacuum" Command="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="90" />
+                                        <Button Content="Blow" Command="{Binding WorkHeadMonitor.SelectedWorkHead.BlowCommand}" Padding="10,4" MinWidth="80" />
+                                    </StackPanel>
                                 </Grid>
                             </ScrollViewer>
                         </GroupBox>
