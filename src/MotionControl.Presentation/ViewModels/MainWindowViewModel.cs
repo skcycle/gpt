@@ -208,7 +208,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public string? SelectedWorkHeadPositionName { get => _selectedWorkHeadPositionName; set { if (_selectedWorkHeadPositionName == value) return; _selectedWorkHeadPositionName = value; OnPropertyChanged(); (DeleteWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (TeachToWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MoveToWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
 
     public IReadOnlyList<WorkHeadPosition> GetWorkHeadPositions(string workHeadName) =>
-        _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, workHeadName, StringComparison.OrdinalIgnoreCase))?.Positions ?? new List<WorkHeadPosition>();
+        _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, workHeadName, StringComparison.OrdinalIgnoreCase))?.Positions ?? Array.Empty<WorkHeadPosition>();
     public string OperationStatus
     {
         get => _operationStatus;

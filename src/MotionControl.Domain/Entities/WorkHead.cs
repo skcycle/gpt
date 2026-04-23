@@ -1,8 +1,10 @@
+using System.Collections.ObjectModel;
+
 namespace MotionControl.Domain.Entities;
 
 public sealed class WorkHead
 {
-    public WorkHead(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs = 3000, List<WorkHeadPosition>? positions = null, double safeZ = 0)
+    public WorkHead(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs = 3000, IEnumerable<WorkHeadPosition>? positions = null, double safeZ = 0)
     {
         Name = name;
         Description = description;
@@ -18,7 +20,7 @@ public sealed class WorkHead
         GeneralInputAddress1 = generalInputAddress1;
         GeneralInputAddress2 = generalInputAddress2;
         VacuumTimeoutMs = vacuumTimeoutMs;
-        Positions = positions ?? new List<WorkHeadPosition>();
+        Positions = positions is null ? new ObservableCollection<WorkHeadPosition>() : new ObservableCollection<WorkHeadPosition>(positions);
         SafeZ = safeZ;
     }
 
@@ -44,7 +46,7 @@ public sealed class WorkHead
     public bool VacuumTimeoutLogged { get; set; }
     public bool VacuumConflictLogged { get; set; }
 
-    public List<WorkHeadPosition> Positions { get; private set; } = new();
+    public ObservableCollection<WorkHeadPosition> Positions { get; } = new();
     public string? SelectedPositionName { get; set; }
 
     public void UpdateMetadata(string name, string description, int xAxisNo, int yAxisNo, int zAxisNo, int rAxisNo, int vacuumOutputAddress, int blowOutputAddress, int vacuumInputAddress, int generalOutputAddress1, int generalOutputAddress2, int generalInputAddress1, int generalInputAddress2, int vacuumTimeoutMs, double safeZ)
@@ -67,7 +69,14 @@ public sealed class WorkHead
     }
 
     public void AddPosition(WorkHeadPosition position) => Positions.Add(position);
-    public void RemovePosition(string positionName) => Positions.RemoveAll(p => p.Name == positionName);
+    public void RemovePosition(string positionName)
+    {
+        var targets = Positions.Where(p => p.Name == positionName).ToList();
+        foreach (var target in targets)
+        {
+            Positions.Remove(target);
+        }
+    }
 
     public void StartVacuumCommand()
     {

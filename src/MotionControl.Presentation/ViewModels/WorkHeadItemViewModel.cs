@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
@@ -102,7 +103,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     public ICommand BlowCommand { get; }
     public ICommand TeachPositionCommand { get; }
     public ICommand MovePositionCommand { get; }
-    public List<WorkHeadPosition> Positions => _workHead.Positions;
+    public ObservableCollection<WorkHeadPosition> Positions => _workHead.Positions;
     public IEnumerable<string> PositionNames => _workHead.Positions.Select(p => p.Name).ToList();
     private WorkHeadPosition? SelectedPosition => _workHead.Positions.FirstOrDefault(p => string.Equals(p.Name, _workHead.SelectedPositionName, StringComparison.OrdinalIgnoreCase)) ?? _workHead.Positions.FirstOrDefault();
 
