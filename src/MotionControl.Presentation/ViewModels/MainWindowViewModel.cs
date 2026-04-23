@@ -210,7 +210,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public IReadOnlyList<WorkHeadPosition> GetWorkHeadPositions(string workHeadName)
     {
         var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, workHeadName, StringComparison.OrdinalIgnoreCase));
-        return workHead?.Positions?.ToList() ?? Array.Empty<WorkHeadPosition>();
+        return workHead?.Positions?.ToList() ?? new List<WorkHeadPosition>();
     }
     public string OperationStatus
     {
