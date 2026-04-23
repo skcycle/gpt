@@ -759,8 +759,6 @@
                         <Button Content="Save" Command="{Binding SavePositionSetupConfigCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
                         <Button Content="Load" Command="{Binding LoadPositionSetupConfigCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
                         <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
-                        <Button Content="Teach" Command="{Binding TeachPositionSetupCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
-                        <Button Content="Move" Command="{Binding MovePositionSetupCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
                         <TextBlock Text="{Binding OperationStatus}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" MaxWidth="400" />
                     </StackPanel>
 
@@ -805,6 +803,8 @@
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <Grid Margin="8">
                                     <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="10" />
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="10" />
                                         <RowDefinition Height="Auto" />
@@ -897,6 +897,11 @@
                                         <TextBlock Grid.Column="3" Text="Description" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
                                         <TextBox Grid.Column="4" Margin="10,0,0,0" Text="{Binding PositionSetupMonitor.SelectedItem.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                     </Grid>
+
+                                    <StackPanel Grid.Row="6" Orientation="Horizontal" Margin="4,0,4,4">
+                                        <Button Content="Teach" Command="{Binding TeachPositionSetupCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="80" />
+                                        <Button Content="Move" Command="{Binding MovePositionSetupCommand}" Padding="10,4" MinWidth="80" />
+                                    </StackPanel>
                                 </Grid>
                             </ScrollViewer>
                         </GroupBox>
