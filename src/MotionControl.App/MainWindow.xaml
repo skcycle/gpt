@@ -554,105 +554,175 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                        <Button Content="Add WorkHead" Command="{Binding AddWorkHeadCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                        <Button Content="Delete WorkHead" Command="{Binding DeleteWorkHeadCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                        <Button Content="Save Config" Command="{Binding SaveWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                        <Button Content="Load Config" Command="{Binding LoadWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                        <Button Content="Add Position" Command="{Binding AddWorkHeadPositionCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
-                        <Button Content="Delete Position" Command="{Binding DeleteWorkHeadPositionCommand}" Padding="10,4" Margin="0,0,8,0" MinWidth="120" />
+                        <Button Content="Add Object" Command="{Binding AddWorkHeadCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="90" />
+                        <Button Content="Delete Object" Command="{Binding DeleteWorkHeadCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="100" />
+                        <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
+                        <Button Content="Add Position" Command="{Binding AddWorkHeadPositionCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="95" />
+                        <Button Content="Delete Position" Command="{Binding DeleteWorkHeadPositionCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="105" />
+                        <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
+                        <Button Content="Save" Command="{Binding SaveWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
+                        <Button Content="Load" Command="{Binding LoadWorkHeadConfigCommand}" Padding="10,4" Margin="0,0,6,0" MinWidth="70" />
+                        <Rectangle Width="1" Fill="#3A3A3A" Margin="8,4" />
+                        <TextBlock Text="{Binding OperationStatus}" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource SecondaryTextBrush}" TextWrapping="Wrap" MaxWidth="400" />
                     </StackPanel>
 
-                    <DataGrid Grid.Row="1"
-                              ItemsSource="{Binding WorkHeadMonitor.WorkHeads}"
-                              SelectedItem="{Binding WorkHeadMonitor.SelectedWorkHead, Mode=TwoWay}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="False"
-                              IsReadOnly="False"
-                              VerticalContentAlignment="Center"
-                              Margin="0,0,0,12">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="140" />
-                            <DataGridTextColumn Header="Description" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="180" />
-                            <DataGridTextColumn Header="X Axis" Binding="{Binding XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
-                            <DataGridTextColumn Header="Y Axis" Binding="{Binding YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
-                            <DataGridTextColumn Header="Z Axis" Binding="{Binding ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
-                            <DataGridTextColumn Header="R Axis" Binding="{Binding RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="75" />
-                            <DataGridTextColumn Header="Safe Z" Binding="{Binding SafeZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
-                            <DataGridTemplateColumn Header="Position" Width="120">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding PositionSelector}" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                                <DataGridTemplateColumn.CellEditingTemplate>
-                                    <DataTemplate>
-                                        <ComboBox ItemsSource="{Binding PositionNames}" SelectedItem="{Binding PositionSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellEditingTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="Position Name" Binding="{Binding PositionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" />
-                            <DataGridTextColumn Header="Position Desc" Binding="{Binding PositionDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="140" />
-                            <DataGridTextColumn Header="Pos X" Binding="{Binding PositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
-                            <DataGridTextColumn Header="Pos Y" Binding="{Binding PositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
-                            <DataGridTextColumn Header="Pos Z" Binding="{Binding PositionZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
-                            <DataGridTextColumn Header="Pos R" Binding="{Binding PositionR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="80" />
-                            <DataGridTemplateColumn Header="Vacuum DO" Width="105">
-                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding VacuumDoBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding VacuumOutputAddress}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
-                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding VacuumOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Blow DO" Width="105">
-                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding BlowDoBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding BlowOutputAddress}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
-                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding BlowOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Vacuum DI" Width="105">
-                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding VacuumDiBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding VacuumInputAddress}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
-                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding VacuumInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="General DO 1" Width="115">
-                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding GeneralDo1Brush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding GeneralOutputAddress1}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
-                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding GeneralOutputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="General DO 2" Width="115">
-                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding GeneralDo2Brush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding GeneralOutputAddress2}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
-                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding GeneralOutputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="General DI 1" Width="115">
-                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding GeneralDi1Brush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding GeneralInputAddress1}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
-                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding GeneralInputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="General DI 2" Width="115">
-                                <DataGridTemplateColumn.CellTemplate><DataTemplate><StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="12" Height="12" Fill="{Binding GeneralDi2Brush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,5,0" /><TextBlock Text="{Binding GeneralInputAddress2}" VerticalAlignment="Center" /></StackPanel></DataTemplate></DataGridTemplateColumn.CellTemplate>
-                                <DataGridTemplateColumn.CellEditingTemplate><DataTemplate><TextBox Text="{Binding GeneralInputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" /></DataTemplate></DataGridTemplateColumn.CellEditingTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTextColumn Header="Vacuum Timeout(ms)" Binding="{Binding VacuumTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="130" />
-                            <DataGridTemplateColumn Header="Actions" Width="320">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                            <Button Content="Teach" Command="{Binding TeachPositionCommand}" Width="70" Margin="0,0,6,0" />
-                                            <Button Content="Move" Command="{Binding MovePositionCommand}" Width="70" Margin="0,0,6,0" />
-                                            <Button Content="Vacuum" Command="{Binding VacuumCommand}" Width="80" Margin="0,0,6,0" />
-                                            <Button Content="Blow" Command="{Binding BlowCommand}" Width="80" Margin="0,0,6,0" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="220" MinWidth="150" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="200" MinWidth="130" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                    <GroupBox Grid.Row="2" Header="Event Log" Margin="0,8,0,12">
-                        <ListBox ItemsSource="{Binding WorkHeadEventLog.Events}" BorderThickness="0">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="2,2,2,6">
-                                        <TextBlock Text="{Binding Time}" FontWeight="SemiBold" Margin="0,0,8,0" />
-                                        <TextBlock Text="{Binding WorkHeadName}" FontWeight="SemiBold" Margin="0,0,8,0" />
-                                        <TextBlock Text="{Binding EventType}" Foreground="{StaticResource SecondaryTextBrush}" Margin="0,0,8,0" />
-                                        <TextBlock Text="{Binding Message}" TextWrapping="NoWrap" Foreground="{StaticResource SecondaryTextBrush}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
+                        <GroupBox Header="Objects">
+                            <DataGrid ItemsSource="{Binding WorkHeadMonitor.WorkHeads}"
+                                      SelectedItem="{Binding WorkHeadMonitor.SelectedWorkHead, Mode=TwoWay}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="2" Header="Positions">
+                            <DataGrid ItemsSource="{Binding WorkHeadMonitor.SelectedWorkHead.Positions}"
+                                      SelectedItem="{Binding WorkHeadMonitor.SelectedWorkHead.PositionSelector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      IsReadOnly="False">
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="Name" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Name}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </GroupBox>
+
+                        <GroupBox Grid.Column="4" Header="Setup">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <Grid Margin="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="10" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="10" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="10" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <UniformGrid Grid.Row="0" Columns="4">
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="X Axis" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="Y Axis" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="Z Axis" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="R Axis" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </UniformGrid>
+
+                                    <UniformGrid Grid.Row="2" Columns="4">
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="X Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="Y Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="Z Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="R Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </UniformGrid>
+
+                                    <Grid Grid.Row="4" Margin="4,0,4,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="120" />
+                                            <ColumnDefinition Width="16" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="Safe Z" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
+                                        <TextBox Grid.Column="1" Margin="10,0,0,0" Text="{Binding WorkHeadMonitor.SelectedWorkHead.SafeZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        <TextBlock Grid.Column="3" Text="Description" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
+                                        <TextBox Grid.Column="4" Margin="10,0,0,0" Text="{Binding WorkHeadMonitor.SelectedWorkHead.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    </Grid>
+
+                                    <UniformGrid Grid.Row="6" Columns="8">
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="Vacuum DO" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="Blow DO" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.BlowOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="Vacuum DI" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="General DO 1" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="General DO 2" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="General DI 1" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="General DI 2" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                        <StackPanel Margin="4">
+                                            <TextBlock Text="Vacuum Timeout(ms)" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" />
+                                            <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+                                    </UniformGrid>
+                                </Grid>
+                            </ScrollViewer>
+                        </GroupBox>
+                    </Grid>
+
+                    <GroupBox Grid.Row="2" Header="Work Head Event Log">
+                        <DataGrid ItemsSource="{Binding WorkHeadEventLog.Events}" AutoGenerateColumns="False" IsReadOnly="True">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="110" />
+                                <DataGridTextColumn Header="WorkHead" Binding="{Binding WorkHeadName}" Width="180" />
+                                <DataGridTextColumn Header="Event" Binding="{Binding EventType}" Width="120" />
+                                <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
+                            </DataGrid.Columns>
+                        </DataGrid>
                     </GroupBox>
                 </Grid>
             </TabItem>
