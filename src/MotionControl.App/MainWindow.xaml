@@ -224,7 +224,7 @@
                             </StackPanel>
 
                             <GroupBox Header="Recent Runtime Events" Margin="0,16,0,0">
-                                <DataGrid ItemsSource="{Binding Dashboard.RecentCommandFeedback}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="220">
+                                <DataGrid ItemsSource="{Binding Dashboard.RecentCommandFeedback}" AutoGenerateColumns="False" IsReadOnly="True" Height="220" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="110" />
                                         <DataGridTextColumn Header="Axis" Binding="{Binding Axis}" Width="80" />

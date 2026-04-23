@@ -72,7 +72,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
 
         var latestFeedback = _commandFeedbackRuntimeState.RecentFeedback
             .Reverse()
-            .Take(8)
+            .Take(100)
             .Select(item => new RuntimeEventLogItem(
                 item.Timestamp.ToLocalTime().ToString("HH:mm:ss"),
                 item.AxisNo?.ToString() ?? "-",
