@@ -23,6 +23,8 @@ public sealed class PositionSetupItemViewModel : INotifyPropertyChanged
         {
             _positions.Add(new PositionSetupPositionViewModel(pos));
         }
+        // 自动选中第一个位置（与 WorkHead 行为一致）
+        _selectedPosition = _positions.FirstOrDefault();
     }
 
     public PositionSetupConfigItem ToConfig()
@@ -40,13 +42,13 @@ public sealed class PositionSetupItemViewModel : INotifyPropertyChanged
     public double SafeZ { get => _item.SafeZ; set { if (_item.SafeZ == value) return; _item.SafeZ = value; OnPropertyChanged(); } }
 
     /// <summary>轴映射（该对象下所有位置共用）</summary>
-    public int XxAxisNo { get => _item.XxAxisNo; set { if (_item.XxAxisNo == value) return; _item.XxAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsXxAxisConfigured)); } }
-    public int XAxisNo { get => _item.XAxisNo; set { if (_item.XAxisNo == value) return; _item.XAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsXAxisConfigured)); } }
-    public int YAxisNo { get => _item.YAxisNo; set { if (_item.YAxisNo == value) return; _item.YAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsYAxisConfigured)); } }
-    public int ZAxisNo { get => _item.ZAxisNo; set { if (_item.ZAxisNo == value) return; _item.ZAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsZAxisConfigured)); } }
-    public int UAxisNo { get => _item.UAxisNo; set { if (_item.UAxisNo == value) return; _item.UAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsUAxisConfigured)); } }
-    public int VAxisNo { get => _item.VAxisNo; set { if (_item.VAxisNo == value) return; _item.VAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsVAxisConfigured)); } }
-    public int WAxisNo { get => _item.WAxisNo; set { if (_item.WAxisNo == value) return; _item.WAxisNo = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsWAxisConfigured)); } }
+    public int XxAxisNo { get => _item.XxAxisNo; set { if (_item.XxAxisNo == value) return; _item.XxAxisNo = value; OnAxisMappingChanged(); OnPropertyChanged(nameof(IsXxAxisConfigured)); } }
+    public int XAxisNo { get => _item.XAxisNo; set { if (_item.XAxisNo == value) return; _item.XAxisNo = value; OnAxisMappingChanged(); OnPropertyChanged(nameof(IsXAxisConfigured)); } }
+    public int YAxisNo { get => _item.YAxisNo; set { if (_item.YAxisNo == value) return; _item.YAxisNo = value; OnAxisMappingChanged(); OnPropertyChanged(nameof(IsYAxisConfigured)); } }
+    public int ZAxisNo { get => _item.ZAxisNo; set { if (_item.ZAxisNo == value) return; _item.ZAxisNo = value; OnAxisMappingChanged(); OnPropertyChanged(nameof(IsZAxisConfigured)); } }
+    public int UAxisNo { get => _item.UAxisNo; set { if (_item.UAxisNo == value) return; _item.UAxisNo = value; OnAxisMappingChanged(); OnPropertyChanged(nameof(IsUAxisConfigured)); } }
+    public int VAxisNo { get => _item.VAxisNo; set { if (_item.VAxisNo == value) return; _item.VAxisNo = value; OnAxisMappingChanged(); OnPropertyChanged(nameof(IsVAxisConfigured)); } }
+    public int WAxisNo { get => _item.WAxisNo; set { if (_item.WAxisNo == value) return; _item.WAxisNo = value; OnAxisMappingChanged(); OnPropertyChanged(nameof(IsWAxisConfigured)); } }
 
     public bool IsXxAxisConfigured => XxAxisNo >= 0;
     public bool IsXAxisConfigured => XAxisNo >= 0;
@@ -55,6 +57,7 @@ public sealed class PositionSetupItemViewModel : INotifyPropertyChanged
     public bool IsUAxisConfigured => UAxisNo >= 0;
     public bool IsVAxisConfigured => VAxisNo >= 0;
     public bool IsWAxisConfigured => WAxisNo >= 0;
+    public bool HasAnyConfiguredAxis => IsXxAxisConfigured || IsXAxisConfigured || IsYAxisConfigured || IsZAxisConfigured || IsUAxisConfigured || IsVAxisConfigured || IsWAxisConfigured;
 
     // ===== 子位置点集合 =====
 
@@ -62,9 +65,12 @@ public sealed class PositionSetupItemViewModel : INotifyPropertyChanged
     public ObservableCollection<PositionSetupPositionViewModel> Positions => _positions;
 
     private PositionSetupPositionViewModel? _selectedPosition;
+    /// <summary>
+    /// 始终返回选中的位置（自动 fallback 到第一个位置，与 WorkHead 行为一致）。
+    /// </summary>
     public PositionSetupPositionViewModel? SelectedPosition
     {
-        get => _selectedPosition;
+        get => _selectedPosition ?? _positions.FirstOrDefault();
         set
         {
             if (_selectedPosition == value) return;
@@ -74,10 +80,15 @@ public sealed class PositionSetupItemViewModel : INotifyPropertyChanged
             (DeletePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            HasSelectedPositionChanged?.Invoke();
         }
     }
 
-    public bool HasSelectedPosition => _selectedPosition is not null;
+    /// <summary>始终有选中位置（当存在至少一个位置时）。</summary>
+    public bool HasSelectedPosition => _positions.Any();
+
+    /// <summary>当 HasSelectedPosition 状态改变时触发，用于通知 MainWindowViewModel 刷新页面级命令的 CanExecute。</summary>
+    public event Action? HasSelectedPositionChanged;
 
     public void AddPosition()
     {
@@ -122,5 +133,15 @@ public sealed class PositionSetupItemViewModel : INotifyPropertyChanged
     public RelayCommand? MovePositionCommand { get; set; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void OnAxisMappingChanged()
+    {
+        OnPropertyChanged();
+        OnPropertyChanged(nameof(HasAnyConfiguredAxis));
+        (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        HasSelectedPositionChanged?.Invoke();
+    }
+
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

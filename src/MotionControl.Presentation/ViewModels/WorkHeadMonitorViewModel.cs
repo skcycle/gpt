@@ -1,9 +1,12 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
+using MotionControl.Presentation.Commands;
 
 namespace MotionControl.Presentation.ViewModels;
 
@@ -27,13 +30,22 @@ public sealed class WorkHeadMonitorViewModel : INotifyPropertyChanged
     }
 
     public ObservableCollection<WorkHeadItemViewModel> WorkHeads { get; }
-    public WorkHeadItemViewModel? SelectedWorkHead { get => _selectedWorkHead; set { if (_selectedWorkHead == value) return; _selectedWorkHead = value; OnPropertyChanged(); } }
+    public WorkHeadItemViewModel? SelectedWorkHead { get => _selectedWorkHead; set { if (_selectedWorkHead == value) return; _selectedWorkHead = value; OnPropertyChanged(); if (value is WorkHeadItemViewModel vm) { (vm.TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (vm.MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (vm.VacuumCommand as RelayCommand)?.RaiseCanExecuteChanged(); (vm.BlowCommand as RelayCommand)?.RaiseCanExecuteChanged(); } } }
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public void RefreshAll()
     {
-        SyncCollections();
         foreach (var workHead in WorkHeads) workHead.Refresh();
+    }
+
+    public void ReloadFromMachine()
+    {
+        WorkHeads.Clear();
+        foreach (var workHead in _machine.WorkHeads)
+        {
+            WorkHeads.Add(BuildViewModel(workHead));
+        }
+        SelectedWorkHead = WorkHeads.FirstOrDefault();
     }
 
     public void AddWorkHead(WorkHead workHead)

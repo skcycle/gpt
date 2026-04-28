@@ -13,7 +13,10 @@ public sealed class AxisControllerParameterAppService(ZmcAxisNativeFacade axisNa
 
     public Task WriteControllerParametersAsync(int axisNo, double workVelocity, double setupVelocity, double pulseEquivalent, CancellationToken cancellationToken = default)
     {
-        var result = axisNativeFacade.WriteAxisParameters(axisNo, workVelocity, setupVelocity, pulseEquivalent);
+        var effectivePulseEquivalent = pulseEquivalent > 0 ? pulseEquivalent : 1000;
+        var pulseWorkVelocity = workVelocity * effectivePulseEquivalent;
+        var pulseSetupVelocity = setupVelocity * effectivePulseEquivalent;
+        var result = axisNativeFacade.WriteAxisParameters(axisNo, pulseWorkVelocity, pulseSetupVelocity);
         if (result != 0)
         {
             throw new InvalidOperationException($"Write controller parameters failed: {result}");

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using MotionControl.Device.Abstractions.Results;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
 
@@ -86,13 +87,19 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         try
         {
             var currentOn = await _axisControlService.IsServoOnAsync(_axis);
+            DeviceResult r;
             if (currentOn)
             {
-                await _axisControlService.DisableAxisAsync(_axis);
+                r = await _axisControlService.DisableAxisAsync(_axis);
             }
             else
             {
-                await _axisControlService.EnableAxisAsync(_axis);
+                r = await _axisControlService.EnableAxisAsync(_axis);
+            }
+            if (!r.Success)
+            {
+                System.Windows.MessageBox.Show(r.ErrorMessage, "伺服切换失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                return;
             }
             Refresh();
         }

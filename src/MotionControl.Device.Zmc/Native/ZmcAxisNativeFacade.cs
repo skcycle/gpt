@@ -144,13 +144,11 @@ public sealed class ZmcAxisNativeFacade
         return buffer.ToString();
     }
 
-    public int WriteAxisParameters(int axisNo, double workVelocity, double setupVelocity, double pulseEquivalent)
+    public int WriteAxisParameters(int axisNo, double workVelocity, double setupVelocity)
     {
         var result = ExecuteCommand($"SPEED({axisNo})={workVelocity}");
         if (result != 0) return result;
-        result = ExecuteCommand($"CREEP({axisNo})={setupVelocity}");
-        if (result != 0) return result;
-        return ExecuteCommand($"UNITS({axisNo})={pulseEquivalent}");
+        return ExecuteCommand($"CREEP({axisNo})={setupVelocity}");
     }
 
     private int ExecuteCommand(string command)

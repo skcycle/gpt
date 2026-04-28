@@ -42,11 +42,20 @@ public sealed class CylinderMonitorViewModel : INotifyPropertyChanged
 
     public void RefreshAll()
     {
-        SyncCollections();
         foreach (var cylinder in Cylinders)
         {
             cylinder.Refresh();
         }
+    }
+
+    public void ReloadFromMachine()
+    {
+        Cylinders.Clear();
+        foreach (var cylinder in _machine.Cylinders)
+        {
+            Cylinders.Add(BuildViewModel(cylinder));
+        }
+        SelectedCylinder = Cylinders.FirstOrDefault();
     }
 
     public void AddCylinder(Cylinder cylinder)

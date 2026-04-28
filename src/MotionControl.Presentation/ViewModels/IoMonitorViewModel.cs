@@ -52,8 +52,6 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
 
     public void RefreshAll()
     {
-        SyncCollections();
-
         foreach (var input in Inputs)
         {
             input.Refresh();

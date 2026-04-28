@@ -19,14 +19,14 @@ public sealed class ZmcMotionController(
     {
         var result = axisNativeFacade.Connect(options.IpAddress);
         _isConnected = result == 0;
-        return Task.FromResult(_isConnected ? DeviceResult.Ok() : DeviceResult.Fail($"ZMC connect failed: {result}"));
+        return Task.FromResult(_isConnected ? DeviceResult.Ok() : DeviceResult.Fail("控制器连接失败"));
     }
 
     public Task<DeviceResult> DisconnectAsync(CancellationToken cancellationToken = default)
     {
         var result = axisNativeFacade.Disconnect();
         _isConnected = false;
-        return Task.FromResult(result == 0 ? DeviceResult.Ok() : DeviceResult.Fail($"ZMC disconnect failed: {result}"));
+        return Task.FromResult(result == 0 ? DeviceResult.Ok() : DeviceResult.Fail("控制器断开连接失败"));
     }
 
     public Task<AxisFeedback> GetAxisFeedbackAsync(int axisNo, CancellationToken cancellationToken = default)
@@ -57,40 +57,52 @@ public sealed class ZmcMotionController(
     }
 
     public Task<DeviceResult> EnableAxisAsync(int axisNo, CancellationToken cancellationToken = default)
-        => Task.FromResult(axisNativeFacade.EnableAxis(axisNo) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC enable axis failed."));
+        => Task.FromResult(axisNativeFacade.EnableAxis(axisNo) == 0
+            ? DeviceResult.Ok()
+            : DeviceResult.Fail($"轴 {axisNo} 使能失败"));
 
     public Task<DeviceResult> DisableAxisAsync(int axisNo, CancellationToken cancellationToken = default)
-        => Task.FromResult(axisNativeFacade.DisableAxis(axisNo) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC disable axis failed."));
+        => Task.FromResult(axisNativeFacade.DisableAxis(axisNo) == 0
+            ? DeviceResult.Ok()
+            : DeviceResult.Fail($"轴 {axisNo} 失能失败"));
 
     public Task<DeviceResult> HomeAxisAsync(int axisNo, CancellationToken cancellationToken = default)
-        => Task.FromResult(axisNativeFacade.HomeAxis(axisNo) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC home axis failed."));
+        => Task.FromResult(axisNativeFacade.HomeAxis(axisNo) == 0
+            ? DeviceResult.Ok()
+            : DeviceResult.Fail($"轴 {axisNo} 回零失败"));
 
     public Task<DeviceResult> MoveAbsoluteAsync(int axisNo, AxisMoveCommand command, CancellationToken cancellationToken = default)
         => Task.FromResult(axisNativeFacade.MoveAbsolute(axisNo, command.Position, command.Velocity, command.Acceleration, command.Deceleration) == 0
             ? DeviceResult.Ok()
-            : DeviceResult.Fail("ZMC move absolute failed."));
+            : DeviceResult.Fail($"轴 {axisNo} 定位失败"));
 
     public Task<DeviceResult> JogAxisAsync(int axisNo, double velocity, bool positiveDirection, CancellationToken cancellationToken = default)
-        => Task.FromResult(axisNativeFacade.JogAxis(axisNo, velocity, positiveDirection) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC jog axis failed."));
+        => Task.FromResult(axisNativeFacade.JogAxis(axisNo, velocity, positiveDirection) == 0
+            ? DeviceResult.Ok()
+            : DeviceResult.Fail($"轴 {axisNo} Jog 失败"));
 
     public Task<DeviceResult> StopAxisAsync(int axisNo, CancellationToken cancellationToken = default)
-        => Task.FromResult(axisNativeFacade.StopAxis(axisNo) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC stop axis failed."));
+        => Task.FromResult(axisNativeFacade.StopAxis(axisNo) == 0
+            ? DeviceResult.Ok()
+            : DeviceResult.Fail($"轴 {axisNo} 停止失败"));
 
     public Task<DeviceResult> RapidStopAsync(int mode, CancellationToken cancellationToken = default)
-        => Task.FromResult(axisNativeFacade.RapidStop(mode) == 0 ? DeviceResult.Ok() : DeviceResult.Fail("ZMC rapid stop failed."));
+        => Task.FromResult(axisNativeFacade.RapidStop(mode) == 0
+            ? DeviceResult.Ok()
+            : DeviceResult.Fail("快速停止失败"));
 
     public Task<DeviceResult> ResetAxisAlarmAsync(int axisNo, CancellationToken cancellationToken = default)
     {
         var driveResult = axisNativeFacade.ClearDriveAlarm(axisNo);
         if (driveResult != 0)
         {
-            return Task.FromResult(DeviceResult.Fail($"驱动器报警清除失败: {driveResult}"));
+            return Task.FromResult(DeviceResult.Fail($"轴 {axisNo} 驱动器报警清除失败"));
         }
 
         var zmcResult = axisNativeFacade.ClearZmcAlarm(axisNo);
         if (zmcResult != 0)
         {
-            return Task.FromResult(DeviceResult.Fail($"ZMC 自身报警清除失败(DATUM): {zmcResult}"));
+            return Task.FromResult(DeviceResult.Fail($"轴 {axisNo} 自身报警清除失败"));
         }
 
         return Task.FromResult(DeviceResult.Ok());
@@ -115,7 +127,7 @@ public sealed class ZmcMotionController(
     public Task<DeviceResult> SetIoPointValueAsync(int address, bool value, CancellationToken cancellationToken = default)
     {
         var result = axisNativeFacade.SetOutput(address, value ? 1 : 0);
-        return Task.FromResult(result == 0 ? DeviceResult.Ok() : DeviceResult.Fail($"SetOutput failed: {result}"));
+        return Task.FromResult(result == 0 ? DeviceResult.Ok() : DeviceResult.Fail($"DO {address} 输出失败"));
     }
 
     public Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default)

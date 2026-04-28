@@ -29,6 +29,7 @@ public sealed class PositionSetupMonitorViewModel : INotifyPropertyChanged
             if (_selectedItem is not null)
             {
                 _selectedItem.PropertyChanged += OnSelectedItemPropertyChanged;
+                _selectedItem.HasSelectedPositionChanged += () => OnPropertyChanged("SelectedItem.SelectedPosition");
             }
         }
     }

@@ -57,6 +57,16 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         return viewModel;
     }
 
+    public void ReloadFromMachine()
+    {
+        Axes.Clear();
+        foreach (var axis in _machine.Axes)
+        {
+            Axes.Add(new AxisViewModel(axis, GetAxisControlService()));
+        }
+        SelectedAxis = Axes.FirstOrDefault();
+    }
+
     public void RemoveAxis(int axisNo)
     {
         var existing = Axes.FirstOrDefault(axis => axis.AxisNo == axisNo);

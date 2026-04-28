@@ -1,8 +1,9 @@
+using MotionControl.Device.Abstractions.Results;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Control.Interfaces;
 
 public interface IHomingService
 {
-    Task HomeAxisAsync(Axis axis, CancellationToken cancellationToken = default);
+    Task<DeviceResult> HomeAxisAsync(Axis axis, CancellationToken cancellationToken = default);
 }

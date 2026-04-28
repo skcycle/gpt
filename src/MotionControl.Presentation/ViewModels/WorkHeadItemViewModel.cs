@@ -31,18 +31,22 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         _canControl = canControl;
         VacuumCommand = new RelayCommand(async () => await ToggleVacuumAsync(), () => _canControl() && _workHead.VacuumOutputAddress >= 0);
         BlowCommand = new RelayCommand(async () => await ToggleBlowAsync(), () => _canControl() && _workHead.BlowOutputAddress >= 0);
-        TeachPositionCommand = new RelayCommand(TeachSelectedPosition, () => SelectedPosition is not null);
-        MovePositionCommand = new RelayCommand(async () => await MoveSelectedPositionAsync(), () => SelectedPosition is not null);
+        var canTeachMove = () => SelectedPosition is not null && (XAxisNo >= 0 || YAxisNo >= 0 || ZAxisNo >= 0 || RAxisNo >= 0) && Positions.Count > 0;
+        TeachPositionCommand = new RelayCommand(TeachSelectedPosition, canTeachMove);
+        MovePositionCommand = new RelayCommand(async () => await MoveSelectedPositionAsync(), canTeachMove);
+        // Force initial CanExecute evaluation so buttons are correctly disabled when Positions is empty
+        (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
     public string Name { get => _workHead.Name; set { if (_workHead.Name == value) return; UpdateMetadata(name: value); OnPropertyChanged(); } }
     public string Description { get => _workHead.Description; set { if (_workHead.Description == value) return; UpdateMetadata(description: value); OnPropertyChanged(); } }
-    public int XAxisNo { get => _workHead.XAxisNo; set { if (_workHead.XAxisNo == value) return; UpdateMetadata(xAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsXAxisConfigured)); } }
-    public int YAxisNo { get => _workHead.YAxisNo; set { if (_workHead.YAxisNo == value) return; UpdateMetadata(yAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsYAxisConfigured)); } }
-    public int ZAxisNo { get => _workHead.ZAxisNo; set { if (_workHead.ZAxisNo == value) return; UpdateMetadata(zAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsZAxisConfigured)); } }
-    public int RAxisNo { get => _workHead.RAxisNo; set { if (_workHead.RAxisNo == value) return; UpdateMetadata(rAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsRAxisConfigured)); } }
-    public int VacuumOutputAddress { get => _workHead.VacuumOutputAddress; set { if (_workHead.VacuumOutputAddress == value) return; UpdateMetadata(vacuumOutputAddress: value); OnPropertyChanged(); } }
-    public int BlowOutputAddress { get => _workHead.BlowOutputAddress; set { if (_workHead.BlowOutputAddress == value) return; UpdateMetadata(blowOutputAddress: value); OnPropertyChanged(); } }
+    public int XAxisNo { get => _workHead.XAxisNo; set { if (Positions.Count == 0) return; if (_workHead.XAxisNo == value) return; UpdateMetadata(xAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsXAxisConfigured)); (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
+    public int YAxisNo { get => _workHead.YAxisNo; set { if (Positions.Count == 0) return; if (_workHead.YAxisNo == value) return; UpdateMetadata(yAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsYAxisConfigured)); (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
+    public int ZAxisNo { get => _workHead.ZAxisNo; set { if (Positions.Count == 0) return; if (_workHead.ZAxisNo == value) return; UpdateMetadata(zAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsZAxisConfigured)); (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
+    public int RAxisNo { get => _workHead.RAxisNo; set { if (Positions.Count == 0) return; if (_workHead.RAxisNo == value) return; UpdateMetadata(rAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsRAxisConfigured)); (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
+    public int VacuumOutputAddress { get => _workHead.VacuumOutputAddress; set { if (_workHead.VacuumOutputAddress == value) return; UpdateMetadata(vacuumOutputAddress: value); OnPropertyChanged(); (VacuumCommand as RelayCommand)?.RaiseCanExecuteChanged(); (BlowCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
+    public int BlowOutputAddress { get => _workHead.BlowOutputAddress; set { if (_workHead.BlowOutputAddress == value) return; UpdateMetadata(blowOutputAddress: value); OnPropertyChanged(); (BlowCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
     public int VacuumInputAddress { get => _workHead.VacuumInputAddress; set { if (_workHead.VacuumInputAddress == value) return; UpdateMetadata(vacuumInputAddress: value); OnPropertyChanged(); } }
     public int GeneralOutputAddress1 { get => _workHead.GeneralOutputAddress1; set { if (_workHead.GeneralOutputAddress1 == value) return; UpdateMetadata(generalOutputAddress1: value); OnPropertyChanged(); } }
     public int GeneralOutputAddress2 { get => _workHead.GeneralOutputAddress2; set { if (_workHead.GeneralOutputAddress2 == value) return; UpdateMetadata(generalOutputAddress2: value); OnPropertyChanged(); } }
@@ -116,6 +120,8 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         _workHead.AddPosition(new WorkHeadPosition(name, string.Empty, 0, 0, 0, 0));
         _workHead.SelectedPositionName = name;
         RaisePositionChanged();
+        (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
     public void DeleteSelectedPosition()
@@ -125,6 +131,8 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         _workHead.RemovePosition(removed);
         _workHead.SelectedPositionName = _workHead.Positions.FirstOrDefault()?.Name;
         RaisePositionChanged();
+        (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
     }
 
     public void Refresh()
@@ -155,14 +163,19 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     private async Task ToggleVacuumAsync()
     {
         if (_workHead.VacuumOutputAddress < 0) return;
+        if (_machine.IoPoints.All(io => io.Address != _workHead.VacuumOutputAddress || !io.IsOutput))
+        {
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} vacuum output address {_workHead.VacuumOutputAddress} 不存在于 IO 配置中" });
+            return;
+        }
         var next = !(_machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == _workHead.VacuumOutputAddress)?.Value ?? false);
         if (next && _workHead.BlowOutputAddress >= 0)
         {
             var blowOff = await _ioControlService.SetOutputAsync(_workHead.BlowOutputAddress, false);
-            if (!blowOff.Success) return;
+            if (!blowOff.Success) { _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} blow off 失败: {blowOff.ErrorMessage}" }); return; }
         }
         var result = await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, next);
-        if (!result.Success) return;
+        if (!result.Success) { _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} vacuum 失败: {result.ErrorMessage}" }); return; }
         if (next) _workHead.StartVacuumCommand(); else _workHead.StopVacuumCommand();
         _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = next ? $"{_workHead.Name} vacuum on" : $"{_workHead.Name} vacuum off" });
         Refresh();
@@ -171,15 +184,20 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     private async Task ToggleBlowAsync()
     {
         if (_workHead.BlowOutputAddress < 0) return;
+        if (_machine.IoPoints.All(io => io.Address != _workHead.BlowOutputAddress || !io.IsOutput))
+        {
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} blow output address {_workHead.BlowOutputAddress} 不存在于 IO 配置中" });
+            return;
+        }
         var next = !(_machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == _workHead.BlowOutputAddress)?.Value ?? false);
         if (next && _workHead.VacuumOutputAddress >= 0)
         {
             var vacuumOff = await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, false);
-            if (!vacuumOff.Success) return;
+            if (!vacuumOff.Success) { _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} vacuum off 失败: {vacuumOff.ErrorMessage}" }); return; }
             _workHead.StopVacuumCommand();
         }
         var result = await _ioControlService.SetOutputAsync(_workHead.BlowOutputAddress, next);
-        if (!result.Success) return;
+        if (!result.Success) { _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} blow 失败: {result.ErrorMessage}" }); return; }
         _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = next ? $"{_workHead.Name} blow on" : $"{_workHead.Name} blow off" });
         Refresh();
     }
@@ -187,32 +205,54 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     private void TeachSelectedPosition()
     {
         if (SelectedPosition is null) return;
+        var configuredAxes = new[] { (no: _workHead.XAxisNo, name: "X"), (no: _workHead.YAxisNo, name: "Y"), (no: _workHead.ZAxisNo, name: "Z"), (no: _workHead.RAxisNo, name: "R") }.Where(a => a.no >= 0).ToList();
+        var missing = configuredAxes.Where(a => _machine.Axes.All(ax => ax.Id.Value != a.no)).Select(a => a.no).ToList();
+        if (missing.Count > 0)
+        {
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} 存在未配置到运行时的轴: {string.Join(", ", missing)}" });
+            return;
+        }
         if (_workHead.XAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == _workHead.XAxisNo);
-            if (axis is not null) SelectedPosition.X = axis.CurrentPosition;
+            if (axis is not null) SelectedPosition.X = ToEngineeringPosition(axis);
         }
         if (_workHead.YAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == _workHead.YAxisNo);
-            if (axis is not null) SelectedPosition.Y = axis.CurrentPosition;
+            if (axis is not null) SelectedPosition.Y = ToEngineeringPosition(axis);
         }
         if (_workHead.ZAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == _workHead.ZAxisNo);
-            if (axis is not null) SelectedPosition.Z = axis.CurrentPosition;
+            if (axis is not null) SelectedPosition.Z = ToEngineeringPosition(axis);
         }
         if (_workHead.RAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == _workHead.RAxisNo);
-            if (axis is not null) SelectedPosition.R = axis.CurrentPosition;
+            if (axis is not null) SelectedPosition.R = ToEngineeringPosition(axis);
         }
+        _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Teach", Message = $"{_workHead.Name}:{SelectedPosition.Name} teach completed" });
         RaisePositionChanged();
+    }
+
+    private static double ToEngineeringPosition(Axis axis)
+    {
+        var pulseEquivalent = axis.PulseEquivalent > 0 ? axis.PulseEquivalent : 1000;
+        return axis.CurrentPosition / pulseEquivalent;
     }
 
     private async Task MoveSelectedPositionAsync()
     {
         if (SelectedPosition is null) return;
+        var configuredAxes = new[] { (no: _workHead.XAxisNo, name: "X"), (no: _workHead.YAxisNo, name: "Y"), (no: _workHead.ZAxisNo, name: "Z"), (no: _workHead.RAxisNo, name: "R") }.Where(a => a.no >= 0).ToList();
+        var missing = configuredAxes.Where(a => _machine.Axes.All(ax => ax.Id.Value != a.no)).Select(a => a.no).ToList();
+        if (missing.Count > 0)
+        {
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} 存在未配置到运行时的轴: {string.Join(", ", missing)}" });
+            return;
+        }
+        _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = $"{_workHead.Name}:{SelectedPosition.Name} move started" });
         if (_workHead.ZAxisNo >= 0)
         {
             await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, _workHead.SafeZ, 100, 100, 100));
@@ -226,6 +266,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         {
             await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, SelectedPosition.Z, 100, 100, 100));
         }
+        _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Success", Message = $"{_workHead.Name}:{SelectedPosition.Name} move completed" });
     }
 
     private void UpdateMetadata(string? name = null, string? description = null, int? xAxisNo = null, int? yAxisNo = null, int? zAxisNo = null, int? rAxisNo = null, int? vacuumOutputAddress = null, int? blowOutputAddress = null, int? vacuumInputAddress = null, int? generalOutputAddress1 = null, int? generalOutputAddress2 = null, int? generalInputAddress1 = null, int? generalInputAddress2 = null, int? vacuumTimeoutMs = null, double? safeZ = null)

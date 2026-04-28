@@ -7,6 +7,19 @@ namespace MotionControl.Application.Services;
 
 public sealed class AxisParameterAppService(string appSettingsPath) : IAxisParameterAppService
 {
+    public async Task<List<AxisMappingItem>> LoadAllAxesAsync(CancellationToken cancellationToken = default)
+    {
+        var root = await LoadRootAsync(cancellationToken);
+        return root.AxisMapping.Axes.ToList();
+    }
+
+    public async Task SaveAllAxesAsync(List<AxisMappingItem> items, CancellationToken cancellationToken = default)
+    {
+        var root = await LoadRootAsync(cancellationToken);
+        root.AxisMapping.Axes = items;
+        await SaveRootAsync(root, cancellationToken);
+    }
+
     public async Task<AxisMappingItem?> LoadAxisParametersAsync(int axisNo, CancellationToken cancellationToken = default)
     {
         var root = await LoadRootAsync(cancellationToken);

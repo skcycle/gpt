@@ -1,19 +1,21 @@
-using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using MotionControl.Presentation.ViewModels;
 
 namespace MotionControl.App;
 
 public partial class MainWindow : Window
 {
-    private const int JogHoldThresholdMs = 250;
+    private const int JogHoldThresholdMs = 300;
 
     private readonly MainWindowViewModel? _viewModel;
     private bool _initialized;
-    private CancellationTokenSource? _jogPressCts;
-    private bool _isJogRunning;
-    private bool? _pendingJogDirection;
+    private bool _jogHolding;
+    private bool _jogContinuousRunning;
+    private bool _jogPositiveDirection;
+    private DispatcherTimer? _jogHoldTimer;
 
     public MainWindow()
     {
@@ -38,7 +40,7 @@ public partial class MainWindow : Window
         await _viewModel.InitializeAsync();
     }
 
-    private async void JogPositiveButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void JogPositiveButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (_viewModel is null)
         {
@@ -46,10 +48,19 @@ public partial class MainWindow : Window
         }
 
         e.Handled = true;
-        await BeginJogPressAsync(true);
+        ((UIElement)sender).CaptureMouse();
+
+        _jogHolding = true;
+        _jogContinuousRunning = false;
+        _jogPositiveDirection = true;
+
+        _jogHoldTimer?.Stop();
+        _jogHoldTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(JogHoldThresholdMs) };
+        _jogHoldTimer.Tick += OnJogHoldTimerTick;
+        _jogHoldTimer.Start();
     }
 
-    private async void JogNegativeButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void JogNegativeButton_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (_viewModel is null)
         {
@@ -57,10 +68,19 @@ public partial class MainWindow : Window
         }
 
         e.Handled = true;
-        await BeginJogPressAsync(false);
+        ((UIElement)sender).CaptureMouse();
+
+        _jogHolding = true;
+        _jogContinuousRunning = false;
+        _jogPositiveDirection = false;
+
+        _jogHoldTimer?.Stop();
+        _jogHoldTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(JogHoldThresholdMs) };
+        _jogHoldTimer.Tick += OnJogHoldTimerTick;
+        _jogHoldTimer.Start();
     }
 
-    private async void JogButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private void JogButton_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
     {
         if (_viewModel is null)
         {
@@ -68,77 +88,64 @@ public partial class MainWindow : Window
         }
 
         e.Handled = true;
-        await EndJogPressAsync();
-    }
+        ((UIElement)sender).ReleaseMouseCapture();
 
-    private async void JogButton_MouseLeave(object sender, MouseEventArgs e)
-    {
-        if (_viewModel is null || e.LeftButton != MouseButtonState.Pressed)
+        if (_jogHoldTimer != null)
         {
-            return;
+            _jogHoldTimer.Stop();
+            _jogHoldTimer.Tick -= OnJogHoldTimerTick;
+            _jogHoldTimer = null;
         }
 
-        await EndJogPressAsync();
+        _jogHolding = false;
+
+        if (_jogContinuousRunning)
+        {
+            _jogContinuousRunning = false;
+            _ = _viewModel.AxisDebug.StopJogAsync();
+        }
+        else
+        {
+            _ = _viewModel.AxisDebug.StepMoveAsync(_jogPositiveDirection);
+        }
     }
 
-    private async Task BeginJogPressAsync(bool positiveDirection)
+    private void JogButton_MouseLeave(object sender, MouseEventArgs e)
     {
-        if (_viewModel is null)
+        if (e.LeftButton != MouseButtonState.Pressed)
         {
-            return;
-        }
+            _jogHolding = false;
 
-        _jogPressCts?.Cancel();
-        _jogPressCts?.Dispose();
-        _jogPressCts = new CancellationTokenSource();
-        _pendingJogDirection = positiveDirection;
-        _isJogRunning = false;
-
-        try
-        {
-            await Task.Delay(JogHoldThresholdMs, _jogPressCts.Token);
-            if (_pendingJogDirection.HasValue)
+            if (_jogHoldTimer != null)
             {
-                _isJogRunning = true;
-                await _viewModel.AxisDebug.StartJogAsync(_pendingJogDirection.Value);
+                _jogHoldTimer.Stop();
+                _jogHoldTimer.Tick -= OnJogHoldTimerTick;
+                _jogHoldTimer = null;
             }
         }
-        catch (TaskCanceledException)
-        {
-        }
     }
 
-    private async Task EndJogPressAsync()
+    private void OnJogHoldTimerTick(object? sender, EventArgs e)
     {
-        if (_viewModel is null)
+        if (_jogHoldTimer != null)
+        {
+            _jogHoldTimer.Stop();
+            _jogHoldTimer.Tick -= OnJogHoldTimerTick;
+            _jogHoldTimer = null;
+        }
+
+        if (!_jogHolding || _viewModel is null)
         {
             return;
         }
 
-        _jogPressCts?.Cancel();
-        _jogPressCts?.Dispose();
-        _jogPressCts = null;
-
-        var direction = _pendingJogDirection;
-        _pendingJogDirection = null;
-
-        if (_isJogRunning)
-        {
-            _isJogRunning = false;
-            await _viewModel.AxisDebug.StopJogAsync();
-            return;
-        }
-
-        if (direction.HasValue)
-        {
-            await _viewModel.AxisDebug.StepMoveAsync(direction.Value);
-        }
+        _jogContinuousRunning = true;
+        _ = _viewModel.AxisDebug.StartJogAsync(_jogPositiveDirection);
     }
 
     private void AxisMonitorDataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
     {
-        // Forward mouse wheel to the parent ScrollViewer so the outer panel scrolls
-        var scrollViewer = FindVisualChild<System.Windows.Controls.ScrollViewer>(this);
+        var scrollViewer = FindVisualChild<ScrollViewer>(this);
         if (scrollViewer != null)
         {
             scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3.0);
@@ -148,17 +155,107 @@ public partial class MainWindow : Window
 
     private void AxisParametersScrollViewer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
     {
-        if (sender is System.Windows.Controls.ScrollViewer scrollViewer)
+        if (sender is ScrollViewer scrollViewer)
         {
             scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3.0);
             e.Handled = true;
         }
     }
 
+    private void SectionDataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (sender is not DataGrid dataGrid)
+        {
+            return;
+        }
+
+        var dataGridScrollViewer = FindVisualChild<ScrollViewer>(dataGrid);
+        if (dataGridScrollViewer != null)
+        {
+            var scrollingDown = e.Delta < 0;
+            var scrollingUp = e.Delta > 0;
+            var canScrollDown = dataGridScrollViewer.VerticalOffset < dataGridScrollViewer.ScrollableHeight;
+            var canScrollUp = dataGridScrollViewer.VerticalOffset > 0;
+
+            if ((scrollingDown && canScrollDown) || (scrollingUp && canScrollUp))
+            {
+                dataGridScrollViewer.ScrollToVerticalOffset(dataGridScrollViewer.VerticalOffset - e.Delta / 3.0);
+                e.Handled = true;
+                return;
+            }
+        }
+
+        var parentScrollViewer = FindVisualChild<ScrollViewer>(this);
+        if (parentScrollViewer != null)
+        {
+            parentScrollViewer.ScrollToVerticalOffset(parentScrollViewer.VerticalOffset - e.Delta / 3.0);
+            e.Handled = true;
+        }
+    }
+
+    private void NavDashboard_Click(object sender, RoutedEventArgs e) => NavigateTo(0, MainWindowViewModel.NavigationPage.Dashboard);
+    private void NavEtherCat_Click(object sender, RoutedEventArgs e) => NavigateTo(1, MainWindowViewModel.NavigationPage.EtherCat);
+    private void NavAxis_Click(object sender, RoutedEventArgs e) => NavigateTo(2, MainWindowViewModel.NavigationPage.Axis);
+    private void NavIo_Click(object sender, RoutedEventArgs e) => NavigateTo(3, MainWindowViewModel.NavigationPage.Io);
+    private void NavCylinder_Click(object sender, RoutedEventArgs e) => NavigateTo(4, MainWindowViewModel.NavigationPage.Cylinder);
+    private void NavWorkHead_Click(object sender, RoutedEventArgs e) => NavigateTo(5, MainWindowViewModel.NavigationPage.WorkHead);
+    private void NavPositionSetup_Click(object sender, RoutedEventArgs e) => NavigateTo(6, MainWindowViewModel.NavigationPage.PositionSetup);
+    private void NavAlarm_Click(object sender, RoutedEventArgs e) => NavigateTo(7, MainWindowViewModel.NavigationPage.Alarm);
+
+    private void NavigateTo(int tabIndex, MainWindowViewModel.NavigationPage page)
+    {
+        if (FindName("MainTabControl") is TabControl tabControl)
+        {
+            tabControl.SelectedIndex = tabIndex;
+        }
+
+        SetNavigationSelection(tabIndex);
+
+        if (_viewModel is not null)
+        {
+            _viewModel.SelectedPage = page;
+        }
+    }
+
+    private void SetNavigationSelection(int tabIndex)
+    {
+        if (FindName("NavDashboardButton") is System.Windows.Controls.Primitives.ToggleButton dashboardButton)
+        {
+            dashboardButton.IsChecked = tabIndex == 0;
+        }
+        if (FindName("NavEtherCatButton") is System.Windows.Controls.Primitives.ToggleButton etherCatButton)
+        {
+            etherCatButton.IsChecked = tabIndex == 1;
+        }
+        if (FindName("NavAxisButton") is System.Windows.Controls.Primitives.ToggleButton axisButton)
+        {
+            axisButton.IsChecked = tabIndex == 2;
+        }
+        if (FindName("NavIoButton") is System.Windows.Controls.Primitives.ToggleButton ioButton)
+        {
+            ioButton.IsChecked = tabIndex == 3;
+        }
+        if (FindName("NavCylinderButton") is System.Windows.Controls.Primitives.ToggleButton cylinderButton)
+        {
+            cylinderButton.IsChecked = tabIndex == 4;
+        }
+        if (FindName("NavWorkHeadButton") is System.Windows.Controls.Primitives.ToggleButton workHeadButton)
+        {
+            workHeadButton.IsChecked = tabIndex == 5;
+        }
+        if (FindName("NavPositionSetupButton") is System.Windows.Controls.Primitives.ToggleButton positionSetupButton)
+        {
+            positionSetupButton.IsChecked = tabIndex == 6;
+        }
+        if (FindName("NavAlarmButton") is System.Windows.Controls.Primitives.ToggleButton alarmButton)
+        {
+            alarmButton.IsChecked = tabIndex == 7;
+        }
+    }
 
     private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
     {
-        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+        for (var i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
         {
             var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
             if (child is T result)

@@ -153,47 +153,63 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
     private async Task OpenAsync()
     {
         if (_cylinder.ExtendOutputAddress < 0) return;
+        if (_machine.IoPoints.All(io => io.Address != _cylinder.ExtendOutputAddress || !io.IsOutput))
+        {
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Failed", Message = $"{_cylinder.Name} extend output address {_cylinder.ExtendOutputAddress} 不存在于 IO 配置中" });
+            return;
+        }
 
         var currentValue = _machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == _cylinder.ExtendOutputAddress)?.Value ?? false;
         var nextValue = !currentValue;
         var result = await _ioControlService.SetOutputAsync(ExtendOutputAddress, nextValue);
-        if (result.Success)
+        if (!result.Success)
         {
-            if (nextValue)
-            {
-                _cylinder.StartExtendCommand();
-                _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} open on" });
-            }
-            else
-            {
-                _cylinder.ClearPendingCommand();
-                _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} open off" });
-            }
-            Refresh();
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Failed", Message = $"{_cylinder.Name} extend 失败: {result.ErrorMessage}" });
+            return;
         }
+
+        if (nextValue)
+        {
+            _cylinder.StartExtendCommand();
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} extend 命令已发出" });
+        }
+        else
+        {
+            _cylinder.ClearPendingCommand();
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} extend 关闭命令已发出" });
+        }
+        Refresh();
     }
 
     private async Task CloseAsync()
     {
         if (_cylinder.RetractOutputAddress < 0) return;
+        if (_machine.IoPoints.All(io => io.Address != _cylinder.RetractOutputAddress || !io.IsOutput))
+        {
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Failed", Message = $"{_cylinder.Name} retract output address {_cylinder.RetractOutputAddress} 不存在于 IO 配置中" });
+            return;
+        }
 
         var currentValue = _machine.IoPoints.FirstOrDefault(io => io.IsOutput && io.Address == _cylinder.RetractOutputAddress)?.Value ?? false;
         var nextValue = !currentValue;
         var result = await _ioControlService.SetOutputAsync(RetractOutputAddress, nextValue);
-        if (result.Success)
+        if (!result.Success)
         {
-            if (nextValue)
-            {
-                _cylinder.StartRetractCommand();
-                _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} close on" });
-            }
-            else
-            {
-                _cylinder.ClearPendingCommand();
-                _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} close off" });
-            }
-            Refresh();
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Failed", Message = $"{_cylinder.Name} retract 失败: {result.ErrorMessage}" });
+            return;
         }
+
+        if (nextValue)
+        {
+            _cylinder.StartRetractCommand();
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} retract 命令已发出" });
+        }
+        else
+        {
+            _cylinder.ClearPendingCommand();
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Command", Message = $"{_cylinder.Name} retract 关闭命令已发出" });
+        }
+        Refresh();
     }
 
 

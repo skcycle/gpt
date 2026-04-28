@@ -32,4 +32,37 @@ public sealed class AxisManagementAppService(
 
     public Task<AxisMappingItem?> LoadAxisAsync(int axisNo, CancellationToken cancellationToken = default)
         => axisParameterAppService.LoadAxisParametersAsync(axisNo, cancellationToken);
+
+    public Task<List<AxisMappingItem>> LoadAllAxesAsync(CancellationToken cancellationToken = default)
+        => axisParameterAppService.LoadAllAxesAsync(cancellationToken);
+
+    public async Task<AxisMappingItem> CreateAxisForRuntimeAsync(CancellationToken cancellationToken = default)
+    {
+        var existing = await axisParameterAppService.LoadAllAxesAsync(cancellationToken);
+        var nextAxisNo = existing.Count == 0 ? 0 : existing.Max(a => a.AxisNo) + 1;
+        var item = new AxisMappingItem
+        {
+            AxisNo = nextAxisNo,
+            Name = $"Axis {nextAxisNo}",
+            Group = string.Empty,
+            IsMaster = false,
+            SoftLimitPositive = 1000,
+            SoftLimitNegative = -1000,
+            WorkVelocity = 200,
+            SetupVelocity = 50,
+            PulseEquivalent = 1000,
+            HomeMode = MotionControl.Domain.Enums.HomeMode.Default,
+            ServoBinding = string.Empty
+        };
+        await axisRuntimeParameterSyncService.ApplyAsync(item, cancellationToken);
+        return item;
+    }
+
+    public Task SaveAllAxesAsync(List<AxisMappingItem> items, CancellationToken cancellationToken = default)
+        => axisParameterAppService.SaveAllAxesAsync(items, cancellationToken);
+
+    public async Task SyncAxisToRuntimeAsync(AxisMappingItem item, CancellationToken cancellationToken = default)
+    {
+        await axisRuntimeParameterSyncService.ApplyAsync(item, cancellationToken);
+    }
 }

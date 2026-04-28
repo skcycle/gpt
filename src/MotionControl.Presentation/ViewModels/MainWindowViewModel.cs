@@ -9,6 +9,8 @@ using System.Windows.Input;
 using MotionControl.Domain.Enums;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
+using MotionControl.Device.Abstractions.Results;
+using MotionControl.Infrastructure.Configuration;
 using MotionControl.Domain.Entities;
 using MotionControl.Domain.ValueObjects;
 using MotionControl.Presentation.Commands;
@@ -17,6 +19,17 @@ namespace MotionControl.Presentation.ViewModels;
 
 public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStatusReporter
 {
+    public enum NavigationPage
+    {
+        Dashboard,
+        EtherCat,
+        Axis,
+        Io,
+        Cylinder,
+        WorkHead,
+        PositionSetup,
+        Alarm
+    }
     private readonly Machine _machine;
     private readonly IMotionAppService _motionAppService;
     private readonly IAxisManagementAppService _axisManagementAppService;
@@ -43,6 +56,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private DateTime _lastPositionSetupRefreshUtc = DateTime.MinValue;
     private string _currentBeijingTime = GetBeijingTimeString();
     private string _operationStatus = "Ready";
+    private NavigationPage _selectedPage = NavigationPage.Dashboard;
     private string? _selectedWorkHeadMotionName;
     private double _workHeadTargetX;
     private double _workHeadTargetY;
@@ -113,6 +127,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         {
             if (e.PropertyName == nameof(PositionSetupMonitorViewModel.SelectedItem))
             {
+                // 订阅新的 PositionSetupItemViewModel 的 HasSelectedPositionChanged
+                if (PositionSetupMonitor.SelectedItem != null)
+                {
+                    PositionSetupMonitor.SelectedItem.HasSelectedPositionChanged += () =>
+                    {
+                        (DeletePositionSetupCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                        (AddPositionSetupPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                        (DeletePositionSetupPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                        (TeachPositionSetupCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                        (MovePositionSetupCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    };
+                }
                 (DeletePositionSetupCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 (AddPositionSetupPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 (DeletePositionSetupPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
@@ -144,6 +170,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             });
         AddAxisCommand = new RelayCommand(async () => await AddAxisAsync());
         DeleteAxisCommand = new RelayCommand(async () => await DeleteSelectedAxisAsync(), () => AxisMonitor.SelectedAxis is not null);
+        SaveAxisConsoleConfigCommand = new RelayCommand(async () => await SaveAxisConsoleConfigAsync(), CanEditIoConfiguration);
+        LoadAxisConsoleConfigCommand = new RelayCommand(async () => await LoadAxisConsoleConfigAsync(), CanEditIoConfiguration);
         AddInputCommand = new RelayCommand(async () => await AddIoPointAsync(false), CanEditIoConfiguration);
         AddOutputCommand = new RelayCommand(async () => await AddIoPointAsync(true), CanEditIoConfiguration);
         DeleteInputCommand = new RelayCommand(async () => await DeleteSelectedInputAsync(), () => IoMonitor.SelectedInput is not null && CanEditIoConfiguration());
@@ -170,8 +198,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         LoadPositionSetupConfigCommand = new RelayCommand(async () => await LoadPositionSetupConfigAsync(), CanEditIoConfiguration);
         AddPositionSetupPositionCommand = new RelayCommand(AddPositionSetupPosition, () => PositionSetupMonitor.SelectedItem is not null);
         DeletePositionSetupPositionCommand = new RelayCommand(DeleteSelectedPositionSetupPosition, () => PositionSetupMonitor.SelectedItem?.HasSelectedPosition == true);
-        TeachPositionSetupCommand = new RelayCommand(TeachSelectedPositionSetup, () => PositionSetupMonitor.SelectedItem?.HasSelectedPosition == true);
-        MovePositionSetupCommand = new RelayCommand(async () => await MoveSelectedPositionSetupAsync(), () => PositionSetupMonitor.SelectedItem?.HasSelectedPosition == true);
+        TeachPositionSetupCommand = new RelayCommand(TeachSelectedPositionSetup, () => PositionSetupMonitor.SelectedItem?.HasSelectedPosition == true && PositionSetupMonitor.SelectedItem?.HasAnyConfiguredAxis == true);
+        MovePositionSetupCommand = new RelayCommand(async () => await MoveSelectedPositionSetupAsync(), () => PositionSetupMonitor.SelectedItem?.HasSelectedPosition == true && PositionSetupMonitor.SelectedItem?.HasAnyConfiguredAxis == true);
         _axisConsoleCoordinator = new AxisConsoleCoordinator(AxisMonitor, AxisDebug, AxisParameterEditor);
         _ioMonitorCoordinator = new IoMonitorCoordinator(IoMonitor, (RelayCommand)DeleteInputCommand, (RelayCommand)DeleteOutputCommand);
         _ioMonitorCoordinator.Initialize();
@@ -179,6 +207,50 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     }
 
     public DashboardViewModel Dashboard { get; }
+
+    public NavigationPage SelectedPage
+    {
+        get => _selectedPage;
+        set
+        {
+            if (_selectedPage == value)
+            {
+                return;
+            }
+
+            _selectedPage = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(CurrentPageTitle));
+            OnPropertyChanged(nameof(CurrentPageDescription));
+        }
+    }
+
+    public string CurrentPageTitle => SelectedPage switch
+    {
+        NavigationPage.Dashboard => "Dashboard",
+        NavigationPage.EtherCat => "EtherCAT Monitor",
+        NavigationPage.Axis => "Axis Console",
+        NavigationPage.Io => "IO Monitor",
+        NavigationPage.Cylinder => "Cylinder Monitor",
+        NavigationPage.WorkHead => "Work Head",
+        NavigationPage.PositionSetup => "Position Setup",
+        NavigationPage.Alarm => "Alarm Center",
+        _ => "Dashboard"
+    };
+
+    public string CurrentPageDescription => SelectedPage switch
+    {
+        NavigationPage.Dashboard => "System overview, network health and recent events.",
+        NavigationPage.EtherCat => "Realtime EtherCAT slave status, topology and fault visibility.",
+        NavigationPage.Axis => "Axis control, jog operation and controller parameters.",
+        NavigationPage.Io => "Digital input and output configuration with runtime status.",
+        NavigationPage.Cylinder => "Cylinder configuration, runtime state and event tracking.",
+        NavigationPage.WorkHead => "Work head objects, position management and vacuum IO setup.",
+        NavigationPage.PositionSetup => "Reusable position objects, axis mapping and target values.",
+        NavigationPage.Alarm => "Active alarms, severity overview and alarm investigation.",
+        _ => "System overview, network health and recent events."
+    };
+
     public string CurrentBeijingTime
     {
         get => _currentBeijingTime;
@@ -194,7 +266,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
     }
 
-    public IReadOnlyList<string> WorkHeadNames => _machine.WorkHeads.Select(item => item.Name).OrderBy(item => item).ToList();
+    public IReadOnlyList<string> WorkHeadNames => WorkHeadMonitor.WorkHeads.Select(item => item.Name).OrderBy(item => item).ToList();
 
     public string? SelectedWorkHeadMotionName { get => _selectedWorkHeadMotionName; set { if (_selectedWorkHeadMotionName == value) return; _selectedWorkHeadMotionName = value; OnPropertyChanged(); (MoveWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged(); (TeachWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged(); (AddWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (DeleteWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (TeachToWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MoveToWorkHeadPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); OnPropertyChanged(nameof(WorkHeadPositionNames)); SelectedWorkHeadPositionName = null; } }
     public double WorkHeadTargetX { get => _workHeadTargetX; set { if (_workHeadTargetX == value) return; _workHeadTargetX = value; OnPropertyChanged(); } }
@@ -209,7 +281,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     public IReadOnlyList<WorkHeadPosition> GetWorkHeadPositions(string workHeadName)
     {
-        var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, workHeadName, StringComparison.OrdinalIgnoreCase));
+        var workHead = WorkHeadMonitor.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, workHeadName, StringComparison.OrdinalIgnoreCase));
         return workHead?.Positions?.ToList() ?? new List<WorkHeadPosition>();
     }
     public string OperationStatus
@@ -246,6 +318,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public ICommand ReconnectCommand { get; }
     public ICommand AddAxisCommand { get; }
     public ICommand DeleteAxisCommand { get; }
+    public ICommand SaveAxisConsoleConfigCommand { get; }
+    public ICommand LoadAxisConsoleConfigCommand { get; }
     public ICommand AddInputCommand { get; }
     public ICommand AddOutputCommand { get; }
     public ICommand DeleteInputCommand { get; }
@@ -385,7 +459,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private async Task AddAxisAsync()
     {
-        var item = await _axisManagementAppService.AddAxisAsync();
+        var item = await _axisManagementAppService.CreateAxisForRuntimeAsync();
         var axis = _machine.Axes.FirstOrDefault(a => a.Id.Value == item.AxisNo);
         if (axis is null)
         {
@@ -396,137 +470,236 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         AxisMonitor.AddAxis(axis);
         RaiseAxisDeleteCanExecuteChanged();
         await _axisConsoleCoordinator.SyncSelectedAxisAsync(item.AxisNo);
-        OperationStatus = $"Axis {item.AxisNo} 已新增";
+        OperationStatus = $"Axis {item.AxisNo} 已新增（未保存）";
         RefreshViewModels(force: true);
     }
 
-    private async Task DeleteSelectedAxisAsync()
+    private Task DeleteSelectedAxisAsync()
     {
         var selectedAxis = AxisMonitor.SelectedAxis;
         if (selectedAxis is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        if (!UiGuards.Confirm("删除 Axis", $"确定删除 Axis {selectedAxis.AxisNo} 吗？此操作会同时更新配置。"))
+        if (!UiGuards.Confirm("删除 Axis", $"确定删除 Axis {selectedAxis.AxisNo} 吗？（未保存的删除）"))
         {
             OperationStatus = "已取消删除 Axis";
-            return;
+            return Task.CompletedTask;
         }
 
         var axisNo = selectedAxis.AxisNo;
-        var removed = await _axisManagementAppService.DeleteAxisAsync(axisNo);
-        if (!removed)
-        {
-            OperationStatus = $"Axis {axisNo} 删除失败";
-            return;
-        }
-
         _machine.RemoveAxis(axisNo);
         AxisMonitor.RemoveAxis(axisNo);
         RaiseAxisDeleteCanExecuteChanged();
-        OperationStatus = $"Axis {axisNo} 已删除";
+        OperationStatus = $"Axis {axisNo} 已删除（未保存）";
         RefreshViewModels(force: true);
+        return Task.CompletedTask;
     }
 
-    private async Task AddIoPointAsync(bool isOutput)
+    private async Task SaveAxisConsoleConfigAsync()
     {
-        var item = await _ioManagementAppService.AddIoPointAsync(isOutput);
-        var ioPoint = _machine.IoPoints.First(io => io.IsOutput == item.IsOutput && io.Address == item.Address);
-        IoMonitor.AddIoPoint(ioPoint);
-        OperationStatus = $"{(isOutput ? "DO" : "DI")} {item.Address} 已新增";
+        if (!UiGuards.Confirm("保存 Axis 配置", "确定保存当前 Axis 列表和参数到配置文件吗？"))
+        {
+            OperationStatus = "已取消保存 Axis 配置";
+            return;
+        }
+
+        // 先将参数编辑器的值同步到运行时，再构建完整列表
+        if (AxisMonitor.SelectedAxis is not null && AxisParameterEditor.AxisNo >= 0)
+        {
+            var editorItem = new AxisMappingItem
+            {
+                AxisNo = AxisParameterEditor.AxisNo,
+                Name = AxisParameterEditor.Name,
+                Group = AxisParameterEditor.Group,
+                IsMaster = AxisParameterEditor.IsMaster,
+                MasterAxisName = string.IsNullOrWhiteSpace(AxisParameterEditor.MasterAxisName) ? null : AxisParameterEditor.MasterAxisName,
+                SoftLimitPositive = AxisParameterEditor.SoftLimitPositive,
+                SoftLimitNegative = AxisParameterEditor.SoftLimitNegative,
+                WorkVelocity = AxisParameterEditor.WorkVelocity,
+                SetupVelocity = AxisParameterEditor.SetupVelocity,
+                Acceleration = AxisParameterEditor.Acceleration,
+                Deceleration = AxisParameterEditor.Deceleration,
+                PulseEquivalent = AxisParameterEditor.PulseEquivalent,
+                HomeMode = AxisParameterEditor.HomeMode,
+                ServoBinding = AxisParameterEditor.ServoBinding
+            };
+            await _axisManagementAppService.SyncAxisToRuntimeAsync(editorItem);
+        }
+
+        var items = new List<AxisMappingItem>();
+        foreach (var ax in _machine.Axes)
+        {
+            items.Add(new AxisMappingItem
+            {
+                AxisNo = ax.Id.Value,
+                Name = ax.Name,
+                Group = string.Empty,
+                IsMaster = false,
+                SoftLimitPositive = ax.SoftLimit?.Maximum,
+                SoftLimitNegative = ax.SoftLimit?.Minimum,
+                WorkVelocity = ax.WorkVelocity,
+                SetupVelocity = ax.SetupVelocity,
+                Acceleration = ax.Acceleration,
+                Deceleration = ax.Deceleration,
+                PulseEquivalent = ax.PulseEquivalent,
+                HomeMode = ax.HomeMode,
+                ServoBinding = ax.ServoBinding
+            });
+        }
+
+        await _axisManagementAppService.SaveAllAxesAsync(items);
+
+        // 同时写入控制器参数
+        if (AxisParameterEditor.AxisNo >= 0)
+        {
+            await AxisParameterEditor.WriteControllerAsync();
+        }
+
+        OperationStatus = $"Axis 配置已保存并写入控制器，共 {items.Count} 个轴";
+        if (AxisMonitor.SelectedAxis is not null)
+        {
+            await AxisParameterEditor.SyncAxisNoAsync(AxisMonitor.SelectedAxis.AxisNo);
+        }
         RefreshViewModels(force: true);
     }
 
-    private async Task DeleteSelectedInputAsync()
+    private async Task LoadAxisConsoleConfigAsync()
+    {
+        if (!UiGuards.Confirm("加载 Axis 配置", "确定从配置文件重新加载 Axis 配置吗？未保存修改将丢失。"))
+        {
+            OperationStatus = "已取消加载 Axis 配置";
+            return;
+        }
+
+        var allAxes = await _axisManagementAppService.LoadAllAxesAsync();
+
+        // Remove axes from runtime that are not in config
+        var configAxisNos = allAxes.Select(a => a.AxisNo).ToHashSet();
+        foreach (var runtimeAxis in _machine.Axes.ToList())
+        {
+            if (!configAxisNos.Contains(runtimeAxis.Id.Value))
+            {
+                _machine.RemoveAxis(runtimeAxis.Id.Value);
+            }
+        }
+
+        // Sync config axes to runtime (creates missing ones, updates existing)
+        foreach (var configAxis in allAxes)
+        {
+            await _axisManagementAppService.SyncAxisToRuntimeAsync(configAxis);
+        }
+
+        AxisMonitor.ReloadFromMachine();
+
+        if (AxisMonitor.SelectedAxis is not null)
+        {
+            await AxisParameterEditor.SyncAxisNoAsync(AxisMonitor.SelectedAxis.AxisNo);
+        }
+
+        RaiseAxisDeleteCanExecuteChanged();
+        OperationStatus = "Axis 配置已重新加载";
+        RefreshViewModels(force: true);
+    }
+
+    private Task AddIoPointAsync(bool isOutput)
+    {
+        var existingAddresses = IoMonitor.GetAllIoPoints()
+            .Where(io => io.IsOutput == isOutput)
+            .Select(io => io.Address)
+            .OrderBy(address => address)
+            .ToList();
+
+        var nextAddress = 0;
+        while (existingAddresses.Contains(nextAddress))
+        {
+            nextAddress++;
+        }
+
+        var ioPoint = new IoPoint(isOutput ? $"DO_{nextAddress}" : $"DI_{nextAddress}", nextAddress, isOutput);
+        IoMonitor.AddIoPoint(ioPoint);
+        OperationStatus = $"{(isOutput ? "DO" : "DI")} {nextAddress} 已新增（未保存）";
+        RefreshViewModels(force: true);
+        return Task.CompletedTask;
+    }
+
+    private Task DeleteSelectedInputAsync()
     {
         var selected = IoMonitor.SelectedInput;
         if (selected is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        if (!UiGuards.Confirm("删除输入点", $"确定删除 DI {selected.Address} 吗？此操作会同时更新配置。"))
+        if (!UiGuards.Confirm("删除输入点", $"确定删除 DI {selected.Address} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除 DI";
-            return;
+            return Task.CompletedTask;
         }
 
-        var removed = await _ioManagementAppService.DeleteIoPointAsync(false, selected.Address);
-        if (!removed)
-        {
-            OperationStatus = $"DI {selected.Address} 删除失败";
-            return;
-        }
-        _ioMonitorCoordinator.AfterDelete(false, selected.Address);
-        OperationStatus = $"DI {selected.Address} 已删除";
+        IoMonitor.RemoveIoPoint(false, selected.Address);
+        OperationStatus = $"DI {selected.Address} 已删除（未保存）";
         RefreshViewModels(force: true);
+        return Task.CompletedTask;
     }
 
-    private async Task DeleteSelectedOutputAsync()
+    private Task DeleteSelectedOutputAsync()
     {
         var selected = IoMonitor.SelectedOutput;
         if (selected is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        if (!UiGuards.Confirm("删除输出点", $"确定删除 DO {selected.Address} 吗？此操作会同时更新配置。"))
+        if (!UiGuards.Confirm("删除输出点", $"确定删除 DO {selected.Address} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除 DO";
-            return;
+            return Task.CompletedTask;
         }
 
-        var removed = await _ioManagementAppService.DeleteIoPointAsync(true, selected.Address);
-        if (!removed)
-        {
-            OperationStatus = $"DO {selected.Address} 删除失败";
-            return;
-        }
-        _ioMonitorCoordinator.AfterDelete(true, selected.Address);
-        OperationStatus = $"DO {selected.Address} 已删除";
+        IoMonitor.RemoveIoPoint(true, selected.Address);
+        OperationStatus = $"DO {selected.Address} 已删除（未保存）";
         RefreshViewModels(force: true);
+        return Task.CompletedTask;
     }
 
-    private async Task AddCylinderAsync()
+    private Task AddCylinderAsync()
     {
-        var item = await _cylinderManagementAppService.AddCylinderAsync();
-        var cylinder = _machine.Cylinders.FirstOrDefault(c => string.Equals(c.Name, item.Name, StringComparison.OrdinalIgnoreCase));
-        if (cylinder is null)
+        var index = CylinderMonitor.Cylinders.Count + 1;
+        var names = CylinderMonitor.Cylinders.Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var name = $"Cylinder {index}";
+        while (names.Contains(name))
         {
-            OperationStatus = $"Cylinder {item.Name} 创建后未同步到运行时";
-            return;
+            index++;
+            name = $"Cylinder {index}";
         }
 
+        var cylinder = new Cylinder(name, -1, -1, -1, -1, string.Empty, 3000);
         CylinderMonitor.AddCylinder(cylinder);
-        OperationStatus = $"Cylinder {item.Name} 已新增";
+        OperationStatus = $"Cylinder {name} 已新增（未保存）";
         RefreshViewModels(force: true);
+        return Task.CompletedTask;
     }
 
-    private async Task DeleteSelectedCylinderAsync()
+    private Task DeleteSelectedCylinderAsync()
     {
         var selected = CylinderMonitor.SelectedCylinder;
         if (selected is null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        if (!UiGuards.Confirm("删除 Cylinder", $"确定删除 Cylinder {selected.Name} 吗？此操作会同时更新配置。"))
+        if (!UiGuards.Confirm("删除 Cylinder", $"确定删除 Cylinder {selected.Name} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除 Cylinder";
-            return;
-        }
-
-        var removed = await _cylinderManagementAppService.DeleteCylinderAsync(selected.Name);
-        if (!removed)
-        {
-            OperationStatus = $"Cylinder {selected.Name} 删除失败";
-            return;
+            return Task.CompletedTask;
         }
 
         CylinderMonitor.RemoveCylinder(selected.Name);
-        OperationStatus = $"Cylinder {selected.Name} 已删除";
+        OperationStatus = $"Cylinder {selected.Name} 已删除（未保存）";
         RefreshViewModels(force: true);
+        return Task.CompletedTask;
     }
 
     private void TeachSelectedWorkHeadPosition()
@@ -537,7 +710,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return;
         }
 
-        var workHead = _machine.WorkHeads.FirstOrDefault(item => string.Equals(item.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+        var workHead = WorkHeadMonitor.WorkHeads.FirstOrDefault(item => string.Equals(item.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
         if (workHead is null)
         {
             OperationStatus = $"未找到 WorkHead: {SelectedWorkHeadMotionName}";
@@ -547,22 +720,22 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         if (workHead.XAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.XAxisNo);
-            if (axis is not null) WorkHeadTargetX = axis.CurrentPosition;
+            if (axis is not null) WorkHeadTargetX = ToEngineeringPosition(axis);
         }
         if (workHead.YAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.YAxisNo);
-            if (axis is not null) WorkHeadTargetY = axis.CurrentPosition;
+            if (axis is not null) WorkHeadTargetY = ToEngineeringPosition(axis);
         }
         if (workHead.ZAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.ZAxisNo);
-            if (axis is not null) WorkHeadTargetZ = axis.CurrentPosition;
+            if (axis is not null) WorkHeadTargetZ = ToEngineeringPosition(axis);
         }
         if (workHead.RAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.RAxisNo);
-            if (axis is not null) WorkHeadTargetR = axis.CurrentPosition;
+            if (axis is not null) WorkHeadTargetR = ToEngineeringPosition(axis);
         }
 
         OperationStatus = $"WorkHead {workHead.Name} 当前坐标已 Teach";
@@ -578,14 +751,28 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private void DeleteWorkHeadPosition()
     {
         if (WorkHeadMonitor.SelectedWorkHead is null) return;
-        WorkHeadMonitor.SelectedWorkHead.DeleteSelectedPosition();
-        OperationStatus = $"{WorkHeadMonitor.SelectedWorkHead.Name} 已删除 Position";
+        var selectedWorkHead = WorkHeadMonitor.SelectedWorkHead;
+        var selectedPositionName = selectedWorkHead.PositionSelector;
+        if (string.IsNullOrWhiteSpace(selectedPositionName))
+        {
+            selectedPositionName = selectedWorkHead.Positions.FirstOrDefault()?.Name;
+        }
+        if (string.IsNullOrWhiteSpace(selectedPositionName)) return;
+
+        if (!UiGuards.Confirm("删除 WorkHead Position", $"确定删除 {selectedWorkHead.Name} 的 Position {selectedPositionName} 吗？删除后需点击 Save 才会写入配置。"))
+        {
+            OperationStatus = "已取消删除 WorkHead Position";
+            return;
+        }
+
+        selectedWorkHead.DeleteSelectedPosition();
+        OperationStatus = $"{selectedWorkHead.Name} 已删除 Position（未保存）";
     }
 
     private void TeachToSelectedWorkHeadPosition()
     {
         if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) || string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName)) return;
-        var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+        var workHead = WorkHeadMonitor.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
         if (workHead is null) return;
 
         var pos = workHead.Positions.FirstOrDefault(p => p.Name == SelectedWorkHeadPositionName);
@@ -594,22 +781,22 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         if (workHead.XAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.XAxisNo);
-            if (axis is not null) pos.X = axis.CurrentPosition;
+            if (axis is not null) pos.X = ToEngineeringPosition(axis);
         }
         if (workHead.YAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.YAxisNo);
-            if (axis is not null) pos.Y = axis.CurrentPosition;
+            if (axis is not null) pos.Y = ToEngineeringPosition(axis);
         }
         if (workHead.ZAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.ZAxisNo);
-            if (axis is not null) pos.Z = axis.CurrentPosition;
+            if (axis is not null) pos.Z = ToEngineeringPosition(axis);
         }
         if (workHead.RAxisNo >= 0)
         {
             var axis = _machine.Axes.FirstOrDefault(item => item.Id.Value == workHead.RAxisNo);
-            if (axis is not null) pos.R = axis.CurrentPosition;
+            if (axis is not null) pos.R = ToEngineeringPosition(axis);
         }
 
         OnPropertyChanged(nameof(WorkHeadPositionNames));
@@ -619,11 +806,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private async Task MoveToSelectedWorkHeadPositionAsync()
     {
         if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName) || string.IsNullOrWhiteSpace(SelectedWorkHeadPositionName)) return;
-        var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+        var workHead = WorkHeadMonitor.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
         if (workHead is null) return;
 
         var pos = workHead.Positions.FirstOrDefault(p => p.Name == SelectedWorkHeadPositionName);
         if (pos is null) return;
+
+        var configuredAxes = new[] { (no: workHead.XAxisNo, name: "X"), (no: workHead.YAxisNo, name: "Y"), (no: workHead.ZAxisNo, name: "Z"), (no: workHead.RAxisNo, name: "R") }.Where(a => a.no >= 0).ToList();
+        var missingAxes = configuredAxes.Where(a => _machine.Axes.All(ax => ax.Id.Value != a.no)).Select(a => a.no).ToList();
+        if (missingAxes.Count > 0)
+        {
+            OperationStatus = $"WorkHead {workHead.Name} 存在未配置到运行时的轴: {string.Join(", ", missingAxes)}";
+            return;
+        }
 
         // Temporarily set targets and call the existing move logic
         var savedX = WorkHeadTargetX;
@@ -649,7 +844,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         get
         {
             if (string.IsNullOrWhiteSpace(SelectedWorkHeadMotionName)) return Array.Empty<string>();
-            var workHead = _machine.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+            var workHead = WorkHeadMonitor.WorkHeads.FirstOrDefault(w => string.Equals(w.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
             return workHead?.Positions.Select(p => p.Name).ToList() ?? new List<string>();
         }
     }
@@ -662,10 +857,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return;
         }
 
-        var workHead = _machine.WorkHeads.FirstOrDefault(item => string.Equals(item.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
+        var workHead = WorkHeadMonitor.WorkHeads.FirstOrDefault(item => string.Equals(item.Name, SelectedWorkHeadMotionName, StringComparison.OrdinalIgnoreCase));
         if (workHead is null)
         {
             OperationStatus = $"未找到 WorkHead: {SelectedWorkHeadMotionName}";
+            return;
+        }
+
+        var configuredAxes = new[] { (no: workHead.XAxisNo, name: "X"), (no: workHead.YAxisNo, name: "Y"), (no: workHead.ZAxisNo, name: "Z"), (no: workHead.RAxisNo, name: "R") }.Where(a => a.no >= 0).ToList();
+        var missingAxes = configuredAxes.Where(a => _machine.Axes.All(ax => ax.Id.Value != a.no)).Select(a => a.no).ToList();
+        if (missingAxes.Count > 0)
+        {
+            OperationStatus = $"WorkHead {workHead.Name} 存在未配置到运行时的轴: {string.Join(", ", missingAxes)}";
             return;
         }
 
@@ -736,43 +939,40 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         OperationStatus = $"WorkHead {workHead.Name} 已执行定位";
     }
 
-    private async Task AddWorkHeadAsync()
+    private Task AddWorkHeadAsync()
     {
-        var item = await _workHeadManagementAppService.AddWorkHeadAsync();
-        var workHead = _machine.WorkHeads.FirstOrDefault(c => string.Equals(c.Name, item.Name, StringComparison.OrdinalIgnoreCase));
-        if (workHead is null)
+        var index = WorkHeadMonitor.WorkHeads.Count + 1;
+        var names = WorkHeadMonitor.WorkHeads.Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var name = $"WorkHead {index}";
+        while (names.Contains(name))
         {
-            OperationStatus = $"WorkHead {item.Name} 创建后未同步到运行时";
-            return;
+            index++;
+            name = $"WorkHead {index}";
         }
 
+        var workHead = new WorkHead(name, string.Empty, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 3000, new[] { new WorkHeadPosition("Position 1", string.Empty, 0, 0, 0, 0) }, 0);
         WorkHeadMonitor.AddWorkHead(workHead);
         OnPropertyChanged(nameof(WorkHeadNames));
-        OperationStatus = $"WorkHead {item.Name} 已新增";
+        OperationStatus = $"WorkHead {name} 已新增（未保存）";
         RefreshViewModels(force: true);
+        return Task.CompletedTask;
     }
 
-    private async Task DeleteSelectedWorkHeadAsync()
+    private Task DeleteSelectedWorkHeadAsync()
     {
         var selected = WorkHeadMonitor.SelectedWorkHead;
-        if (selected is null) return;
-        if (!UiGuards.Confirm("删除 WorkHead", $"确定删除 WorkHead {selected.Name} 吗？此操作会同时更新配置。"))
+        if (selected is null) return Task.CompletedTask;
+        if (!UiGuards.Confirm("删除 WorkHead", $"确定删除 WorkHead {selected.Name} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除 WorkHead";
-            return;
-        }
-
-        var removed = await _workHeadManagementAppService.DeleteWorkHeadAsync(selected.Name);
-        if (!removed)
-        {
-            OperationStatus = $"WorkHead {selected.Name} 删除失败";
-            return;
+            return Task.CompletedTask;
         }
 
         WorkHeadMonitor.RemoveWorkHead(selected.Name);
         OnPropertyChanged(nameof(WorkHeadNames));
-        OperationStatus = $"WorkHead {selected.Name} 已删除";
+        OperationStatus = $"WorkHead {selected.Name} 已删除（未保存）";
         RefreshViewModels(force: true);
+        return Task.CompletedTask;
     }
 
     private async Task SaveIoConfigAsync()
@@ -816,6 +1016,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         try
         {
             await _ioManagementAppService.SaveIoPointsAsync(items);
+            await _ioManagementAppService.LoadIoPointsAsync();
             _ioMonitorCoordinator.AfterLoadOrReload();
             OperationStatus = $"IO 配置已保存，共 {items.Count} 个点位";
             RefreshViewModels(force: true);
@@ -843,9 +1044,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             })
             .ToList();
 
+        if (!UiGuards.Confirm("保存 Cylinder 配置", "确定覆盖当前 Cylinder 配置到 appsettings.json 吗？"))
+        {
+            OperationStatus = "已取消保存 Cylinder 配置";
+            return;
+        }
+
         try
         {
             await _cylinderManagementAppService.SaveCylindersAsync(items);
+            await _cylinderManagementAppService.LoadCylindersAsync();
             OperationStatus = $"Cylinder 配置已保存，共 {items.Count} 个气缸";
             RefreshViewModels(force: true);
         }
@@ -858,13 +1066,38 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private async Task LoadCylinderConfigAsync()
     {
+        if (!UiGuards.Confirm("加载 Cylinder 配置", "确定从 appsettings.json 重新加载 Cylinder 配置吗？未保存修改将丢失。"))
+        {
+            OperationStatus = "已取消加载 Cylinder 配置";
+            return;
+        }
+
         await _cylinderManagementAppService.LoadCylindersAsync();
+        CylinderMonitor.ReloadFromMachine();
         OperationStatus = "Cylinder 配置已重新加载";
         RefreshViewModels(force: true);
     }
 
     private async Task SaveWorkHeadConfigAsync()
     {
+        // 检查配置的轴号是否在 Axis Monitor 中存在
+        var configuredAxisNos = WorkHeadMonitor.WorkHeads
+            .SelectMany(wh => new[] { wh.XAxisNo, wh.YAxisNo, wh.ZAxisNo, wh.RAxisNo })
+            .Where(no => no >= 0)
+            .Distinct()
+            .ToList();
+        var missingAxes = configuredAxisNos.Where(no => !_machine.Axes.Any(ax => ax.Id.Value == no)).ToList();
+        if (missingAxes.Count > 0)
+        {
+            System.Windows.MessageBox.Show(
+                $"以下轴号未在 Axis Monitor 中配置，无法保存 WorkHead：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。",
+                "轴号未配置",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Warning);
+            OperationStatus = $"WorkHead 保存失败：轴 {string.Join(", ", missingAxes)} 未配置";
+            return;
+        }
+
         var items = WorkHeadMonitor.WorkHeads.Select(workHead => new MotionControl.Infrastructure.Configuration.WorkHeadConfigItem
         {
             Name = workHead.Name,
@@ -902,6 +1135,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         try
         {
             await _workHeadManagementAppService.SaveWorkHeadsAsync(items);
+            await _workHeadManagementAppService.LoadWorkHeadsAsync();
+            OnPropertyChanged(nameof(WorkHeadNames));
             OperationStatus = $"WorkHead 配置已保存，共 {items.Count} 个工作头";
             RefreshViewModels(force: true);
         }
@@ -921,6 +1156,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
 
         await _workHeadManagementAppService.LoadWorkHeadsAsync();
+        WorkHeadMonitor.ReloadFromMachine();
         OnPropertyChanged(nameof(WorkHeadNames));
         OperationStatus = "WorkHead 配置已重新加载";
         RefreshViewModels(force: true);
@@ -983,13 +1219,39 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private void DeleteSelectedPositionSetupPosition()
     {
         if (PositionSetupMonitor.SelectedItem?.SelectedPosition is null) return;
-        PositionSetupMonitor.SelectedItem.DeleteSelectedPosition();
-        OperationStatus = "位置已删除";
+        var setupItem = PositionSetupMonitor.SelectedItem;
+        var selectedPosition = setupItem.SelectedPosition;
+        if (!UiGuards.Confirm("删除位置点", $"确定删除 {setupItem.Name} 下的位置 {selectedPosition.Name} 吗？删除后需点击 Save 才会写入配置。"))
+        {
+            OperationStatus = "已取消删除位置点";
+            return;
+        }
+
+        setupItem.DeleteSelectedPosition();
+        OperationStatus = "位置已删除（未保存）";
         RefreshViewModels(force: true);
     }
 
     private async Task SavePositionSetupConfigAsync()
     {
+        // 检查配置的轴号是否在 Axis Monitor 中存在
+        var configuredAxisNos = PositionSetupMonitor.Items
+            .SelectMany(setup => new[] { setup.XxAxisNo, setup.XAxisNo, setup.YAxisNo, setup.ZAxisNo, setup.UAxisNo, setup.VAxisNo, setup.WAxisNo })
+            .Where(no => no >= 0)
+            .Distinct()
+            .ToList();
+        var missingAxes = configuredAxisNos.Where(no => !_machine.Axes.Any(ax => ax.Id.Value == no)).ToList();
+        if (missingAxes.Count > 0)
+        {
+            System.Windows.MessageBox.Show(
+                $"以下轴号未在 Axis Monitor 中配置，无法保存位置设定：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。",
+                "轴号未配置",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Warning);
+            OperationStatus = $"位置设定保存失败：轴 {string.Join(", ", missingAxes)} 未配置";
+            return;
+        }
+
         var items = PositionSetupMonitor.ToConfigs();
 
         if (!UiGuards.Confirm("保存位置设定配置", "确定覆盖当前位置设定配置到 appsettings.json 吗？"))
@@ -1074,13 +1336,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             }
 
             // 使用父对象的轴映射读取当前位置，写入子位置点
-            if (setupItem.XxAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.XxAxisNo); selectedPos.XxPosition = a.CurrentPosition; }
-            if (setupItem.XAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.XAxisNo); selectedPos.XPosition = a.CurrentPosition; }
-            if (setupItem.YAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.YAxisNo); selectedPos.YPosition = a.CurrentPosition; }
-            if (setupItem.ZAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.ZAxisNo); selectedPos.ZPosition = a.CurrentPosition; }
-            if (setupItem.UAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.UAxisNo); selectedPos.UPosition = a.CurrentPosition; }
-            if (setupItem.VAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.VAxisNo); selectedPos.VPosition = a.CurrentPosition; }
-            if (setupItem.WAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.WAxisNo); selectedPos.WPosition = a.CurrentPosition; }
+            if (setupItem.XxAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.XxAxisNo); selectedPos.XxPosition = ToEngineeringPosition(a); }
+            if (setupItem.XAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.XAxisNo); selectedPos.XPosition = ToEngineeringPosition(a); }
+            if (setupItem.YAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.YAxisNo); selectedPos.YPosition = ToEngineeringPosition(a); }
+            if (setupItem.ZAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.ZAxisNo); selectedPos.ZPosition = ToEngineeringPosition(a); }
+            if (setupItem.UAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.UAxisNo); selectedPos.UPosition = ToEngineeringPosition(a); }
+            if (setupItem.VAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.VAxisNo); selectedPos.VPosition = ToEngineeringPosition(a); }
+            if (setupItem.WAxisNo >= 0) { var a = _machine.Axes.First(x => x.Id.Value == setupItem.WAxisNo); selectedPos.WPosition = ToEngineeringPosition(a); }
 
             // 刷新选中项所有绑定 + 记录事件
             setupItem.Refresh();
@@ -1157,12 +1419,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             _commandFeedbackRuntimeState.AddStarted("PositionSetupMove", message: $"{eventName} started");
             PositionSetupEventLogRecord(eventName, "Command", $"{eventName} move started");
 
-            var planarMoves = new List<Task>();
+            var planarMoves = new List<Task<DeviceResult>>();
 
             // 安全顺序: 先抬 Z 到 SafeZ，再其它轴并发，最后 Z 到目标
             if (setupItem.ZAxisNo >= 0)
             {
-                await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.ZAxisNo, setupItem.SafeZ));
+                var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.ZAxisNo, setupItem.SafeZ));
+                if (!r.Success) { OperationStatus = $"{setupItem.Name} Z轴抬升失败: {r.ErrorMessage}"; PositionSetupEventLogRecord(eventName, "Failed", $"{setupItem.Name} Z轴抬升失败: {r.ErrorMessage}"); return; }
             }
 
             if (setupItem.XxAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.XxAxisNo, selectedPos.XxPosition)));
@@ -1174,12 +1437,15 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
             if (planarMoves.Count > 0)
             {
-                await Task.WhenAll(planarMoves);
+                var results = await Task.WhenAll(planarMoves);
+                var failed = results.FirstOrDefault(r => !r.Success);
+                if (failed is not null) { OperationStatus = $"{setupItem.Name} 运动失败: {failed.ErrorMessage}"; PositionSetupEventLogRecord(eventName, "Failed", $"{setupItem.Name} 运动失败: {failed.ErrorMessage}"); return; }
             }
 
             if (setupItem.ZAxisNo >= 0)
             {
-                await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.ZAxisNo, selectedPos.ZPosition));
+                var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.ZAxisNo, selectedPos.ZPosition));
+                if (!r.Success) { OperationStatus = $"{setupItem.Name} Z轴定位失败: {r.ErrorMessage}"; PositionSetupEventLogRecord(eventName, "Failed", $"{setupItem.Name} Z轴定位失败: {r.ErrorMessage}"); return; }
             }
 
             setupItem.Refresh();
@@ -1205,6 +1471,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
 
         await _ioManagementAppService.LoadIoPointsAsync();
+        IoMonitor.ReloadFromMachine();
         _ioMonitorCoordinator.AfterLoadOrReload();
         OperationStatus = "IO 配置已重新加载";
         RefreshViewModels(force: true);
@@ -1275,6 +1542,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         });
     }
 
+    private static double ToEngineeringPosition(MotionControl.Domain.Entities.Axis axis)
+    {
+        var pulseEquivalent = axis.PulseEquivalent > 0 ? axis.PulseEquivalent : 1000;
+        return axis.CurrentPosition / pulseEquivalent;
+    }
+
     private void PositionSetupEventLogRecord(string positionName, string eventType, string message)
     {
         _positionSetupEventRuntimeState.Add(new PositionSetupEventRecord
@@ -1283,6 +1556,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             EventType = eventType,
             Message = message
         });
+        PositionSetupEventLog.Refresh();
     }
 
     public void ReportStatus(string message)

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using MotionControl.Application.DTOs;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
+using MotionControl.Device.Abstractions.Results;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
 
@@ -155,27 +156,32 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
 
     public async Task EnableSelectedAxisAsync()
     {
-        await _motionAppService.EnableAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        var r = await _motionAppService.EnableAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 使能失败: {r.ErrorMessage}");
     }
 
     public async Task DisableSelectedAxisAsync()
     {
-        await _motionAppService.DisableAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        var r = await _motionAppService.DisableAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 失能失败: {r.ErrorMessage}");
     }
 
     public async Task HomeSelectedAxisAsync()
     {
-        await _motionAppService.HomeAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        var r = await _motionAppService.HomeAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 回零失败: {r.ErrorMessage}");
     }
 
     public async Task MoveSelectedAxisAsync()
     {
-        await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(SelectedAxisNo, TargetPosition, Velocity, Acceleration, Deceleration));
+        var r = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(SelectedAxisNo, TargetPosition, Velocity, Acceleration, Deceleration));
+        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 定位失败: {r.ErrorMessage}");
     }
 
     public async Task StopSelectedAxisAsync()
     {
-        await _motionAppService.StopAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        var r = await _motionAppService.StopAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 停止失败: {r.ErrorMessage}");
     }
 
     public async Task StartJogAsync(bool positiveDirection)
@@ -185,7 +191,8 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             return;
         }
 
-        await _motionAppService.JogAxisAsync(new JogAxisCommandDto(SelectedAxisNo, Velocity, positiveDirection));
+        var r = await _motionAppService.JogAxisAsync(new JogAxisCommandDto(SelectedAxisNo, Velocity, positiveDirection));
+        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] Jog 失败: {r.ErrorMessage}");
     }
 
     public async Task StopJogAsync()
@@ -195,7 +202,8 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             return;
         }
 
-        await _motionAppService.StopAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        var r = await _motionAppService.StopAxisAsync(new AxisCommandDto(SelectedAxisNo));
+        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 停止失败: {r.ErrorMessage}");
     }
 
     public async Task StepMoveAsync(bool positiveDirection)
@@ -205,10 +213,12 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             return;
         }
 
+        var pulseEquivalent = SelectedAxis.PulseEquivalent > 0 ? SelectedAxis.PulseEquivalent : 1000;
+        var currentPositionMm = SelectedAxis.CurrentPosition / pulseEquivalent;
         var step = positiveDirection ? JogStepDistance : -JogStepDistance;
-        var targetPosition = SelectedAxis.CurrentPosition + step;
-        await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(SelectedAxisNo, targetPosition, Velocity, Acceleration, Deceleration));
-        TargetPosition = targetPosition;
+        var targetPositionMm = currentPositionMm + step;
+        await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(SelectedAxisNo, targetPositionMm, Velocity, Acceleration, Deceleration));
+        TargetPosition = targetPositionMm;
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

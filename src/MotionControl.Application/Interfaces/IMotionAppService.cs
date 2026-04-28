@@ -1,13 +1,14 @@
 using MotionControl.Application.DTOs;
+using MotionControl.Device.Abstractions.Results;
 
 namespace MotionControl.Application.Interfaces;
 
 public interface IMotionAppService
 {
-    Task EnableAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default);
-    Task DisableAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default);
-    Task HomeAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default);
-    Task MoveAbsoluteAsync(MoveAxisCommandDto command, CancellationToken cancellationToken = default);
-    Task StopAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default);
-    Task JogAxisAsync(JogAxisCommandDto command, CancellationToken cancellationToken = default);
+    Task<DeviceResult> EnableAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default);
+    Task<DeviceResult> DisableAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default);
+    Task<DeviceResult> HomeAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default);
+    Task<DeviceResult> MoveAbsoluteAsync(MoveAxisCommandDto command, CancellationToken cancellationToken = default);
+    Task<DeviceResult> StopAxisAsync(AxisCommandDto command, CancellationToken cancellationToken = default);
+    Task<DeviceResult> JogAxisAsync(JogAxisCommandDto command, CancellationToken cancellationToken = default);
 }
