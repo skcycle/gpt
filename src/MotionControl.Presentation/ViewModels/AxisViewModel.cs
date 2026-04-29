@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using MotionControl.Control.Services;
 using MotionControl.Device.Abstractions.Results;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
@@ -13,12 +14,14 @@ public sealed class AxisViewModel : INotifyPropertyChanged
     private readonly Axis _axis;
     private readonly MotionControl.Control.Interfaces.IAxisControlService _axisControlService;
     private readonly IDialogService _dialogService;
+    private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
 
-    public AxisViewModel(Axis axis, MotionControl.Control.Interfaces.IAxisControlService axisControlService, IDialogService dialogService)
+    public AxisViewModel(Axis axis, MotionControl.Control.Interfaces.IAxisControlService axisControlService, IDialogService dialogService, CommandFeedbackRuntimeState commandFeedbackRuntimeState)
     {
         _axis = axis;
         _axisControlService = axisControlService;
         _dialogService = dialogService;
+        _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         ClearAlarmCommand = new RelayCommand(async () => await ClearAlarmAsync(), () => HasAlarm);
         ToggleServoCommand = new RelayCommand(async () => await ToggleServoAsync());
     }
@@ -74,22 +77,43 @@ public sealed class AxisViewModel : INotifyPropertyChanged
 
     private async Task ClearAlarmAsync()
     {
+        var actionName = "AxisClearAlarm";
+        var messagePrefix = $"Axis {AxisNo}";
+        _commandFeedbackRuntimeState.AddStarted(actionName, AxisNo, $"{messagePrefix} clear alarm started");
+
         try
         {
-            await _axisControlService.ResetAlarmAsync(_axis);
+            var result = await _axisControlService.ResetAlarmAsync(_axis);
+            if (!result.Success)
+            {
+                var message = result.ErrorMessage ?? "未知错误";
+                _commandFeedbackRuntimeState.AddFailed(actionName, AxisNo, $"{messagePrefix} clear alarm failed: {message}");
+                _dialogService.ShowAlarm(message, "报警清除失败");
+                return;
+            }
+
+            _commandFeedbackRuntimeState.AddSucceeded(actionName, AxisNo, $"{messagePrefix} clear alarm completed");
             Refresh();
         }
         catch (InvalidOperationException ex)
         {
+            _commandFeedbackRuntimeState.AddFailed(actionName, AxisNo, $"{messagePrefix} clear alarm failed: {ex.Message}");
             _dialogService.ShowAlarm(ex.Message, "报警清除失败");
         }
     }
 
     private async Task ToggleServoAsync()
     {
+        var currentOn = false;
+        var actionName = "AxisServoToggle";
+        var messagePrefix = $"Axis {AxisNo}";
+
         try
         {
-            var currentOn = await _axisControlService.IsServoOnAsync(_axis);
+            currentOn = await _axisControlService.IsServoOnAsync(_axis);
+            var operation = currentOn ? "disable" : "enable";
+            _commandFeedbackRuntimeState.AddStarted(actionName, AxisNo, $"{messagePrefix} servo {operation} started");
+
             DeviceResult r;
             if (currentOn)
             {
@@ -101,13 +125,19 @@ public sealed class AxisViewModel : INotifyPropertyChanged
             }
             if (!r.Success)
             {
-                _dialogService.ShowAlarm(r.ErrorMessage ?? "未知错误", "伺服切换失败");
+                var message = r.ErrorMessage ?? "未知错误";
+                _commandFeedbackRuntimeState.AddFailed(actionName, AxisNo, $"{messagePrefix} servo {operation} failed: {message}");
+                _dialogService.ShowAlarm(message, "伺服切换失败");
                 return;
             }
+
+            _commandFeedbackRuntimeState.AddSucceeded(actionName, AxisNo, $"{messagePrefix} servo {operation} completed");
             Refresh();
         }
         catch (InvalidOperationException ex)
         {
+            var operation = currentOn ? "disable" : "enable";
+            _commandFeedbackRuntimeState.AddFailed(actionName, AxisNo, $"{messagePrefix} servo {operation} failed: {ex.Message}");
             _dialogService.ShowAlarm(ex.Message, "伺服切换失败");
         }
     }

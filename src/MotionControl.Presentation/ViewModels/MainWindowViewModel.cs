@@ -107,7 +107,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine, commandFeedbackRuntimeState);
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
-        AxisMonitor = new AxisMonitorViewModel(machine, axisControlService, dialogService);
+        AxisMonitor = new AxisMonitorViewModel(machine, axisControlService, dialogService, commandFeedbackRuntimeState);
         AxisMonitor.SelectedAxisChanged += _ => RaiseAxisDeleteCanExecuteChanged();
         IoMonitor = new IoMonitorViewModel(machine, ioControlService, commandFeedbackRuntimeState, CanWriteIoOutputs);
         IoEventLog = new IoEventLogViewModel(ioEventRuntimeState);

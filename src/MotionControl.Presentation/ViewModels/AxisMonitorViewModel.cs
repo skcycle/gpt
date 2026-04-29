@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Presentation.ViewModels;
@@ -9,14 +10,16 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
     private readonly MotionControl.Presentation.Dialogs.IDialogService _dialogService;
+    private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private AxisViewModel? _selectedAxis;
 
-    public AxisMonitorViewModel(Machine machine, MotionControl.Control.Interfaces.IAxisControlService axisControlService, MotionControl.Presentation.Dialogs.IDialogService dialogService)
+    public AxisMonitorViewModel(Machine machine, MotionControl.Control.Interfaces.IAxisControlService axisControlService, MotionControl.Presentation.Dialogs.IDialogService dialogService, CommandFeedbackRuntimeState commandFeedbackRuntimeState)
     {
         _machine = machine;
         _axisControlService = axisControlService;
         _dialogService = dialogService;
-        Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis, axisControlService, dialogService)));
+        _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
+        Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis, axisControlService, dialogService, commandFeedbackRuntimeState)));
         _selectedAxis = Axes.FirstOrDefault();
     }
 
@@ -53,7 +56,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
 
     public AxisViewModel AddAxis(Axis axis)
     {
-        var viewModel = new AxisViewModel(axis, GetAxisControlService(), _dialogService);
+        var viewModel = new AxisViewModel(axis, GetAxisControlService(), _dialogService, _commandFeedbackRuntimeState);
         Axes.Add(viewModel);
         SelectedAxis = viewModel;
         return viewModel;
@@ -64,7 +67,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         Axes.Clear();
         foreach (var axis in _machine.Axes)
         {
-            Axes.Add(new AxisViewModel(axis, GetAxisControlService(), _dialogService));
+            Axes.Add(new AxisViewModel(axis, GetAxisControlService(), _dialogService, _commandFeedbackRuntimeState));
         }
         SelectedAxis = Axes.FirstOrDefault();
     }
@@ -100,7 +103,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         {
             if (Axes.All(existing => existing.AxisNo != axis.Id.Value))
             {
-                Axes.Add(new AxisViewModel(axis, GetAxisControlService(), _dialogService));
+                Axes.Add(new AxisViewModel(axis, GetAxisControlService(), _dialogService, _commandFeedbackRuntimeState));
             }
         }
     }
