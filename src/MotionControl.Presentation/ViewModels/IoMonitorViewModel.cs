@@ -83,7 +83,7 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
 
     public void AddIoPoint(IoPoint ioPoint)
     {
-        var viewModel = new IoPointViewModel(ioPoint, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput);
+        var viewModel = new IoPointViewModel(ioPoint, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput, _machine);
         if (ioPoint.IsOutput)
         {
             Outputs.Add(viewModel);
@@ -143,10 +143,10 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
         => Inputs.Concat(Outputs).ToList();
 
     private ObservableCollection<IoPointViewModel> BuildInputs()
-        => new(_machine.IoPoints.Where(io => !io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput)));
+        => new(_machine.IoPoints.Where(io => !io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput, _machine)));
 
     private ObservableCollection<IoPointViewModel> BuildOutputs()
-        => new(_machine.IoPoints.Where(io => io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput)));
+        => new(_machine.IoPoints.Where(io => io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput, _machine)));
 
     private void SyncCollections()
     {
@@ -170,7 +170,7 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
             var existing = collection.FirstOrDefault(item => item.Address == ioPoint.Address);
             if (existing is null)
             {
-                collection.Add(new IoPointViewModel(ioPoint, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput));
+                collection.Add(new IoPointViewModel(ioPoint, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput, _machine));
             }
         }
     }

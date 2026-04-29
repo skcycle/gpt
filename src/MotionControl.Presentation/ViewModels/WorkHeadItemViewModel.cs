@@ -173,10 +173,24 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         if (next && _workHead.BlowOutputAddress >= 0)
         {
             var blowOff = await _ioControlService.SetOutputAsync(_workHead.BlowOutputAddress, false);
-            if (!blowOff.Success) { _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} blow off 失败: {blowOff.ErrorMessage}" }); return; }
+            if (!blowOff.Success)
+            {
+                var message = $"{_workHead.Name} blow off 失败: {blowOff.ErrorMessage}";
+                _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = message });
+                _machine.UpsertAlarm($"WH-{_workHead.Name}-BLOW-OFF-FAILED", message, _workHead.Name, "WorkHead", "Error");
+                return;
+            }
+            _machine.ClearAlarm($"WH-{_workHead.Name}-BLOW-OFF-FAILED");
         }
         var result = await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, next);
-        if (!result.Success) { _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} vacuum 失败: {result.ErrorMessage}" }); return; }
+        if (!result.Success)
+        {
+            var message = $"{_workHead.Name} vacuum 失败: {result.ErrorMessage}";
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = message });
+            _machine.UpsertAlarm($"WH-{_workHead.Name}-VACUUM-COMMAND-FAILED", message, _workHead.Name, "WorkHead", "Error");
+            return;
+        }
+        _machine.ClearAlarm($"WH-{_workHead.Name}-VACUUM-COMMAND-FAILED");
         if (next) _workHead.StartVacuumCommand(); else _workHead.StopVacuumCommand();
         _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = next ? $"{_workHead.Name} vacuum on" : $"{_workHead.Name} vacuum off" });
         Refresh();
@@ -194,11 +208,25 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         if (next && _workHead.VacuumOutputAddress >= 0)
         {
             var vacuumOff = await _ioControlService.SetOutputAsync(_workHead.VacuumOutputAddress, false);
-            if (!vacuumOff.Success) { _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} vacuum off 失败: {vacuumOff.ErrorMessage}" }); return; }
+            if (!vacuumOff.Success)
+            {
+                var message = $"{_workHead.Name} vacuum off 失败: {vacuumOff.ErrorMessage}";
+                _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = message });
+                _machine.UpsertAlarm($"WH-{_workHead.Name}-VACUUM-OFF-FAILED", message, _workHead.Name, "WorkHead", "Error");
+                return;
+            }
+            _machine.ClearAlarm($"WH-{_workHead.Name}-VACUUM-OFF-FAILED");
             _workHead.StopVacuumCommand();
         }
         var result = await _ioControlService.SetOutputAsync(_workHead.BlowOutputAddress, next);
-        if (!result.Success) { _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} blow 失败: {result.ErrorMessage}" }); return; }
+        if (!result.Success)
+        {
+            var message = $"{_workHead.Name} blow 失败: {result.ErrorMessage}";
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = message });
+            _machine.UpsertAlarm($"WH-{_workHead.Name}-BLOW-COMMAND-FAILED", message, _workHead.Name, "WorkHead", "Error");
+            return;
+        }
+        _machine.ClearAlarm($"WH-{_workHead.Name}-BLOW-COMMAND-FAILED");
         _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = next ? $"{_workHead.Name} blow on" : $"{_workHead.Name} blow off" });
         Refresh();
     }
@@ -326,21 +354,43 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
 
     private void EvaluateVacuumRuntime()
     {
+        var conflictAlarmCode = $"WH-{_workHead.Name}-VACUUM-CONFLICT";
+        var timeoutAlarmCode = $"WH-{_workHead.Name}-VACUUM-TIMEOUT";
+
         if (VacuumDoOn && VacuumDiOn && _workHead.PendingVacuumCommand && !_workHead.VacuumSuccessLogged)
         {
             _workHead.VacuumSuccessLogged = true;
             _workHead.StopVacuumCommand();
             _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Success", Message = $"{_workHead.Name} vacuum detected" });
+            _machine.ClearAlarm(timeoutAlarmCode);
         }
-        if (!VacuumDoOn && VacuumDiOn && !_workHead.VacuumConflictLogged)
+        if (!VacuumDoOn && VacuumDiOn)
         {
-            _workHead.VacuumConflictLogged = true;
-            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Conflict", Message = $"{_workHead.Name} vacuum DI on while vacuum DO off" });
+            if (!_workHead.VacuumConflictLogged)
+            {
+                _workHead.VacuumConflictLogged = true;
+                _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Conflict", Message = $"{_workHead.Name} vacuum DI on while vacuum DO off" });
+            }
+            _machine.UpsertAlarm(conflictAlarmCode, $"WorkHead {_workHead.Name} vacuum DI on while vacuum DO off", _workHead.Name, "WorkHead", "Error");
         }
-        if (_workHead.HasVacuumTimedOut(DateTime.UtcNow) && !_workHead.VacuumTimeoutLogged)
+        else if (_machine.ClearAlarm(conflictAlarmCode))
         {
-            _workHead.VacuumTimeoutLogged = true;
-            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Timeout", Message = $"{_workHead.Name} vacuum timeout" });
+            _workHead.VacuumConflictLogged = false;
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Recovered", Message = $"{_workHead.Name} vacuum conflict cleared" });
+        }
+        if (_workHead.HasVacuumTimedOut(DateTime.UtcNow))
+        {
+            if (!_workHead.VacuumTimeoutLogged)
+            {
+                _workHead.VacuumTimeoutLogged = true;
+                _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Timeout", Message = $"{_workHead.Name} vacuum timeout" });
+            }
+            _machine.UpsertAlarm(timeoutAlarmCode, $"WorkHead {_workHead.Name} vacuum timeout ({_workHead.VacuumTimeoutMs} ms)", _workHead.Name, "WorkHead", "Error");
+        }
+        else if (_machine.ClearAlarm(timeoutAlarmCode))
+        {
+            _workHead.VacuumTimeoutLogged = false;
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Recovered", Message = $"{_workHead.Name} vacuum timeout cleared" });
         }
     }
 

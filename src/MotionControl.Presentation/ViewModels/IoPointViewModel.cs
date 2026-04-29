@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -14,14 +15,16 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
     private readonly IoControlService _ioControlService;
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private readonly Func<bool> _canToggleOutput;
+    private readonly Machine? _machine;
     private bool _value;
 
-    public IoPointViewModel(IoPoint ioPoint, IoControlService ioControlService, CommandFeedbackRuntimeState commandFeedbackRuntimeState, Func<bool> canToggleOutput)
+    public IoPointViewModel(IoPoint ioPoint, IoControlService ioControlService, CommandFeedbackRuntimeState commandFeedbackRuntimeState, Func<bool> canToggleOutput, Machine? machine = null)
     {
         _ioPoint = ioPoint;
         _ioControlService = ioControlService;
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         _canToggleOutput = canToggleOutput;
+        _machine = machine;
         _value = ioPoint.Value;
         SetCommand = new RelayCommand(
             async () =>
@@ -34,6 +37,7 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
                 var result = await _ioControlService.SetOutputAsync(Address, nextValue);
                 if (result.Success)
                 {
+                    _machine?.ClearAlarm(GetOutputFailedAlarmCode());
                     _ioPoint.Update(nextValue);
                     _value = nextValue;
                     OnPropertyChanged(nameof(Value));
@@ -42,7 +46,9 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
                 }
                 else
                 {
-                    _commandFeedbackRuntimeState.AddFailed(actionName, message: $"{pointName} set to {(nextValue ? "ON" : "OFF")} failed: {result.ErrorMessage}");
+                    var message = $"{pointName} set to {(nextValue ? "ON" : "OFF")} failed: {result.ErrorMessage}";
+                    _machine?.UpsertAlarm(GetOutputFailedAlarmCode(), message, Name, "IO", "Error");
+                    _commandFeedbackRuntimeState.AddFailed(actionName, message: message);
                 }
             },
             () => IsOutput && _canToggleOutput());
@@ -107,6 +113,14 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(Name));
         OnPropertyChanged(nameof(Address));
         OnPropertyChanged(nameof(Description));
+    }
+
+    private string GetOutputFailedAlarmCode()
+    {
+        var normalizedName = string.IsNullOrWhiteSpace(Name)
+            ? $"ADDR-{Address}"
+            : new string(Name.Select(ch => char.IsLetterOrDigit(ch) ? char.ToUpperInvariant(ch) : '-').ToArray());
+        return $"IO-{normalizedName}-{Address}-WRITE-FAILED";
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
