@@ -49,7 +49,6 @@ public partial class DialogWindow : Window
     public DialogWindow()
     {
         InitializeComponent();
-        SetOwner();
         Loaded += OnLoaded;
     }
 
@@ -141,9 +140,4 @@ public partial class DialogWindow : Window
         }
     }
 
-    private void SetOwner()
-    {
-        if (System.Windows.Application.Current.MainWindow != null && System.Windows.Application.Current.MainWindow != this)
-            Owner = System.Windows.Application.Current.MainWindow;
-    }
 }

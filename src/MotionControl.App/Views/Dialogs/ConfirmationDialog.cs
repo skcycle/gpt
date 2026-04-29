@@ -18,6 +18,11 @@ public class ConfirmationDialog : DialogWindow
     public static MessageBoxResult Show(string message, string title = "确认", DialogIcon icon = DialogIcon.Warning, DialogButton buttons = DialogButton.YesNo)
     {
         var dialog = new ConfirmationDialog(message, title, icon, buttons);
+        var owner = Application.Current?.MainWindow;
+
+        if (owner != null && owner != dialog)
+            dialog.Owner = owner;
+
         dialog.ShowDialog();
         return dialog.Result;
     }

@@ -1,3 +1,5 @@
+using System.Windows;
+
 namespace MotionControl.App.Views.Dialogs;
 
 /// <summary>
@@ -16,6 +18,11 @@ public class AlertDialog : DialogWindow
     public static void Show(string message, string title = "提示", DialogIcon icon = DialogIcon.Warning)
     {
         var dialog = new AlertDialog(message, title, icon);
+        var owner = Application.Current?.MainWindow;
+
+        if (owner != null && owner != dialog)
+            dialog.Owner = owner;
+
         dialog.ShowDialog();
     }
 }
