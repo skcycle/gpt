@@ -163,7 +163,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             CanWriteAxisConfiguration,
             CanAccessControllerParameters,
             this,
-            dialogService);
+            dialogService,
+            commandFeedbackRuntimeState);
         Alarm = new AlarmViewModel(machine);
         EmergencyStopCommand = new RelayCommand(
             async () =>

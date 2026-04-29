@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using MotionControl.Application.Interfaces;
+using MotionControl.Control.Services;
 using MotionControl.Domain.Enums;
 using MotionControl.Infrastructure.Configuration;
 using MotionControl.Presentation.Commands;
@@ -16,6 +17,7 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     private readonly Func<bool> _canAccessControllerParameters;
     private readonly IOperationStatusReporter _statusReporter;
     private readonly IDialogService _dialogService;
+    private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private int _axisNo;
     private string _name = string.Empty;
     private string _group = string.Empty;
@@ -38,7 +40,8 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         Func<bool> canWriteParameters,
         Func<bool> canAccessControllerParameters,
         IOperationStatusReporter statusReporter,
-        IDialogService dialogService)
+        IDialogService dialogService,
+        CommandFeedbackRuntimeState commandFeedbackRuntimeState)
     {
         _axisManagementAppService = axisManagementAppService;
         _axisControllerParameterAppService = axisControllerParameterAppService;
@@ -46,6 +49,7 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         _canAccessControllerParameters = canAccessControllerParameters;
         _statusReporter = statusReporter;
         _dialogService = dialogService;
+        _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         LoadCommand = new RelayCommand(async () => await LoadAsync(), () => AxisNo >= 0);
         SaveCommand = new RelayCommand(async () => await SaveAsync(), () => AxisNo >= 0 && _canWriteParameters());
         ReadControllerCommand = new RelayCommand(async () => await ReadControllerAsync(), () => AxisNo >= 0 && _canAccessControllerParameters());
@@ -172,34 +176,52 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
 
     public async Task LoadAsync()
     {
-        var item = await _axisManagementAppService.LoadAxisAsync(AxisNo);
-        if (item is null)
-        {
-            _statusReporter.ReportStatus($"Axis {AxisNo} config not found");
-            return;
-        }
+        _commandFeedbackRuntimeState.AddStarted("AxisConfigLoad", AxisNo, $"Axis {AxisNo} config load started");
 
-        Name = item.Name;
-        Group = item.Group;
-        IsMaster = item.IsMaster;
-        MasterAxisName = item.MasterAxisName ?? string.Empty;
-        SoftLimitPositive = item.SoftLimitPositive;
-        SoftLimitNegative = item.SoftLimitNegative;
-        WorkVelocity = item.WorkVelocity;
-        SetupVelocity = item.SetupVelocity;
-        Acceleration = item.Acceleration ?? 100;
-        Deceleration = item.Deceleration ?? 100;
-        PulseEquivalent = item.PulseEquivalent ?? 1000;
-        HomeMode = item.HomeMode;
-        ServoBinding = item.ServoBinding;
-        _statusReporter.ReportStatus($"Axis {AxisNo} config loaded");
+        try
+        {
+            var item = await _axisManagementAppService.LoadAxisAsync(AxisNo);
+            if (item is null)
+            {
+                var message = $"Axis {AxisNo} config not found";
+                _statusReporter.ReportStatus(message);
+                _commandFeedbackRuntimeState.AddFailed("AxisConfigLoad", AxisNo, message);
+                return;
+            }
+
+            Name = item.Name;
+            Group = item.Group;
+            IsMaster = item.IsMaster;
+            MasterAxisName = item.MasterAxisName ?? string.Empty;
+            SoftLimitPositive = item.SoftLimitPositive;
+            SoftLimitNegative = item.SoftLimitNegative;
+            WorkVelocity = item.WorkVelocity;
+            SetupVelocity = item.SetupVelocity;
+            Acceleration = item.Acceleration ?? 100;
+            Deceleration = item.Deceleration ?? 100;
+            PulseEquivalent = item.PulseEquivalent ?? 1000;
+            HomeMode = item.HomeMode;
+            ServoBinding = item.ServoBinding;
+
+            var message = $"Axis {AxisNo} config loaded";
+            _statusReporter.ReportStatus(message);
+            _commandFeedbackRuntimeState.AddSucceeded("AxisConfigLoad", AxisNo, message);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Axis {AxisNo} config load failed: {ex.Message}";
+            _statusReporter.ReportStatus(message);
+            _commandFeedbackRuntimeState.AddFailed("AxisConfigLoad", AxisNo, message);
+        }
     }
 
     public async Task SaveAsync()
     {
         if (!TryValidate(out var validationMessage))
         {
-            _statusReporter.ReportStatus($"Axis 参数校验失败: {validationMessage}");
+            var message = $"Axis 参数校验失败: {validationMessage}";
+            _statusReporter.ReportStatus(message);
+            _commandFeedbackRuntimeState.AddFailed("AxisConfigSave", AxisNo, message);
             _dialogService.ShowWarning(validationMessage, "参数校验失败");
             return;
         }
@@ -222,31 +244,63 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
             ServoBinding = ServoBinding
         };
 
+        _commandFeedbackRuntimeState.AddStarted("AxisConfigSave", AxisNo, $"Axis {AxisNo} config save started");
+
         try
         {
             await _axisManagementAppService.SaveAxisAsync(item);
-            _statusReporter.ReportStatus($"Axis {AxisNo} config saved");
+            var message = $"Axis {AxisNo} config saved";
+            _statusReporter.ReportStatus(message);
+            _commandFeedbackRuntimeState.AddSucceeded("AxisConfigSave", AxisNo, message);
         }
         catch (InvalidOperationException ex)
         {
-            _statusReporter.ReportStatus($"Axis {AxisNo} 保存失败: {ex.Message}");
+            var message = $"Axis {AxisNo} 保存失败: {ex.Message}";
+            _statusReporter.ReportStatus(message);
+            _commandFeedbackRuntimeState.AddFailed("AxisConfigSave", AxisNo, message);
         }
     }
 
     public async Task ReadControllerAsync()
     {
-        ControllerParameterSnapshot = await _axisControllerParameterAppService.ReadControllerParametersAsync(AxisNo);
-        _statusReporter.ReportStatus($"Axis {AxisNo} controller parameters read");
+        _commandFeedbackRuntimeState.AddStarted("AxisControllerRead", AxisNo, $"Axis {AxisNo} controller parameter read started");
+
+        try
+        {
+            ControllerParameterSnapshot = await _axisControllerParameterAppService.ReadControllerParametersAsync(AxisNo);
+            var message = $"Axis {AxisNo} controller parameters read";
+            _statusReporter.ReportStatus(message);
+            _commandFeedbackRuntimeState.AddSucceeded("AxisControllerRead", AxisNo, message);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Axis {AxisNo} controller parameter read failed: {ex.Message}";
+            _statusReporter.ReportStatus(message);
+            _commandFeedbackRuntimeState.AddFailed("AxisControllerRead", AxisNo, message);
+        }
     }
 
     public async Task WriteControllerAsync()
     {
-        await _axisControllerParameterAppService.WriteControllerParametersAsync(
-            AxisNo,
-            WorkVelocity ?? 0,
-            SetupVelocity ?? 0,
-            PulseEquivalent ?? 1000);
-        _statusReporter.ReportStatus($"Axis {AxisNo} controller parameters written");
+        _commandFeedbackRuntimeState.AddStarted("AxisControllerWrite", AxisNo, $"Axis {AxisNo} controller parameter write started");
+
+        try
+        {
+            await _axisControllerParameterAppService.WriteControllerParametersAsync(
+                AxisNo,
+                WorkVelocity ?? 0,
+                SetupVelocity ?? 0,
+                PulseEquivalent ?? 1000);
+            var message = $"Axis {AxisNo} controller parameters written";
+            _statusReporter.ReportStatus(message);
+            _commandFeedbackRuntimeState.AddSucceeded("AxisControllerWrite", AxisNo, message);
+        }
+        catch (Exception ex)
+        {
+            var message = $"Axis {AxisNo} controller parameter write failed: {ex.Message}";
+            _statusReporter.ReportStatus(message);
+            _commandFeedbackRuntimeState.AddFailed("AxisControllerWrite", AxisNo, message);
+        }
     }
 
     private bool TryValidate(out string validationMessage)
