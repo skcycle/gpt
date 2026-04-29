@@ -4,6 +4,7 @@ using MotionControl.Application.Interfaces;
 using MotionControl.Domain.Enums;
 using MotionControl.Infrastructure.Configuration;
 using MotionControl.Presentation.Commands;
+using MotionControl.Presentation.Dialogs;
 
 namespace MotionControl.Presentation.ViewModels;
 
@@ -196,7 +197,7 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         if (!TryValidate(out var validationMessage))
         {
             _statusReporter.ReportStatus($"Axis 参数校验失败: {validationMessage}");
-            System.Windows.MessageBox.Show(validationMessage, "参数校验失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowWarning(validationMessage, "参数校验失败");
             return;
         }
 

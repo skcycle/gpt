@@ -4,6 +4,7 @@ using System.Windows.Input;
 using MotionControl.Device.Abstractions.Results;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
+using MotionControl.Presentation.Dialogs;
 
 namespace MotionControl.Presentation.ViewModels;
 
@@ -78,7 +79,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         }
         catch (InvalidOperationException ex)
         {
-            System.Windows.MessageBox.Show(ex.Message, "报警清除失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowError(ex.Message, "报警清除失败");
         }
     }
 
@@ -98,14 +99,14 @@ public sealed class AxisViewModel : INotifyPropertyChanged
             }
             if (!r.Success)
             {
-                System.Windows.MessageBox.Show(r.ErrorMessage, "伺服切换失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                DialogService.Instance.ShowError(r.ErrorMessage, "伺服切换失败");
                 return;
             }
             Refresh();
         }
         catch (InvalidOperationException ex)
         {
-            System.Windows.MessageBox.Show(ex.Message, "伺服切换失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowError(ex.Message, "伺服切换失败");
         }
     }
 

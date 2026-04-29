@@ -9,6 +9,7 @@ using System.Windows.Input;
 using MotionControl.Domain.Enums;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
+using MotionControl.Presentation.Dialogs;
 using MotionControl.Device.Abstractions.Results;
 using MotionControl.Infrastructure.Configuration;
 using MotionControl.Domain.Entities;
@@ -994,7 +995,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         {
             var msg = $"存在重复地址: {(duplicateAddress.Key.IsOutput ? "DO" : "DI")} {duplicateAddress.Key.Address}";
             OperationStatus = msg;
-            System.Windows.MessageBox.Show(msg, "IO 配置校验失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowWarning(msg, "IO 配置校验失败");
             return;
         }
 
@@ -1003,7 +1004,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         {
             var msg = "IO 配置存在空名称或非法地址，保存已取消";
             OperationStatus = msg;
-            System.Windows.MessageBox.Show(msg, "IO 配置校验失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowWarning(msg, "IO 配置校验失败");
             return;
         }
 
@@ -1024,7 +1025,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         catch (InvalidOperationException ex)
         {
             OperationStatus = ex.Message;
-            System.Windows.MessageBox.Show(ex.Message, "IO 配置保存失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowError(ex.Message, "IO 配置保存失败");
             return;
         }
     }
@@ -1060,7 +1061,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         catch (InvalidOperationException ex)
         {
             OperationStatus = ex.Message;
-            System.Windows.MessageBox.Show(ex.Message, "Cylinder 配置保存失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowError(ex.Message, "Cylinder 配置保存失败");
         }
     }
 
@@ -1089,11 +1090,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         var missingAxes = configuredAxisNos.Where(no => !_machine.Axes.Any(ax => ax.Id.Value == no)).ToList();
         if (missingAxes.Count > 0)
         {
-            System.Windows.MessageBox.Show(
-                $"以下轴号未在 Axis Monitor 中配置，无法保存 WorkHead：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。",
-                "轴号未配置",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowWarning($"以下轴号未在 Axis Monitor 中配置，无法保存 WorkHead：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。", "轴号未配置");
             OperationStatus = $"WorkHead 保存失败：轴 {string.Join(", ", missingAxes)} 未配置";
             return;
         }
@@ -1143,7 +1140,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         catch (InvalidOperationException ex)
         {
             OperationStatus = ex.Message;
-            System.Windows.MessageBox.Show(ex.Message, "WorkHead 配置保存失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowError(ex.Message, "WorkHead 配置保存失败");
         }
     }
 
@@ -1243,11 +1240,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         var missingAxes = configuredAxisNos.Where(no => !_machine.Axes.Any(ax => ax.Id.Value == no)).ToList();
         if (missingAxes.Count > 0)
         {
-            System.Windows.MessageBox.Show(
-                $"以下轴号未在 Axis Monitor 中配置，无法保存位置设定：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。",
-                "轴号未配置",
-                System.Windows.MessageBoxButton.OK,
-                System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowWarning($"以下轴号未在 Axis Monitor 中配置，无法保存位置设定：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。", "轴号未配置");
             OperationStatus = $"位置设定保存失败：轴 {string.Join(", ", missingAxes)} 未配置";
             return;
         }
@@ -1274,7 +1267,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         catch (InvalidOperationException ex)
         {
             OperationStatus = ex.Message;
-            System.Windows.MessageBox.Show(ex.Message, "位置设定配置保存失败", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+            DialogService.Instance.ShowError(ex.Message, "位置设定配置保存失败");
         }
     }
 
