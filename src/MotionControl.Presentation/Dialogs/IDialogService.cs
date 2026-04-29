@@ -11,6 +11,7 @@ public interface IDialogService
     void ShowError(string message, string title = "错误");
     void ShowInfo(string message, string title = "提示");
     void ShowSuccess(string message, string title = "成功");
+    void ShowAlarm(string message, string title = "报警");
     MessageBoxResult Confirm(string message, string title = "确认");
     MessageBoxResult ConfirmWithCancel(string message, string title = "确认");
 }

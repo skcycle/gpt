@@ -81,7 +81,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         }
         catch (InvalidOperationException ex)
         {
-            _dialogService.ShowError(ex.Message, "报警清除失败");
+            _dialogService.ShowAlarm(ex.Message, "报警清除失败");
         }
     }
 
@@ -101,14 +101,14 @@ public sealed class AxisViewModel : INotifyPropertyChanged
             }
             if (!r.Success)
             {
-                _dialogService.ShowError(r.ErrorMessage, "伺服切换失败");
+                _dialogService.ShowAlarm(r.ErrorMessage ?? "未知错误", "伺服切换失败");
                 return;
             }
             Refresh();
         }
         catch (InvalidOperationException ex)
         {
-            _dialogService.ShowError(ex.Message, "伺服切换失败");
+            _dialogService.ShowAlarm(ex.Message, "伺服切换失败");
         }
     }
 

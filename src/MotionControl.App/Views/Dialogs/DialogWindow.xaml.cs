@@ -7,10 +7,11 @@ namespace MotionControl.App.Views.Dialogs;
 public enum DialogIcon
 {
     None,
+    Info,
+    Success,
     Warning,
     Error,
-    Success,
-    Info
+    Alarm
 }
 
 public enum DialogButton
@@ -36,10 +37,11 @@ public partial class DialogWindow : Window
     public DialogIcon DialogKind { get; set; } = DialogIcon.Info;
     public MessageBoxResult Result { get; private set; } = MessageBoxResult.Cancel;
 
+    static readonly SolidColorBrush InfoBg = new((Color)ColorConverter.ConvertFromString("#547E9D"));
+    static readonly SolidColorBrush SuccessBg = new((Color)ColorConverter.ConvertFromString("#5E8F68"));
     static readonly SolidColorBrush WarningBg = new((Color)ColorConverter.ConvertFromString("#B8924A"));
     static readonly SolidColorBrush ErrorBg = new((Color)ColorConverter.ConvertFromString("#B85E5E"));
-    static readonly SolidColorBrush SuccessBg = new((Color)ColorConverter.ConvertFromString("#5E8F68"));
-    static readonly SolidColorBrush InfoBg = new((Color)ColorConverter.ConvertFromString("#547E9D"));
+    static readonly SolidColorBrush AlarmBg = new((Color)ColorConverter.ConvertFromString("#D64545"));
     static readonly SolidColorBrush DarkBg = new((Color)ColorConverter.ConvertFromString("#0C141C"));
     static readonly SolidColorBrush LightFg = new((Color)ColorConverter.ConvertFromString("#FFFFFF"));
     static readonly SolidColorBrush TransparentBrush = Brushes.Transparent;
@@ -47,6 +49,7 @@ public partial class DialogWindow : Window
     public DialogWindow()
     {
         InitializeComponent();
+        SetOwner();
         Loaded += OnLoaded;
     }
 
@@ -54,17 +57,17 @@ public partial class DialogWindow : Window
     {
         SetupIcon();
         SetupButtons();
-        SetOwner();
     }
 
     private void SetupIcon()
     {
         var (bg, fg, symbol) = DialogKind switch
         {
+            DialogIcon.Info => (InfoBg, LightFg, "i"),
+            DialogIcon.Success => (SuccessBg, LightFg, "✓"),
             DialogIcon.Warning => (WarningBg, DarkBg, "⚠"),
             DialogIcon.Error => (ErrorBg, LightFg, "✕"),
-            DialogIcon.Success => (SuccessBg, LightFg, "✓"),
-            DialogIcon.Info => (InfoBg, LightFg, "i"),
+            DialogIcon.Alarm => (AlarmBg, LightFg, "!"),
             _ => (TransparentBrush, TransparentBrush, "")
         };
 
@@ -75,6 +78,8 @@ public partial class DialogWindow : Window
 
     private void SetupButtons()
     {
+        ButtonsPanel.Children.Clear();
+
         var config = Buttons switch
         {
             DialogButton.OK => new[] { ("OK", true, MessageBoxResult.OK) },

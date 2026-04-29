@@ -18,6 +18,7 @@ using MotionControl.Device.Zmc.Translators;
 using MotionControl.Diagnostics.Services;
 using MotionControl.Domain.Entities;
 using MotionControl.Infrastructure.Configuration;
+using MotionControl.Presentation.Dialogs;
 using MotionControl.Presentation.ViewModels;
 
 namespace MotionControl.App.Bootstrap;
@@ -65,7 +66,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<IHomeStrategy, SlaveFollowMasterHomeStrategy>();
                 services.AddSingleton<IHomingService, HomingService>();
                 services.AddSingleton<ISystemAppService, SystemAppService>();
-                services.AddSingleton<IDialogService, DialogService>();
+                services.AddSingleton<MotionControl.Presentation.Dialogs.IDialogService>(_ => new MotionControl.App.Services.DialogService());
                 services.AddSingleton<IMotionAppService, MotionAppService>();
                 services.AddSingleton<IAxisRuntimeParameterSyncService, AxisRuntimeParameterSyncService>();
                 services.AddSingleton<IIoRuntimeSyncService, IoRuntimeSyncService>();

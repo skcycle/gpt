@@ -23,6 +23,9 @@ public class DialogService : IDialogService
     public void ShowSuccess(string message, string title = "成功") =>
         AlertDialog.Show(message, title, DialogIcon.Success);
 
+    public void ShowAlarm(string message, string title = "报警") =>
+        AlertDialog.Show(message, title, DialogIcon.Alarm);
+
     public MessageBoxResult Confirm(string message, string title = "确认") =>
         ConfirmationDialog.Show(message, title, DialogIcon.Warning, DialogButton.YesNo);
 
