@@ -7,6 +7,7 @@ using System.Windows.Media;
 using MotionControl.Application.DTOs;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
+using MotionControl.Device.Abstractions.Results;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
 
