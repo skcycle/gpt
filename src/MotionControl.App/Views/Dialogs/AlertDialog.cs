@@ -9,7 +9,7 @@ public class AlertDialog : DialogWindow
     {
         Title = title;
         Message = message;
-        Icon = icon;
+        DialogKind = icon;
         Buttons = DialogButton.OK;
     }
 

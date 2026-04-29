@@ -3,6 +3,7 @@ using System.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MotionControl.App.Services;
 using MotionControl.Application.Interfaces;
 using MotionControl.Application.Services;
 using MotionControl.Control.Interfaces;
@@ -64,7 +65,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<IHomeStrategy, SlaveFollowMasterHomeStrategy>();
                 services.AddSingleton<IHomingService, HomingService>();
                 services.AddSingleton<ISystemAppService, SystemAppService>();
-                services.AddSingleton<IDialogService, MotionControl.App.Services.DialogService>();
+                services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<IMotionAppService, MotionAppService>();
                 services.AddSingleton<IAxisRuntimeParameterSyncService, AxisRuntimeParameterSyncService>();
                 services.AddSingleton<IIoRuntimeSyncService, IoRuntimeSyncService>();

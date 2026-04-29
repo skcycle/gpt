@@ -11,7 +11,7 @@ public class ConfirmationDialog : DialogWindow
     {
         Title = title;
         Message = message;
-        Icon = icon;
+        DialogKind = icon;
         Buttons = buttons;
     }
 
@@ -19,6 +19,6 @@ public class ConfirmationDialog : DialogWindow
     {
         var dialog = new ConfirmationDialog(message, title, icon, buttons);
         dialog.ShowDialog();
-        return dialog.DialogResult ?? MessageBoxResult.Cancel;
+        return dialog.Result;
     }
 }

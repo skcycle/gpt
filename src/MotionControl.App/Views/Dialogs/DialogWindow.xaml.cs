@@ -33,7 +33,8 @@ public partial class DialogWindow : Window
     }
 
     public DialogButton Buttons { get; set; } = DialogButton.OK;
-    public DialogIcon Icon { get; set; } = DialogIcon.Info;
+    public DialogIcon DialogKind { get; set; } = DialogIcon.Info;
+    public MessageBoxResult Result { get; private set; } = MessageBoxResult.Cancel;
 
     static readonly SolidColorBrush WarningBg = new((Color)ColorConverter.ConvertFromString("#B8924A"));
     static readonly SolidColorBrush ErrorBg = new((Color)ColorConverter.ConvertFromString("#B85E5E"));
@@ -58,7 +59,7 @@ public partial class DialogWindow : Window
 
     private void SetupIcon()
     {
-        var (bg, fg, symbol) = Icon switch
+        var (bg, fg, symbol) = DialogKind switch
         {
             DialogIcon.Warning => (WarningBg, DarkBg, "⚠"),
             DialogIcon.Error => (ErrorBg, LightFg, "✕"),
@@ -123,7 +124,8 @@ public partial class DialogWindow : Window
 
             btn.Click += (s, _) =>
             {
-                DialogResult = (MessageBoxResult)((Button)s).Tag;
+                Result = (MessageBoxResult)((Button)s).Tag;
+                DialogResult = true;
                 Close();
             };
 
@@ -136,7 +138,7 @@ public partial class DialogWindow : Window
 
     private void SetOwner()
     {
-        if (Application.Current.MainWindow != null && Application.Current.MainWindow != this)
-            Owner = Application.Current.MainWindow;
+        if (System.Windows.Application.Current.MainWindow != null && System.Windows.Application.Current.MainWindow != this)
+            Owner = System.Windows.Application.Current.MainWindow;
     }
 }
