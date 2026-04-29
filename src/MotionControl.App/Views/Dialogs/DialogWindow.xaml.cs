@@ -135,8 +135,7 @@ public partial class DialogWindow : Window
 
             ButtonsPanel.Children.Add(btn);
 
-            if (ButtonsPanel.Children.Count > 1)
-                btn.Margin = new Thickness(8, 0, 0, 0);
+            btn.Margin = new Thickness(4, 0, 4, 0);
         }
     }
 

@@ -165,12 +165,69 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             this,
             dialogService);
         Alarm = new AlarmViewModel(machine);
-        EmergencyStopCommand = new RelayCommand(async () => await _systemAppService.EmergencyStopAsync());
-        ClearEmergencyStopCommand = new RelayCommand(async () => await _systemAppService.ClearEmergencyStopAsync());
+        EmergencyStopCommand = new RelayCommand(
+            async () =>
+            {
+                try
+                {
+                    _commandFeedbackRuntimeState.AddStarted("EmergencyStop", message: "Emergency stop requested");
+                    await _systemAppService.EmergencyStopAsync();
+                    _commandFeedbackRuntimeState.AddSucceeded("EmergencyStop", message: "Emergency stop completed");
+                }
+                catch (Exception ex)
+                {
+                    var message = $"Emergency stop failed: {ex.Message}";
+                    _commandFeedbackRuntimeState.AddFailed("EmergencyStop", message: message);
+                    OperationStatus = message;
+                }
+
+                RefreshViewModels(force: true);
+            });
+        ClearEmergencyStopCommand = new RelayCommand(
+            async () =>
+            {
+                try
+                {
+                    _commandFeedbackRuntimeState.AddStarted("ClearEmergencyStop", message: "Clear emergency stop requested");
+                    await _systemAppService.ClearEmergencyStopAsync();
+                    _commandFeedbackRuntimeState.AddSucceeded("ClearEmergencyStop", message: "Clear emergency stop completed");
+                }
+                catch (Exception ex)
+                {
+                    var message = $"Clear emergency stop failed: {ex.Message}";
+                    _commandFeedbackRuntimeState.AddFailed("ClearEmergencyStop", message: message);
+                    OperationStatus = message;
+                }
+
+                RefreshViewModels(force: true);
+            });
         ReconnectCommand = new RelayCommand(
             async () =>
             {
-                await _systemAppService.ReconnectAsync();
+                try
+                {
+                    _commandFeedbackRuntimeState.AddStarted("Reconnect", message: "Controller reconnect started");
+                    await _systemAppService.ReconnectAsync();
+
+                    if (_controllerRuntimeState.IsConnected)
+                    {
+                        _commandFeedbackRuntimeState.AddSucceeded("Reconnect", message: "Controller reconnect completed");
+                    }
+                    else
+                    {
+                        const string reconnectFailedMessage = "Controller reconnect failed";
+                        _machine.UpsertAlarm("SYS-CONTROLLER-RECONNECT-FAILED", reconnectFailedMessage, "System", "Communication", "Error");
+                        _commandFeedbackRuntimeState.AddFailed("Reconnect", message: reconnectFailedMessage);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var message = $"Controller reconnect failed: {ex.Message}";
+                    _machine.UpsertAlarm("SYS-CONTROLLER-RECONNECT-FAILED", message, "System", "Communication", "Error");
+                    _commandFeedbackRuntimeState.AddFailed("Reconnect", message: message);
+                    OperationStatus = message;
+                }
+
                 RefreshViewModels(force: true);
             });
         AddAxisCommand = new RelayCommand(async () => await AddAxisAsync());
@@ -1391,6 +1448,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             {
                 var message = $"{setupItem.Name} 存在未配置到运行时的轴: {string.Join(", ", missingAxes)}";
                 OperationStatus = message;
+                _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: message);
                 PositionSetupEventLogRecord(setupItem.Name + ":" + selectedPos.Name, "Failed", message);
                 return;
             }
@@ -1399,6 +1457,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             {
                 var message = $"{setupItem.Name} 的 SafeZ 不能低于目标 Z";
                 OperationStatus = message;
+                _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: message);
                 PositionSetupEventLogRecord(setupItem.Name + ":" + selectedPos.Name, "Failed", message);
                 return;
             }
@@ -1422,7 +1481,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             if (setupItem.ZAxisNo >= 0)
             {
                 var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.ZAxisNo, setupItem.SafeZ));
-                if (!r.Success) { OperationStatus = $"{setupItem.Name} Z轴抬升失败: {r.ErrorMessage}"; PositionSetupEventLogRecord(eventName, "Failed", $"{setupItem.Name} Z轴抬升失败: {r.ErrorMessage}"); return; }
+                if (!r.Success)
+                {
+                    var message = $"{setupItem.Name} Z轴抬升失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: message);
+                    PositionSetupEventLogRecord(eventName, "Failed", message);
+                    return;
+                }
             }
 
             if (setupItem.XxAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.XxAxisNo, selectedPos.XxPosition)));
@@ -1436,13 +1502,27 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             {
                 var results = await Task.WhenAll(planarMoves);
                 var failed = results.FirstOrDefault(r => !r.Success);
-                if (failed is not null) { OperationStatus = $"{setupItem.Name} 运动失败: {failed.ErrorMessage}"; PositionSetupEventLogRecord(eventName, "Failed", $"{setupItem.Name} 运动失败: {failed.ErrorMessage}"); return; }
+                if (failed is not null)
+                {
+                    var message = $"{setupItem.Name} 运动失败: {failed.ErrorMessage}";
+                    OperationStatus = message;
+                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: message);
+                    PositionSetupEventLogRecord(eventName, "Failed", message);
+                    return;
+                }
             }
 
             if (setupItem.ZAxisNo >= 0)
             {
                 var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.ZAxisNo, selectedPos.ZPosition));
-                if (!r.Success) { OperationStatus = $"{setupItem.Name} Z轴定位失败: {r.ErrorMessage}"; PositionSetupEventLogRecord(eventName, "Failed", $"{setupItem.Name} Z轴定位失败: {r.ErrorMessage}"); return; }
+                if (!r.Success)
+                {
+                    var message = $"{setupItem.Name} Z轴定位失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: message);
+                    PositionSetupEventLogRecord(eventName, "Failed", message);
+                    return;
+                }
             }
 
             setupItem.Refresh();

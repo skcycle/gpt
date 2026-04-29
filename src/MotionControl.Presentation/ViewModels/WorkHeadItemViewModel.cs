@@ -245,6 +245,7 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
     private async Task MoveSelectedPositionAsync()
     {
         if (SelectedPosition is null) return;
+        var eventName = $"{_workHead.Name}:{SelectedPosition.Name}";
         var configuredAxes = new[] { (no: _workHead.XAxisNo, name: "X"), (no: _workHead.YAxisNo, name: "Y"), (no: _workHead.ZAxisNo, name: "Z"), (no: _workHead.RAxisNo, name: "R") }.Where(a => a.no >= 0).ToList();
         var missing = configuredAxes.Where(a => _machine.Axes.All(ax => ax.Id.Value != a.no)).Select(a => a.no).ToList();
         if (missing.Count > 0)
@@ -252,21 +253,49 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
             _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{_workHead.Name} 存在未配置到运行时的轴: {string.Join(", ", missing)}" });
             return;
         }
-        _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = $"{_workHead.Name}:{SelectedPosition.Name} move started" });
-        if (_workHead.ZAxisNo >= 0)
+
+        try
         {
-            await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, _workHead.SafeZ, 100, 100, 100));
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Command", Message = $"{eventName} move started" });
+
+            if (_workHead.ZAxisNo >= 0)
+            {
+                var safeZResult = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, _workHead.SafeZ, 100, 100, 100));
+                if (!safeZResult.Success)
+                {
+                    _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{eventName} safe Z move failed: {safeZResult.ErrorMessage}" });
+                    return;
+                }
+            }
+
+            var planarResults = new List<(string axisName, DeviceResult result)>();
+            if (_workHead.XAxisNo >= 0) planarResults.Add(("X", await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.XAxisNo, SelectedPosition.X, 100, 100, 100))));
+            if (_workHead.YAxisNo >= 0) planarResults.Add(("Y", await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.YAxisNo, SelectedPosition.Y, 100, 100, 100))));
+            if (_workHead.RAxisNo >= 0) planarResults.Add(("R", await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.RAxisNo, SelectedPosition.R, 100, 100, 100))));
+
+            var failedPlanar = planarResults.FirstOrDefault(x => !x.result.Success);
+            if (failedPlanar.result is not null && !failedPlanar.result.Success)
+            {
+                _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{eventName} {failedPlanar.axisName} axis move failed: {failedPlanar.result.ErrorMessage}" });
+                return;
+            }
+
+            if (_workHead.ZAxisNo >= 0)
+            {
+                var targetZResult = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, SelectedPosition.Z, 100, 100, 100));
+                if (!targetZResult.Success)
+                {
+                    _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{eventName} target Z move failed: {targetZResult.ErrorMessage}" });
+                    return;
+                }
+            }
+
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Success", Message = $"{eventName} move completed" });
         }
-        var planarMoves = new List<Task>();
-        if (_workHead.XAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.XAxisNo, SelectedPosition.X, 100, 100, 100)));
-        if (_workHead.YAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.YAxisNo, SelectedPosition.Y, 100, 100, 100)));
-        if (_workHead.RAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.RAxisNo, SelectedPosition.R, 100, 100, 100)));
-        if (planarMoves.Count > 0) await Task.WhenAll(planarMoves);
-        if (_workHead.ZAxisNo >= 0)
+        catch (Exception ex)
         {
-            await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, SelectedPosition.Z, 100, 100, 100));
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{eventName} move failed: {ex.Message}" });
         }
-        _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Success", Message = $"{_workHead.Name}:{SelectedPosition.Name} move completed" });
     }
 
     private void UpdateMetadata(string? name = null, string? description = null, int? xAxisNo = null, int? yAxisNo = null, int? zAxisNo = null, int? rAxisNo = null, int? vacuumOutputAddress = null, int? blowOutputAddress = null, int? vacuumInputAddress = null, int? generalOutputAddress1 = null, int? generalOutputAddress2 = null, int? generalInputAddress1 = null, int? generalInputAddress2 = null, int? vacuumTimeoutMs = null, double? safeZ = null)
