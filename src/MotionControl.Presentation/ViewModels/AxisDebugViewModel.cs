@@ -15,6 +15,7 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     private readonly IMotionAppService _motionAppService;
     private readonly Machine _machine;
     private readonly HomePlanRuntimeState _homePlanRuntimeState;
+    private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private readonly Func<bool> _canControlAxis;
     private int _selectedAxisNo;
     private double _targetPosition;
@@ -23,11 +24,12 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
     private double _deceleration = 100;
     private double _jogStepDistance = 1;
 
-    public AxisDebugViewModel(IMotionAppService motionAppService, Machine machine, HomePlanRuntimeState homePlanRuntimeState, Func<bool> canControlAxis)
+    public AxisDebugViewModel(IMotionAppService motionAppService, Machine machine, HomePlanRuntimeState homePlanRuntimeState, CommandFeedbackRuntimeState commandFeedbackRuntimeState, Func<bool> canControlAxis)
     {
         _motionAppService = motionAppService;
         _machine = machine;
         _homePlanRuntimeState = homePlanRuntimeState;
+        _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         _canControlAxis = canControlAxis;
 
         EnableAxisCommand = new RelayCommand(async () => await EnableSelectedAxisAsync(), CanExecuteAxisCommand);
@@ -156,32 +158,77 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
 
     public async Task EnableSelectedAxisAsync()
     {
+        var messagePrefix = $"Axis {SelectedAxisNo}";
+        _commandFeedbackRuntimeState.AddStarted("AxisEnable", SelectedAxisNo, $"{messagePrefix} enable started");
         var r = await _motionAppService.EnableAxisAsync(new AxisCommandDto(SelectedAxisNo));
-        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 使能失败: {r.ErrorMessage}");
+        if (r.Success)
+        {
+            _commandFeedbackRuntimeState.AddSucceeded("AxisEnable", SelectedAxisNo, $"{messagePrefix} enable completed");
+        }
+        else
+        {
+            _commandFeedbackRuntimeState.AddFailed("AxisEnable", SelectedAxisNo, $"{messagePrefix} enable failed: {r.ErrorMessage}");
+        }
     }
 
     public async Task DisableSelectedAxisAsync()
     {
+        var messagePrefix = $"Axis {SelectedAxisNo}";
+        _commandFeedbackRuntimeState.AddStarted("AxisDisable", SelectedAxisNo, $"{messagePrefix} disable started");
         var r = await _motionAppService.DisableAxisAsync(new AxisCommandDto(SelectedAxisNo));
-        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 失能失败: {r.ErrorMessage}");
+        if (r.Success)
+        {
+            _commandFeedbackRuntimeState.AddSucceeded("AxisDisable", SelectedAxisNo, $"{messagePrefix} disable completed");
+        }
+        else
+        {
+            _commandFeedbackRuntimeState.AddFailed("AxisDisable", SelectedAxisNo, $"{messagePrefix} disable failed: {r.ErrorMessage}");
+        }
     }
 
     public async Task HomeSelectedAxisAsync()
     {
+        var messagePrefix = $"Axis {SelectedAxisNo}";
+        _commandFeedbackRuntimeState.AddStarted("AxisHome", SelectedAxisNo, $"{messagePrefix} home started");
         var r = await _motionAppService.HomeAxisAsync(new AxisCommandDto(SelectedAxisNo));
-        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 回零失败: {r.ErrorMessage}");
+        if (r.Success)
+        {
+            _commandFeedbackRuntimeState.AddSucceeded("AxisHome", SelectedAxisNo, $"{messagePrefix} home completed");
+        }
+        else
+        {
+            _commandFeedbackRuntimeState.AddFailed("AxisHome", SelectedAxisNo, $"{messagePrefix} home failed: {r.ErrorMessage}");
+        }
     }
 
     public async Task MoveSelectedAxisAsync()
     {
+        var messagePrefix = $"Axis {SelectedAxisNo}";
+        _commandFeedbackRuntimeState.AddStarted("AxisMove", SelectedAxisNo, $"{messagePrefix} move started");
         var r = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(SelectedAxisNo, TargetPosition, Velocity, Acceleration, Deceleration));
-        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 定位失败: {r.ErrorMessage}");
+        if (r.Success)
+        {
+            _commandFeedbackRuntimeState.AddSucceeded("AxisMove", SelectedAxisNo, $"{messagePrefix} move completed");
+        }
+        else
+        {
+            _commandFeedbackRuntimeState.AddFailed("AxisMove", SelectedAxisNo, $"{messagePrefix} move failed: {r.ErrorMessage}");
+        }
     }
 
     public async Task StopSelectedAxisAsync()
     {
+        var messagePrefix = $"Axis {SelectedAxisNo}";
+        _commandFeedbackRuntimeState.AddStarted("AxisStop", SelectedAxisNo, $"{messagePrefix} stop started");
         var r = await _motionAppService.StopAxisAsync(new AxisCommandDto(SelectedAxisNo));
-        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 停止失败: {r.ErrorMessage}");
+        if (r.Success)
+        {
+            _commandFeedbackRuntimeState.AddSucceeded("AxisStop", SelectedAxisNo, $"{messagePrefix} stop completed");
+        }
+        else
+        {
+            _commandFeedbackRuntimeState.AddFailed("AxisStop", SelectedAxisNo, $"{messagePrefix} stop failed: {r.ErrorMessage}");
+        }
     }
 
     public async Task StartJogAsync(bool positiveDirection)
@@ -191,8 +238,18 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             return;
         }
 
+        var direction = positiveDirection ? "positive" : "negative";
+        var messagePrefix = $"Axis {SelectedAxisNo}";
+        _commandFeedbackRuntimeState.AddStarted("AxisJog", SelectedAxisNo, $"{messagePrefix} jog {direction} started");
         var r = await _motionAppService.JogAxisAsync(new JogAxisCommandDto(SelectedAxisNo, Velocity, positiveDirection));
-        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] Jog 失败: {r.ErrorMessage}");
+        if (r.Success)
+        {
+            _commandFeedbackRuntimeState.AddSucceeded("AxisJog", SelectedAxisNo, $"{messagePrefix} jog {direction} started");
+        }
+        else
+        {
+            _commandFeedbackRuntimeState.AddFailed("AxisJog", SelectedAxisNo, $"{messagePrefix} jog {direction} failed: {r.ErrorMessage}");
+        }
     }
 
     public async Task StopJogAsync()
@@ -202,8 +259,17 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
             return;
         }
 
+        var messagePrefix = $"Axis {SelectedAxisNo}";
+        _commandFeedbackRuntimeState.AddStarted("AxisJogStop", SelectedAxisNo, $"{messagePrefix} jog stop started");
         var r = await _motionAppService.StopAxisAsync(new AxisCommandDto(SelectedAxisNo));
-        if (!r.Success) System.Diagnostics.Debug.WriteLine($"[Axis] 停止失败: {r.ErrorMessage}");
+        if (r.Success)
+        {
+            _commandFeedbackRuntimeState.AddSucceeded("AxisJogStop", SelectedAxisNo, $"{messagePrefix} jog stop completed");
+        }
+        else
+        {
+            _commandFeedbackRuntimeState.AddFailed("AxisJogStop", SelectedAxisNo, $"{messagePrefix} jog stop failed: {r.ErrorMessage}");
+        }
     }
 
     public async Task StepMoveAsync(bool positiveDirection)
@@ -217,8 +283,19 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         var currentPositionMm = SelectedAxis.CurrentPosition / pulseEquivalent;
         var step = positiveDirection ? JogStepDistance : -JogStepDistance;
         var targetPositionMm = currentPositionMm + step;
-        await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(SelectedAxisNo, targetPositionMm, Velocity, Acceleration, Deceleration));
-        TargetPosition = targetPositionMm;
+        var direction = positiveDirection ? "positive" : "negative";
+        var messagePrefix = $"Axis {SelectedAxisNo}";
+        _commandFeedbackRuntimeState.AddStarted("AxisStepMove", SelectedAxisNo, $"{messagePrefix} step move {direction} started");
+        var result = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(SelectedAxisNo, targetPositionMm, Velocity, Acceleration, Deceleration));
+        if (result.Success)
+        {
+            TargetPosition = targetPositionMm;
+            _commandFeedbackRuntimeState.AddSucceeded("AxisStepMove", SelectedAxisNo, $"{messagePrefix} step move {direction} completed");
+        }
+        else
+        {
+            _commandFeedbackRuntimeState.AddFailed("AxisStepMove", SelectedAxisNo, $"{messagePrefix} step move {direction} failed: {result.ErrorMessage}");
+        }
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

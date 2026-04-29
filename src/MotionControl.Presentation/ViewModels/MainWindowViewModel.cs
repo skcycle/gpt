@@ -109,7 +109,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
         AxisMonitor = new AxisMonitorViewModel(machine, axisControlService, dialogService);
         AxisMonitor.SelectedAxisChanged += _ => RaiseAxisDeleteCanExecuteChanged();
-        IoMonitor = new IoMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
+        IoMonitor = new IoMonitorViewModel(machine, ioControlService, commandFeedbackRuntimeState, CanWriteIoOutputs);
         IoEventLog = new IoEventLogViewModel(ioEventRuntimeState);
         CylinderEventLog = new CylinderEventLogViewModel(cylinderEventRuntimeState);
         WorkHeadEventLog = new WorkHeadEventLogViewModel(workHeadEventRuntimeState);
@@ -156,7 +156,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 (MovePositionSetupCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         };
-        AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, CanControlAxisCommands);
+        AxisDebug = new AxisDebugViewModel(motionAppService, machine, homePlanRuntimeState, commandFeedbackRuntimeState, CanControlAxisCommands);
         AxisParameterEditor = new AxisParameterEditorViewModel(
             axisManagementAppService,
             axisControllerParameterAppService,

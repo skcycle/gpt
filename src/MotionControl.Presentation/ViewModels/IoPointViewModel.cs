@@ -12,25 +12,37 @@ public sealed class IoPointViewModel : INotifyPropertyChanged
 {
     private readonly IoPoint _ioPoint;
     private readonly IoControlService _ioControlService;
+    private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private readonly Func<bool> _canToggleOutput;
     private bool _value;
 
-    public IoPointViewModel(IoPoint ioPoint, IoControlService ioControlService, Func<bool> canToggleOutput)
+    public IoPointViewModel(IoPoint ioPoint, IoControlService ioControlService, CommandFeedbackRuntimeState commandFeedbackRuntimeState, Func<bool> canToggleOutput)
     {
         _ioPoint = ioPoint;
         _ioControlService = ioControlService;
+        _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         _canToggleOutput = canToggleOutput;
         _value = ioPoint.Value;
         SetCommand = new RelayCommand(
             async () =>
             {
                 var nextValue = !_ioPoint.Value;
+                var actionName = nextValue ? "OutputOn" : "OutputOff";
+                var pointName = string.IsNullOrWhiteSpace(Name) ? $"IO {Address}" : $"{Name}(IO {Address})";
+                _commandFeedbackRuntimeState.AddStarted(actionName, message: $"{pointName} set to {(nextValue ? "ON" : "OFF")} started");
+
                 var result = await _ioControlService.SetOutputAsync(Address, nextValue);
                 if (result.Success)
                 {
                     _ioPoint.Update(nextValue);
                     _value = nextValue;
                     OnPropertyChanged(nameof(Value));
+                    OnPropertyChanged(nameof(StatusBrush));
+                    _commandFeedbackRuntimeState.AddSucceeded(actionName, message: $"{pointName} set to {(nextValue ? "ON" : "OFF")} completed");
+                }
+                else
+                {
+                    _commandFeedbackRuntimeState.AddFailed(actionName, message: $"{pointName} set to {(nextValue ? "ON" : "OFF")} failed: {result.ErrorMessage}");
                 }
             },
             () => IsOutput && _canToggleOutput());

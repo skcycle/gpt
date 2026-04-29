@@ -10,14 +10,16 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
     private readonly IoControlService _ioControlService;
+    private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private readonly Func<bool> _canToggleOutput;
     private IoPointViewModel? _selectedInput;
     private IoPointViewModel? _selectedOutput;
 
-    public IoMonitorViewModel(Machine machine, IoControlService ioControlService, Func<bool> canToggleOutput)
+    public IoMonitorViewModel(Machine machine, IoControlService ioControlService, CommandFeedbackRuntimeState commandFeedbackRuntimeState, Func<bool> canToggleOutput)
     {
         _machine = machine;
         _ioControlService = ioControlService;
+        _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         _canToggleOutput = canToggleOutput;
         Inputs = BuildInputs();
         Outputs = BuildOutputs();
@@ -81,7 +83,7 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
 
     public void AddIoPoint(IoPoint ioPoint)
     {
-        var viewModel = new IoPointViewModel(ioPoint, _ioControlService, _canToggleOutput);
+        var viewModel = new IoPointViewModel(ioPoint, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput);
         if (ioPoint.IsOutput)
         {
             Outputs.Add(viewModel);
@@ -141,10 +143,10 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
         => Inputs.Concat(Outputs).ToList();
 
     private ObservableCollection<IoPointViewModel> BuildInputs()
-        => new(_machine.IoPoints.Where(io => !io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService, _canToggleOutput)));
+        => new(_machine.IoPoints.Where(io => !io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput)));
 
     private ObservableCollection<IoPointViewModel> BuildOutputs()
-        => new(_machine.IoPoints.Where(io => io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService, _canToggleOutput)));
+        => new(_machine.IoPoints.Where(io => io.IsOutput).Select(io => new IoPointViewModel(io, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput)));
 
     private void SyncCollections()
     {
@@ -168,7 +170,7 @@ public sealed class IoMonitorViewModel : INotifyPropertyChanged
             var existing = collection.FirstOrDefault(item => item.Address == ioPoint.Address);
             if (existing is null)
             {
-                collection.Add(new IoPointViewModel(ioPoint, _ioControlService, _canToggleOutput));
+                collection.Add(new IoPointViewModel(ioPoint, _ioControlService, _commandFeedbackRuntimeState, _canToggleOutput));
             }
         }
     }
