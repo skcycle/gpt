@@ -269,9 +269,21 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
             }
 
             var planarResults = new List<(string axisName, DeviceResult result)>();
-            if (_workHead.XAxisNo >= 0) planarResults.Add(("X", await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.XAxisNo, SelectedPosition.X, 100, 100, 100))));
-            if (_workHead.YAxisNo >= 0) planarResults.Add(("Y", await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.YAxisNo, SelectedPosition.Y, 100, 100, 100))));
-            if (_workHead.RAxisNo >= 0) planarResults.Add(("R", await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.RAxisNo, SelectedPosition.R, 100, 100, 100))));
+            if (_workHead.XAxisNo >= 0)
+            {
+                DeviceResult xResult = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.XAxisNo, SelectedPosition.X, 100, 100, 100));
+                planarResults.Add(("X", xResult));
+            }
+            if (_workHead.YAxisNo >= 0)
+            {
+                DeviceResult yResult = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.YAxisNo, SelectedPosition.Y, 100, 100, 100));
+                planarResults.Add(("Y", yResult));
+            }
+            if (_workHead.RAxisNo >= 0)
+            {
+                DeviceResult rResult = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.RAxisNo, SelectedPosition.R, 100, 100, 100));
+                planarResults.Add(("R", rResult));
+            }
 
             var failedPlanar = planarResults.FirstOrDefault(x => !x.result.Success);
             if (failedPlanar.result is not null && !failedPlanar.result.Success)

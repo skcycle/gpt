@@ -183,9 +183,9 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
             var item = await _axisManagementAppService.LoadAxisAsync(AxisNo);
             if (item is null)
             {
-                var message = $"Axis {AxisNo} config not found";
-                _statusReporter.ReportStatus(message);
-                _commandFeedbackRuntimeState.AddFailed("AxisConfigLoad", AxisNo, message);
+                var notFoundMessage = $"Axis {AxisNo} config not found";
+                _statusReporter.ReportStatus(notFoundMessage);
+                _commandFeedbackRuntimeState.AddFailed("AxisConfigLoad", AxisNo, notFoundMessage);
                 return;
             }
 
@@ -203,15 +203,15 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
             HomeMode = item.HomeMode;
             ServoBinding = item.ServoBinding;
 
-            var message = $"Axis {AxisNo} config loaded";
-            _statusReporter.ReportStatus(message);
-            _commandFeedbackRuntimeState.AddSucceeded("AxisConfigLoad", AxisNo, message);
+            var successMessage = $"Axis {AxisNo} config loaded";
+            _statusReporter.ReportStatus(successMessage);
+            _commandFeedbackRuntimeState.AddSucceeded("AxisConfigLoad", AxisNo, successMessage);
         }
         catch (Exception ex)
         {
-            var message = $"Axis {AxisNo} config load failed: {ex.Message}";
-            _statusReporter.ReportStatus(message);
-            _commandFeedbackRuntimeState.AddFailed("AxisConfigLoad", AxisNo, message);
+            var errorMessage = $"Axis {AxisNo} config load failed: {ex.Message}";
+            _statusReporter.ReportStatus(errorMessage);
+            _commandFeedbackRuntimeState.AddFailed("AxisConfigLoad", AxisNo, errorMessage);
         }
     }
 
