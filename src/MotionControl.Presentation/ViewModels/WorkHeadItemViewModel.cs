@@ -264,7 +264,9 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
                 var safeZResult = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, _workHead.SafeZ, 100, 100, 100));
                 if (!safeZResult.Success)
                 {
-                    _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{eventName} safe Z move failed: {safeZResult.ErrorMessage}" });
+                    var message = $"{eventName} safe Z move failed: {safeZResult.ErrorMessage}";
+                    _machine.UpsertAlarm("SYS-WORKHEAD-MOVE-FAILED", message, _workHead.Name, "WorkHead", "Error");
+                    _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = message });
                     return;
                 }
             }
@@ -289,7 +291,9 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
             var failedPlanar = planarResults.FirstOrDefault(x => !x.result.Success);
             if (failedPlanar.result is not null && !failedPlanar.result.Success)
             {
-                _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{eventName} {failedPlanar.axisName} axis move failed: {failedPlanar.result.ErrorMessage}" });
+                var message = $"{eventName} {failedPlanar.axisName} axis move failed: {failedPlanar.result.ErrorMessage}";
+                _machine.UpsertAlarm("SYS-WORKHEAD-MOVE-FAILED", message, _workHead.Name, "WorkHead", "Error");
+                _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = message });
                 return;
             }
 
@@ -298,7 +302,9 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
                 var targetZResult = await _motionAppService.MoveAbsoluteAsync(new MoveAxisCommandDto(_workHead.ZAxisNo, SelectedPosition.Z, 100, 100, 100));
                 if (!targetZResult.Success)
                 {
-                    _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{eventName} target Z move failed: {targetZResult.ErrorMessage}" });
+                    var message = $"{eventName} target Z move failed: {targetZResult.ErrorMessage}";
+                    _machine.UpsertAlarm("SYS-WORKHEAD-MOVE-FAILED", message, _workHead.Name, "WorkHead", "Error");
+                    _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = message });
                     return;
                 }
             }
@@ -307,7 +313,9 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = $"{eventName} move failed: {ex.Message}" });
+            var message = $"{eventName} move failed: {ex.Message}";
+            _machine.UpsertAlarm("SYS-WORKHEAD-MOVE-FAILED", message, _workHead.Name, "WorkHead", "Error");
+            _workHeadEventRuntimeState.Add(new WorkHeadEventRecord { WorkHeadName = _workHead.Name, EventType = "Failed", Message = message });
         }
     }
 

@@ -12,13 +12,15 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class AxisViewModel : INotifyPropertyChanged
 {
     private readonly Axis _axis;
+    private readonly Machine _machine;
     private readonly MotionControl.Control.Interfaces.IAxisControlService _axisControlService;
     private readonly IDialogService _dialogService;
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
 
-    public AxisViewModel(Axis axis, MotionControl.Control.Interfaces.IAxisControlService axisControlService, IDialogService dialogService, CommandFeedbackRuntimeState commandFeedbackRuntimeState)
+    public AxisViewModel(Axis axis, Machine machine, MotionControl.Control.Interfaces.IAxisControlService axisControlService, IDialogService dialogService, CommandFeedbackRuntimeState commandFeedbackRuntimeState)
     {
         _axis = axis;
+        _machine = machine;
         _axisControlService = axisControlService;
         _dialogService = dialogService;
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
@@ -87,6 +89,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
             if (!result.Success)
             {
                 var message = result.ErrorMessage ?? "未知错误";
+                _machine.UpsertAlarm("SYS-AXIS-CLEARALARM-FAILED", $"{messagePrefix} clear alarm failed: {message}", messagePrefix, "Axis", "Error");
                 _commandFeedbackRuntimeState.AddFailed(actionName, AxisNo, $"{messagePrefix} clear alarm failed: {message}");
                 _dialogService.ShowAlarm(message, "报警清除失败");
                 return;
@@ -97,6 +100,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         }
         catch (InvalidOperationException ex)
         {
+            _machine.UpsertAlarm("SYS-AXIS-CLEARALARM-FAILED", $"{messagePrefix} clear alarm failed: {ex.Message}", messagePrefix, "Axis", "Error");
             _commandFeedbackRuntimeState.AddFailed(actionName, AxisNo, $"{messagePrefix} clear alarm failed: {ex.Message}");
             _dialogService.ShowAlarm(ex.Message, "报警清除失败");
         }
@@ -126,6 +130,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
             if (!r.Success)
             {
                 var message = r.ErrorMessage ?? "未知错误";
+                _machine.UpsertAlarm("SYS-AXIS-SERVO-FAILED", $"{messagePrefix} servo {operation} failed: {message}", messagePrefix, "Axis", "Error");
                 _commandFeedbackRuntimeState.AddFailed(actionName, AxisNo, $"{messagePrefix} servo {operation} failed: {message}");
                 _dialogService.ShowAlarm(message, "伺服切换失败");
                 return;
@@ -137,6 +142,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         catch (InvalidOperationException ex)
         {
             var operation = currentOn ? "disable" : "enable";
+            _machine.UpsertAlarm("SYS-AXIS-SERVO-FAILED", $"{messagePrefix} servo {operation} failed: {ex.Message}", messagePrefix, "Axis", "Error");
             _commandFeedbackRuntimeState.AddFailed(actionName, AxisNo, $"{messagePrefix} servo {operation} failed: {ex.Message}");
             _dialogService.ShowAlarm(ex.Message, "伺服切换失败");
         }

@@ -164,7 +164,9 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         var result = await _ioControlService.SetOutputAsync(ExtendOutputAddress, nextValue);
         if (!result.Success)
         {
-            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Failed", Message = $"{_cylinder.Name} extend 失败: {result.ErrorMessage}" });
+            var message = $"{_cylinder.Name} extend 失败: {result.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-CYLINDER-ACTION-FAILED", message, _cylinder.Name, "Cylinder", "Error");
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Failed", Message = message });
             return;
         }
 
@@ -195,7 +197,9 @@ public sealed class CylinderItemViewModel : INotifyPropertyChanged
         var result = await _ioControlService.SetOutputAsync(RetractOutputAddress, nextValue);
         if (!result.Success)
         {
-            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Failed", Message = $"{_cylinder.Name} retract 失败: {result.ErrorMessage}" });
+            var message = $"{_cylinder.Name} retract 失败: {result.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-CYLINDER-ACTION-FAILED", message, _cylinder.Name, "Cylinder", "Error");
+            _cylinderEventRuntimeState.Add(new CylinderEventRecord { CylinderName = _cylinder.Name, EventType = "Failed", Message = message });
             return;
         }
 

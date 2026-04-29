@@ -167,7 +167,9 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
         else
         {
-            _commandFeedbackRuntimeState.AddFailed("AxisEnable", SelectedAxisNo, $"{messagePrefix} enable failed: {r.ErrorMessage}");
+            var message = $"{messagePrefix} enable failed: {r.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-AXIS-COMMAND-FAILED", message, messagePrefix, "Axis", "Error");
+            _commandFeedbackRuntimeState.AddFailed("AxisEnable", SelectedAxisNo, message);
         }
     }
 
@@ -182,7 +184,9 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
         else
         {
-            _commandFeedbackRuntimeState.AddFailed("AxisDisable", SelectedAxisNo, $"{messagePrefix} disable failed: {r.ErrorMessage}");
+            var message = $"{messagePrefix} disable failed: {r.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-AXIS-COMMAND-FAILED", message, messagePrefix, "Axis", "Error");
+            _commandFeedbackRuntimeState.AddFailed("AxisDisable", SelectedAxisNo, message);
         }
     }
 
@@ -197,7 +201,9 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
         else
         {
-            _commandFeedbackRuntimeState.AddFailed("AxisHome", SelectedAxisNo, $"{messagePrefix} home failed: {r.ErrorMessage}");
+            var message = $"{messagePrefix} home failed: {r.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-AXIS-COMMAND-FAILED", message, messagePrefix, "Axis", "Error");
+            _commandFeedbackRuntimeState.AddFailed("AxisHome", SelectedAxisNo, message);
         }
     }
 
@@ -212,7 +218,9 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
         else
         {
-            _commandFeedbackRuntimeState.AddFailed("AxisMove", SelectedAxisNo, $"{messagePrefix} move failed: {r.ErrorMessage}");
+            var message = $"{messagePrefix} move failed: {r.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-AXIS-COMMAND-FAILED", message, messagePrefix, "Axis", "Error");
+            _commandFeedbackRuntimeState.AddFailed("AxisMove", SelectedAxisNo, message);
         }
     }
 
@@ -227,7 +235,9 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
         else
         {
-            _commandFeedbackRuntimeState.AddFailed("AxisStop", SelectedAxisNo, $"{messagePrefix} stop failed: {r.ErrorMessage}");
+            var message = $"{messagePrefix} stop failed: {r.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-AXIS-COMMAND-FAILED", message, messagePrefix, "Axis", "Error");
+            _commandFeedbackRuntimeState.AddFailed("AxisStop", SelectedAxisNo, message);
         }
     }
 
@@ -248,7 +258,9 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
         else
         {
-            _commandFeedbackRuntimeState.AddFailed("AxisJog", SelectedAxisNo, $"{messagePrefix} jog {direction} failed: {r.ErrorMessage}");
+            var message = $"{messagePrefix} jog {direction} failed: {r.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-AXIS-COMMAND-FAILED", message, messagePrefix, "Axis", "Error");
+            _commandFeedbackRuntimeState.AddFailed("AxisJog", SelectedAxisNo, message);
         }
     }
 
@@ -268,7 +280,9 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
         else
         {
-            _commandFeedbackRuntimeState.AddFailed("AxisJogStop", SelectedAxisNo, $"{messagePrefix} jog stop failed: {r.ErrorMessage}");
+            var message = $"{messagePrefix} jog stop failed: {r.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-AXIS-COMMAND-FAILED", message, messagePrefix, "Axis", "Error");
+            _commandFeedbackRuntimeState.AddFailed("AxisJogStop", SelectedAxisNo, message);
         }
     }
 
@@ -294,7 +308,9 @@ public sealed class AxisDebugViewModel : INotifyPropertyChanged
         }
         else
         {
-            _commandFeedbackRuntimeState.AddFailed("AxisStepMove", SelectedAxisNo, $"{messagePrefix} step move {direction} failed: {result.ErrorMessage}");
+            var message = $"{messagePrefix} step move {direction} failed: {result.ErrorMessage}";
+            _machine.UpsertAlarm("SYS-AXIS-COMMAND-FAILED", message, messagePrefix, "Axis", "Error");
+            _commandFeedbackRuntimeState.AddFailed("AxisStepMove", SelectedAxisNo, message);
         }
     }
 

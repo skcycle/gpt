@@ -19,7 +19,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         _axisControlService = axisControlService;
         _dialogService = dialogService;
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
-        Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis, axisControlService, dialogService, commandFeedbackRuntimeState)));
+        Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis, machine, axisControlService, dialogService, commandFeedbackRuntimeState)));
         _selectedAxis = Axes.FirstOrDefault();
     }
 
@@ -56,7 +56,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
 
     public AxisViewModel AddAxis(Axis axis)
     {
-        var viewModel = new AxisViewModel(axis, GetAxisControlService(), _dialogService, _commandFeedbackRuntimeState);
+        var viewModel = new AxisViewModel(axis, _machine, GetAxisControlService(), _dialogService, _commandFeedbackRuntimeState);
         Axes.Add(viewModel);
         SelectedAxis = viewModel;
         return viewModel;
@@ -67,7 +67,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         Axes.Clear();
         foreach (var axis in _machine.Axes)
         {
-            Axes.Add(new AxisViewModel(axis, GetAxisControlService(), _dialogService, _commandFeedbackRuntimeState));
+            Axes.Add(new AxisViewModel(axis, _machine, GetAxisControlService(), _dialogService, _commandFeedbackRuntimeState));
         }
         SelectedAxis = Axes.FirstOrDefault();
     }
@@ -103,7 +103,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         {
             if (Axes.All(existing => existing.AxisNo != axis.Id.Value))
             {
-                Axes.Add(new AxisViewModel(axis, GetAxisControlService(), _dialogService, _commandFeedbackRuntimeState));
+                Axes.Add(new AxisViewModel(axis, _machine, GetAxisControlService(), _dialogService, _commandFeedbackRuntimeState));
             }
         }
     }

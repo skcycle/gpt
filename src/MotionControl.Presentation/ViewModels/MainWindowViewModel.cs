@@ -1524,6 +1524,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 {
                     var message = $"{setupItem.Name} Z轴抬升失败: {r.ErrorMessage}";
                     OperationStatus = message;
+                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", message, setupItem.Name, "PositionSetup", "Error");
                     _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: message);
                     PositionSetupEventLogRecord(eventName, "Failed", message);
                     return;
@@ -1545,6 +1546,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 {
                     var message = $"{setupItem.Name} 运动失败: {failed.ErrorMessage}";
                     OperationStatus = message;
+                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", message, setupItem.Name, "PositionSetup", "Error");
                     _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: message);
                     PositionSetupEventLogRecord(eventName, "Failed", message);
                     return;
@@ -1558,6 +1560,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 {
                     var message = $"{setupItem.Name} Z轴定位失败: {r.ErrorMessage}";
                     OperationStatus = message;
+                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", message, setupItem.Name, "PositionSetup", "Error");
                     _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: message);
                     PositionSetupEventLogRecord(eventName, "Failed", message);
                     return;
@@ -1572,7 +1575,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         catch (Exception ex)
         {
             var eventName = $"{setupItem.Name}:{selectedPos.Name}";
-            OperationStatus = $"{eventName} 运动失败: {ex.Message}";
+            var message = $"{eventName} 运动失败: {ex.Message}";
+            OperationStatus = message;
+            _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", message, setupItem.Name, "PositionSetup", "Error");
             _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: $"{eventName} failed: {ex.Message}");
             PositionSetupEventLogRecord(eventName, "Failed", $"{eventName} move failed: {ex.Message}");
         }
