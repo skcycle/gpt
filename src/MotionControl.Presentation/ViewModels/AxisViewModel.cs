@@ -12,11 +12,13 @@ public sealed class AxisViewModel : INotifyPropertyChanged
 {
     private readonly Axis _axis;
     private readonly MotionControl.Control.Interfaces.IAxisControlService _axisControlService;
+    private readonly IDialogService _dialogService;
 
-    public AxisViewModel(Axis axis, MotionControl.Control.Interfaces.IAxisControlService axisControlService)
+    public AxisViewModel(Axis axis, MotionControl.Control.Interfaces.IAxisControlService axisControlService, IDialogService dialogService)
     {
         _axis = axis;
         _axisControlService = axisControlService;
+        _dialogService = dialogService;
         ClearAlarmCommand = new RelayCommand(async () => await ClearAlarmAsync(), () => HasAlarm);
         ToggleServoCommand = new RelayCommand(async () => await ToggleServoAsync());
     }
@@ -79,7 +81,7 @@ public sealed class AxisViewModel : INotifyPropertyChanged
         }
         catch (InvalidOperationException ex)
         {
-            DialogService.Instance.ShowError(ex.Message, "报警清除失败");
+            _dialogService.ShowError(ex.Message, "报警清除失败");
         }
     }
 
@@ -99,14 +101,14 @@ public sealed class AxisViewModel : INotifyPropertyChanged
             }
             if (!r.Success)
             {
-                DialogService.Instance.ShowError(r.ErrorMessage, "伺服切换失败");
+                _dialogService.ShowError(r.ErrorMessage, "伺服切换失败");
                 return;
             }
             Refresh();
         }
         catch (InvalidOperationException ex)
         {
-            DialogService.Instance.ShowError(ex.Message, "伺服切换失败");
+            _dialogService.ShowError(ex.Message, "伺服切换失败");
         }
     }
 

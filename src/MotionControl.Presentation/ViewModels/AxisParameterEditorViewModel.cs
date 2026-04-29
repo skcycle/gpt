@@ -15,6 +15,7 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
     private readonly Func<bool> _canWriteParameters;
     private readonly Func<bool> _canAccessControllerParameters;
     private readonly IOperationStatusReporter _statusReporter;
+    private readonly IDialogService _dialogService;
     private int _axisNo;
     private string _name = string.Empty;
     private string _group = string.Empty;
@@ -36,13 +37,15 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         IAxisControllerParameterAppService axisControllerParameterAppService,
         Func<bool> canWriteParameters,
         Func<bool> canAccessControllerParameters,
-        IOperationStatusReporter statusReporter)
+        IOperationStatusReporter statusReporter,
+        IDialogService dialogService)
     {
         _axisManagementAppService = axisManagementAppService;
         _axisControllerParameterAppService = axisControllerParameterAppService;
         _canWriteParameters = canWriteParameters;
         _canAccessControllerParameters = canAccessControllerParameters;
         _statusReporter = statusReporter;
+        _dialogService = dialogService;
         LoadCommand = new RelayCommand(async () => await LoadAsync(), () => AxisNo >= 0);
         SaveCommand = new RelayCommand(async () => await SaveAsync(), () => AxisNo >= 0 && _canWriteParameters());
         ReadControllerCommand = new RelayCommand(async () => await ReadControllerAsync(), () => AxisNo >= 0 && _canAccessControllerParameters());
@@ -197,7 +200,7 @@ public sealed class AxisParameterEditorViewModel : INotifyPropertyChanged
         if (!TryValidate(out var validationMessage))
         {
             _statusReporter.ReportStatus($"Axis 参数校验失败: {validationMessage}");
-            DialogService.Instance.ShowWarning(validationMessage, "参数校验失败");
+            _dialogService.ShowWarning(validationMessage, "参数校验失败");
             return;
         }
 

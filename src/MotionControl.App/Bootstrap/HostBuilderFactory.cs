@@ -64,6 +64,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<IHomeStrategy, SlaveFollowMasterHomeStrategy>();
                 services.AddSingleton<IHomingService, HomingService>();
                 services.AddSingleton<ISystemAppService, SystemAppService>();
+                services.AddSingleton<IDialogService, MotionControl.App.Services.DialogService>();
                 services.AddSingleton<IMotionAppService, MotionAppService>();
                 services.AddSingleton<IAxisRuntimeParameterSyncService, AxisRuntimeParameterSyncService>();
                 services.AddSingleton<IIoRuntimeSyncService, IoRuntimeSyncService>();

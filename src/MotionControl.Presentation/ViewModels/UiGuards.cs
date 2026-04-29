@@ -5,6 +5,6 @@ namespace MotionControl.Presentation.ViewModels;
 
 internal static class UiGuards
 {
-    public static bool Confirm(string title, string message)
-        => DialogService.Instance.Confirm(message, title) == MessageBoxResult.Yes;
+    public static bool Confirm(IDialogService dialogService, string title, string message)
+        => dialogService.Confirm(message, title) == MessageBoxResult.Yes;
 }

@@ -39,6 +39,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private readonly IWorkHeadManagementAppService _workHeadManagementAppService;
     private readonly IPositionSetupManagementAppService _positionSetupManagementAppService;
     private readonly ISystemAppService _systemAppService;
+    private readonly IDialogService _dialogService;
     private readonly AxisConsoleCoordinator _axisConsoleCoordinator;
     private readonly IoMonitorCoordinator _ioMonitorCoordinator;
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
@@ -71,6 +72,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public MainWindowViewModel(
         Machine machine,
         ISystemAppService systemAppService,
+        IDialogService dialogService,
         IMotionAppService motionAppService,
         IAxisManagementAppService axisManagementAppService,
         IAxisControllerParameterAppService axisControllerParameterAppService,
@@ -101,10 +103,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _positionSetupEventRuntimeState = positionSetupEventRuntimeState;
         _commandFeedbackRuntimeState.FeedbackChanged += () => RefreshViewModels(force: true);
         _systemAppService = systemAppService;
+        _dialogService = dialogService;
         _controllerRuntimeState = controllerRuntimeState;
         Dashboard = new DashboardViewModel(machine, commandFeedbackRuntimeState);
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
-        AxisMonitor = new AxisMonitorViewModel(machine, axisControlService);
+        AxisMonitor = new AxisMonitorViewModel(machine, axisControlService, dialogService);
         AxisMonitor.SelectedAxisChanged += _ => RaiseAxisDeleteCanExecuteChanged();
         IoMonitor = new IoMonitorViewModel(machine, ioControlService, CanWriteIoOutputs);
         IoEventLog = new IoEventLogViewModel(ioEventRuntimeState);
@@ -159,7 +162,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             axisControllerParameterAppService,
             CanWriteAxisConfiguration,
             CanAccessControllerParameters,
-            this);
+            this,
+            dialogService);
         Alarm = new AlarmViewModel(machine);
         EmergencyStopCommand = new RelayCommand(async () => await _systemAppService.EmergencyStopAsync());
         ClearEmergencyStopCommand = new RelayCommand(async () => await _systemAppService.ClearEmergencyStopAsync());
@@ -483,7 +487,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return Task.CompletedTask;
         }
 
-        if (!UiGuards.Confirm("删除 Axis", $"确定删除 Axis {selectedAxis.AxisNo} 吗？（未保存的删除）"))
+        if (!UiGuards.Confirm(_dialogService, "删除 Axis", $"确定删除 Axis {selectedAxis.AxisNo} 吗？（未保存的删除）"))
         {
             OperationStatus = "已取消删除 Axis";
             return Task.CompletedTask;
@@ -500,7 +504,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private async Task SaveAxisConsoleConfigAsync()
     {
-        if (!UiGuards.Confirm("保存 Axis 配置", "确定保存当前 Axis 列表和参数到配置文件吗？"))
+        if (!UiGuards.Confirm(_dialogService, "保存 Axis 配置", "确定保存当前 Axis 列表和参数到配置文件吗？"))
         {
             OperationStatus = "已取消保存 Axis 配置";
             return;
@@ -568,7 +572,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private async Task LoadAxisConsoleConfigAsync()
     {
-        if (!UiGuards.Confirm("加载 Axis 配置", "确定从配置文件重新加载 Axis 配置吗？未保存修改将丢失。"))
+        if (!UiGuards.Confirm(_dialogService, "加载 Axis 配置", "确定从配置文件重新加载 Axis 配置吗？未保存修改将丢失。"))
         {
             OperationStatus = "已取消加载 Axis 配置";
             return;
@@ -633,7 +637,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return Task.CompletedTask;
         }
 
-        if (!UiGuards.Confirm("删除输入点", $"确定删除 DI {selected.Address} 吗？删除后需点击 Save 才会写入配置。"))
+        if (!UiGuards.Confirm(_dialogService, "删除输入点", $"确定删除 DI {selected.Address} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除 DI";
             return Task.CompletedTask;
@@ -653,7 +657,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return Task.CompletedTask;
         }
 
-        if (!UiGuards.Confirm("删除输出点", $"确定删除 DO {selected.Address} 吗？删除后需点击 Save 才会写入配置。"))
+        if (!UiGuards.Confirm(_dialogService, "删除输出点", $"确定删除 DO {selected.Address} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除 DO";
             return Task.CompletedTask;
@@ -691,7 +695,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             return Task.CompletedTask;
         }
 
-        if (!UiGuards.Confirm("删除 Cylinder", $"确定删除 Cylinder {selected.Name} 吗？删除后需点击 Save 才会写入配置。"))
+        if (!UiGuards.Confirm(_dialogService, "删除 Cylinder", $"确定删除 Cylinder {selected.Name} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除 Cylinder";
             return Task.CompletedTask;
@@ -760,7 +764,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
         if (string.IsNullOrWhiteSpace(selectedPositionName)) return;
 
-        if (!UiGuards.Confirm("删除 WorkHead Position", $"确定删除 {selectedWorkHead.Name} 的 Position {selectedPositionName} 吗？删除后需点击 Save 才会写入配置。"))
+        if (!UiGuards.Confirm(_dialogService, "删除 WorkHead Position", $"确定删除 {selectedWorkHead.Name} 的 Position {selectedPositionName} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除 WorkHead Position";
             return;
@@ -963,7 +967,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     {
         var selected = WorkHeadMonitor.SelectedWorkHead;
         if (selected is null) return Task.CompletedTask;
-        if (!UiGuards.Confirm("删除 WorkHead", $"确定删除 WorkHead {selected.Name} 吗？删除后需点击 Save 才会写入配置。"))
+        if (!UiGuards.Confirm(_dialogService, "删除 WorkHead", $"确定删除 WorkHead {selected.Name} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除 WorkHead";
             return Task.CompletedTask;
@@ -995,7 +999,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         {
             var msg = $"存在重复地址: {(duplicateAddress.Key.IsOutput ? "DO" : "DI")} {duplicateAddress.Key.Address}";
             OperationStatus = msg;
-            DialogService.Instance.ShowWarning(msg, "IO 配置校验失败");
+            _dialogService.ShowWarning(msg, "IO 配置校验失败");
             return;
         }
 
@@ -1004,11 +1008,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         {
             var msg = "IO 配置存在空名称或非法地址，保存已取消";
             OperationStatus = msg;
-            DialogService.Instance.ShowWarning(msg, "IO 配置校验失败");
+            _dialogService.ShowWarning(msg, "IO 配置校验失败");
             return;
         }
 
-        if (!UiGuards.Confirm("保存 IO 配置", "确定覆盖当前 IO 配置到 appsettings.json 吗？"))
+        if (!UiGuards.Confirm(_dialogService, "保存 IO 配置", "确定覆盖当前 IO 配置到 appsettings.json 吗？"))
         {
             OperationStatus = "已取消保存 IO 配置";
             return;
@@ -1025,7 +1029,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         catch (InvalidOperationException ex)
         {
             OperationStatus = ex.Message;
-            DialogService.Instance.ShowError(ex.Message, "IO 配置保存失败");
+            _dialogService.ShowError(ex.Message, "IO 配置保存失败");
             return;
         }
     }
@@ -1045,7 +1049,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             })
             .ToList();
 
-        if (!UiGuards.Confirm("保存 Cylinder 配置", "确定覆盖当前 Cylinder 配置到 appsettings.json 吗？"))
+        if (!UiGuards.Confirm(_dialogService, "保存 Cylinder 配置", "确定覆盖当前 Cylinder 配置到 appsettings.json 吗？"))
         {
             OperationStatus = "已取消保存 Cylinder 配置";
             return;
@@ -1061,13 +1065,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         catch (InvalidOperationException ex)
         {
             OperationStatus = ex.Message;
-            DialogService.Instance.ShowError(ex.Message, "Cylinder 配置保存失败");
+            _dialogService.ShowError(ex.Message, "Cylinder 配置保存失败");
         }
     }
 
     private async Task LoadCylinderConfigAsync()
     {
-        if (!UiGuards.Confirm("加载 Cylinder 配置", "确定从 appsettings.json 重新加载 Cylinder 配置吗？未保存修改将丢失。"))
+        if (!UiGuards.Confirm(_dialogService, "加载 Cylinder 配置", "确定从 appsettings.json 重新加载 Cylinder 配置吗？未保存修改将丢失。"))
         {
             OperationStatus = "已取消加载 Cylinder 配置";
             return;
@@ -1090,7 +1094,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         var missingAxes = configuredAxisNos.Where(no => !_machine.Axes.Any(ax => ax.Id.Value == no)).ToList();
         if (missingAxes.Count > 0)
         {
-            DialogService.Instance.ShowWarning($"以下轴号未在 Axis Monitor 中配置，无法保存 WorkHead：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。", "轴号未配置");
+            _dialogService.ShowWarning($"以下轴号未在 Axis Monitor 中配置，无法保存 WorkHead：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。", "轴号未配置");
             OperationStatus = $"WorkHead 保存失败：轴 {string.Join(", ", missingAxes)} 未配置";
             return;
         }
@@ -1123,7 +1127,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             }).ToList()
         }).ToList();
 
-        if (!UiGuards.Confirm("保存 WorkHead 配置", "确定覆盖当前 WorkHead 配置到 appsettings.json 吗？"))
+        if (!UiGuards.Confirm(_dialogService, "保存 WorkHead 配置", "确定覆盖当前 WorkHead 配置到 appsettings.json 吗？"))
         {
             OperationStatus = "已取消保存 WorkHead 配置";
             return;
@@ -1140,13 +1144,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         catch (InvalidOperationException ex)
         {
             OperationStatus = ex.Message;
-            DialogService.Instance.ShowError(ex.Message, "WorkHead 配置保存失败");
+            _dialogService.ShowError(ex.Message, "WorkHead 配置保存失败");
         }
     }
 
     private async Task LoadWorkHeadConfigAsync()
     {
-        if (!UiGuards.Confirm("加载 WorkHead 配置", "确定从 appsettings.json 重新加载 WorkHead 配置吗？未保存修改将丢失。"))
+        if (!UiGuards.Confirm(_dialogService, "加载 WorkHead 配置", "确定从 appsettings.json 重新加载 WorkHead 配置吗？未保存修改将丢失。"))
         {
             OperationStatus = "已取消加载 WorkHead 配置";
             return;
@@ -1193,7 +1197,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         var selected = PositionSetupMonitor.SelectedItem;
         if (selected is null) return Task.CompletedTask;
 
-        if (!UiGuards.Confirm("删除位置设定", $"确定删除位置设定 {selected.Name} 吗？删除后需点击 Save 才会写入配置。"))
+        if (!UiGuards.Confirm(_dialogService, "删除位置设定", $"确定删除位置设定 {selected.Name} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除位置设定";
             return Task.CompletedTask;
@@ -1218,7 +1222,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         if (PositionSetupMonitor.SelectedItem?.SelectedPosition is null) return;
         var setupItem = PositionSetupMonitor.SelectedItem;
         var selectedPosition = setupItem.SelectedPosition;
-        if (!UiGuards.Confirm("删除位置点", $"确定删除 {setupItem.Name} 下的位置 {selectedPosition.Name} 吗？删除后需点击 Save 才会写入配置。"))
+        if (!UiGuards.Confirm(_dialogService, "删除位置点", $"确定删除 {setupItem.Name} 下的位置 {selectedPosition.Name} 吗？删除后需点击 Save 才会写入配置。"))
         {
             OperationStatus = "已取消删除位置点";
             return;
@@ -1240,14 +1244,14 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         var missingAxes = configuredAxisNos.Where(no => !_machine.Axes.Any(ax => ax.Id.Value == no)).ToList();
         if (missingAxes.Count > 0)
         {
-            DialogService.Instance.ShowWarning($"以下轴号未在 Axis Monitor 中配置，无法保存位置设定：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。", "轴号未配置");
+            _dialogService.ShowWarning($"以下轴号未在 Axis Monitor 中配置，无法保存位置设定：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。", "轴号未配置");
             OperationStatus = $"位置设定保存失败：轴 {string.Join(", ", missingAxes)} 未配置";
             return;
         }
 
         var items = PositionSetupMonitor.ToConfigs();
 
-        if (!UiGuards.Confirm("保存位置设定配置", "确定覆盖当前位置设定配置到 appsettings.json 吗？"))
+        if (!UiGuards.Confirm(_dialogService, "保存位置设定配置", "确定覆盖当前位置设定配置到 appsettings.json 吗？"))
         {
             OperationStatus = "已取消保存位置设定配置";
             return;
@@ -1267,13 +1271,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         catch (InvalidOperationException ex)
         {
             OperationStatus = ex.Message;
-            DialogService.Instance.ShowError(ex.Message, "位置设定配置保存失败");
+            _dialogService.ShowError(ex.Message, "位置设定配置保存失败");
         }
     }
 
     private async Task LoadPositionSetupConfigAsync(CancellationToken cancellationToken = default)
     {
-        if (!UiGuards.Confirm("加载位置设定配置", "确定从 appsettings.json 重新加载位置设定配置吗？未保存修改将丢失。"))
+        if (!UiGuards.Confirm(_dialogService, "加载位置设定配置", "确定从 appsettings.json 重新加载位置设定配置吗？未保存修改将丢失。"))
         {
             OperationStatus = "已取消加载位置设定配置";
             return;
@@ -1457,7 +1461,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private async Task LoadIoConfigAsync()
     {
-        if (!UiGuards.Confirm("加载 IO 配置", "确定从 appsettings.json 重新加载 IO 配置吗？未保存修改将丢失。"))
+        if (!UiGuards.Confirm(_dialogService, "加载 IO 配置", "确定从 appsettings.json 重新加载 IO 配置吗？未保存修改将丢失。"))
         {
             OperationStatus = "已取消加载 IO 配置";
             return;

@@ -9,9 +9,7 @@ namespace MotionControl.App.Services;
 /// </summary>
 public class DialogService : IDialogService
 {
-    public static readonly IDialogService Instance = new DialogService();
-
-    private DialogService() { }
+    public DialogService() { }
 
     public void ShowWarning(string message, string title = "警告") =>
         AlertDialog.Show(message, title, DialogIcon.Warning);

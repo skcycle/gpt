@@ -8,13 +8,15 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class AxisMonitorViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
+    private readonly MotionControl.Presentation.Dialogs.IDialogService _dialogService;
     private AxisViewModel? _selectedAxis;
 
-    public AxisMonitorViewModel(Machine machine, MotionControl.Control.Interfaces.IAxisControlService axisControlService)
+    public AxisMonitorViewModel(Machine machine, MotionControl.Control.Interfaces.IAxisControlService axisControlService, MotionControl.Presentation.Dialogs.IDialogService dialogService)
     {
         _machine = machine;
         _axisControlService = axisControlService;
-        Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis, axisControlService)));
+        _dialogService = dialogService;
+        Axes = new ObservableCollection<AxisViewModel>(machine.Axes.Select(axis => new AxisViewModel(axis, axisControlService, dialogService)));
         _selectedAxis = Axes.FirstOrDefault();
     }
 
@@ -51,7 +53,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
 
     public AxisViewModel AddAxis(Axis axis)
     {
-        var viewModel = new AxisViewModel(axis, GetAxisControlService());
+        var viewModel = new AxisViewModel(axis, GetAxisControlService(), _dialogService);
         Axes.Add(viewModel);
         SelectedAxis = viewModel;
         return viewModel;
@@ -62,7 +64,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         Axes.Clear();
         foreach (var axis in _machine.Axes)
         {
-            Axes.Add(new AxisViewModel(axis, GetAxisControlService()));
+            Axes.Add(new AxisViewModel(axis, GetAxisControlService(), _dialogService));
         }
         SelectedAxis = Axes.FirstOrDefault();
     }
@@ -98,7 +100,7 @@ public sealed class AxisMonitorViewModel : INotifyPropertyChanged
         {
             if (Axes.All(existing => existing.AxisNo != axis.Id.Value))
             {
-                Axes.Add(new AxisViewModel(axis, GetAxisControlService()));
+                Axes.Add(new AxisViewModel(axis, GetAxisControlService(), _dialogService));
             }
         }
     }
