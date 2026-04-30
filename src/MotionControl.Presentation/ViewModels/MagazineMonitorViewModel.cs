@@ -24,17 +24,30 @@ public sealed class MagazineMonitorViewModel : INotifyPropertyChanged
     }
 
     public ObservableCollection<MagazineItemViewModel> Magazines { get; }
+    public event Action? SelectedMagazinePositionChanged;
+
     public MagazineItemViewModel? SelectedMagazine
     {
         get => _selectedMagazine;
         set
         {
             if (_selectedMagazine == value) return;
+            if (_selectedMagazine is not null)
+            {
+                _selectedMagazine.PropertyChanged -= OnSelectedMagazinePropertyChanged;
+            }
+
             _selectedMagazine = value;
             OnPropertyChanged();
-            if (value is null) return;
-            RaiseCanExecuteChanged(value.VacuumCommand);
-            RaiseCanExecuteChanged(value.BlowCommand);
+
+            if (value is not null)
+            {
+                value.PropertyChanged += OnSelectedMagazinePropertyChanged;
+                RaiseCanExecuteChanged(value.VacuumCommand);
+                RaiseCanExecuteChanged(value.BlowCommand);
+            }
+
+            SelectedMagazinePositionChanged?.Invoke();
         }
     }
 
@@ -71,6 +84,14 @@ public sealed class MagazineMonitorViewModel : INotifyPropertyChanged
     }
 
     private MagazineItemViewModel BuildViewModel(Magazine magazine) => new(magazine, _machine, _ioControlService, _magazineEventRuntimeState, _canControl);
+
+    private void OnSelectedMagazinePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MagazineItemViewModel.SelectedPosition))
+        {
+            SelectedMagazinePositionChanged?.Invoke();
+        }
+    }
 
     private static void RaiseCanExecuteChanged(System.Windows.Input.ICommand command)
     {

@@ -17,11 +17,27 @@ public sealed class MagazineRuntimeSyncService(Machine machine) : IMagazineRunti
         var existing = machine.Magazines.FirstOrDefault(item => string.Equals(item.Name, magazine.Name, StringComparison.OrdinalIgnoreCase));
         if (existing is null)
         {
-            machine.AddMagazine(new Magazine(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.VacuumOutputAddress, magazine.BlowOutputAddress, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, magazine.ActionTimeoutMs));
+            var created = new Magazine(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.VacuumOutputAddress, magazine.BlowOutputAddress, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, magazine.ActionTimeoutMs, magazine.Positions);
+            created.EnsureDefaultPositions();
+            machine.AddMagazine(created);
             return Task.CompletedTask;
         }
 
         existing.UpdateMetadata(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.VacuumOutputAddress, magazine.BlowOutputAddress, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, magazine.ActionTimeoutMs);
+        existing.Positions.Clear();
+        foreach (var position in magazine.Positions)
+        {
+            existing.Positions.Add(new MagazinePositionConfigItem
+            {
+                Name = position.Name,
+                Description = position.Description,
+                Kind = position.Kind,
+                X = position.X,
+                Y = position.Y,
+                Z = position.Z
+            });
+        }
+        existing.EnsureDefaultPositions();
         return Task.CompletedTask;
     }
 

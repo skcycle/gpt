@@ -16,4 +16,5 @@ public sealed class MagazineConfigItem
     public double LayerHeight { get; set; }
     public double PickLiftHeight { get; set; }
     public int ActionTimeoutMs { get; set; } = 3000;
+    public List<MagazinePositionConfigItem> Positions { get; set; } = new();
 }

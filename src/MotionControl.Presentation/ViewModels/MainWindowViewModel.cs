@@ -131,7 +131,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             if (e.PropertyName == nameof(MagazineMonitorViewModel.SelectedMagazine))
             {
                 (DeleteMagazineCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (AddMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (DeleteMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
+        };
+        MagazineMonitor.SelectedMagazinePositionChanged += () =>
+        {
+            (DeleteMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
         };
         WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, motionAppService, workHeadEventRuntimeState, CanWriteIoOutputs);
         WorkHeadMonitor.PropertyChanged += (_, e) =>
@@ -264,6 +270,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         LoadCylinderConfigCommand = new RelayCommand(async () => await LoadCylinderConfigAsync(), CanEditIoConfiguration);
         AddMagazineCommand = new RelayCommand(async () => await AddMagazineAsync(), CanEditIoConfiguration);
         DeleteMagazineCommand = new RelayCommand(async () => await DeleteSelectedMagazineAsync(), () => MagazineMonitor.SelectedMagazine is not null && CanEditIoConfiguration());
+        AddMagazinePositionCommand = new RelayCommand(AddMagazinePosition, () => MagazineMonitor.SelectedMagazine is not null);
+        DeleteMagazinePositionCommand = new RelayCommand(DeleteSelectedMagazinePosition, () => MagazineMonitor.SelectedMagazine?.CanDeleteSelectedPosition == true);
         SaveMagazineConfigCommand = new RelayCommand(async () => await SaveMagazineConfigAsync(), CanEditIoConfiguration);
         LoadMagazineConfigCommand = new RelayCommand(async () => await LoadMagazineConfigAsync(), CanEditIoConfiguration);
         AddWorkHeadCommand = new RelayCommand(async () => await AddWorkHeadAsync(), CanEditIoConfiguration);
@@ -420,6 +428,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public ICommand LoadCylinderConfigCommand { get; }
     public ICommand AddMagazineCommand { get; }
     public ICommand DeleteMagazineCommand { get; }
+    public ICommand AddMagazinePositionCommand { get; }
+    public ICommand DeleteMagazinePositionCommand { get; }
     public ICommand SaveMagazineConfigCommand { get; }
     public ICommand LoadMagazineConfigCommand { get; }
     public ICommand AddWorkHeadCommand { get; }
@@ -1231,6 +1241,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
 
         var magazine = new Magazine(name, string.Empty, -1, -1, -1, -1, -1, -1, -1, -1, 1, 0, 0, 3000);
+        magazine.EnsureDefaultPositions();
         MagazineMonitor.AddMagazine(magazine);
         OperationStatus = $"Magazine {name} 已新增（未保存）";
         RefreshViewModels(force: true);
@@ -1251,6 +1262,47 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         OperationStatus = $"Magazine {selected.Name} 已删除（未保存）";
         RefreshViewModels(force: true);
         return Task.CompletedTask;
+    }
+
+    private void AddMagazinePosition()
+    {
+        var selected = MagazineMonitor.SelectedMagazine;
+        if (selected is null) return;
+
+        selected.AddPosition();
+        OperationStatus = $"Magazine {selected.Name} 新增位置 {selected.SelectedPosition?.Name}（未保存）";
+        (DeleteMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        RefreshViewModels(force: true);
+    }
+
+    private void DeleteSelectedMagazinePosition()
+    {
+        var selected = MagazineMonitor.SelectedMagazine;
+        if (selected?.SelectedPosition is null) return;
+
+        var positionName = selected.SelectedPosition.Name;
+        if (selected.SelectedPosition.IsSystemDefault)
+        {
+            OperationStatus = $"Magazine {selected.Name} 的系统默认位 {positionName} 不允许删除";
+            _dialogService.ShowWarning($"{positionName} 为 Magazine 系统默认位，不能删除。", "禁止删除默认位");
+            return;
+        }
+
+        if (!UiGuards.Confirm(_dialogService, "删除 Magazine 位置", $"确定删除位置 {positionName} 吗？删除后需点击 Save 才会写入配置。"))
+        {
+            OperationStatus = "已取消删除 Magazine 位置";
+            return;
+        }
+
+        if (!selected.DeleteSelectedPosition())
+        {
+            OperationStatus = $"位置 {positionName} 删除失败";
+            return;
+        }
+
+        OperationStatus = $"Magazine {selected.Name} 位置 {positionName} 已删除（未保存）";
+        (DeleteMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        RefreshViewModels(force: true);
     }
 
     private async Task SaveMagazineConfigAsync()
@@ -1283,7 +1335,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             LayerCount = magazine.LayerCount,
             LayerHeight = magazine.LayerHeight,
             PickLiftHeight = magazine.PickLiftHeight,
-            ActionTimeoutMs = magazine.ActionTimeoutMs
+            ActionTimeoutMs = magazine.ActionTimeoutMs,
+            Positions = magazine.Positions.Select(position => position.ToConfig()).ToList()
         }).ToList();
 
         if (!UiGuards.Confirm(_dialogService, "保存 Magazine 配置", "确定覆盖当前 Magazine 配置到 appsettings.json 吗？"))

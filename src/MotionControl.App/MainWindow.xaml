@@ -891,6 +891,8 @@
                                 <WrapPanel Grid.Column="1" VerticalAlignment="Top">
                                     <Button Content="Add Object" Command="{Binding AddMagazineCommand}" MinWidth="100" />
                                     <Button Content="Delete Object" Command="{Binding DeleteMagazineCommand}" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
+                                    <Button Content="Add Position" Command="{Binding AddMagazinePositionCommand}" MinWidth="108" />
+                                    <Button Content="Delete Position" Command="{Binding DeleteMagazinePositionCommand}" MinWidth="120" Style="{StaticResource DangerButtonStyle}" />
                                     <Button Content="Save" Command="{Binding SaveMagazineConfigCommand}" MinWidth="90" Style="{StaticResource SuccessButtonStyle}" />
                                     <Button Content="Load" Command="{Binding LoadMagazineConfigCommand}" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
                                 </WrapPanel>
@@ -899,6 +901,8 @@
 
                         <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="220" MinWidth="160" />
+                                <ColumnDefinition Width="16" />
                                 <ColumnDefinition Width="220" MinWidth="160" />
                                 <ColumnDefinition Width="16" />
                                 <ColumnDefinition Width="*" />
@@ -927,9 +931,43 @@
                             </Border>
 
                             <Border Grid.Column="2" Style="{StaticResource SectionCardStyle}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="Positions" Style="{StaticResource SectionTitleTextStyle}" />
+                                    <TextBlock Grid.Row="1" Text="Selected magazine named points" Style="{StaticResource SectionHintTextStyle}" />
+                                    <DataGrid Grid.Row="2" ItemsSource="{Binding MagazineMonitor.SelectedMagazine.Positions}"
+                                              SelectedItem="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition, Mode=TwoWay}"
+                                              AutoGenerateColumns="False"
+                                              CanUserAddRows="False"
+                                              IsReadOnly="False"
+                                              PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+                                            <DataGridTemplateColumn Header="标识" Width="110">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="{Binding BadgeBrush}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2">
+                                                            <TextBlock Text="{Binding BadgeText, TargetNullValue='', FallbackValue=''}" Foreground="White" FontSize="11" FontWeight="SemiBold" />
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                            <DataGridCheckBoxColumn Header="系统位" Binding="{Binding IsSystemDefault, Mode=OneWay}" Width="72" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Column="4" Style="{StaticResource SectionCardStyle}">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                     <Grid Margin="0">
                                         <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="10" />
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="10" />
                                             <RowDefinition Height="Auto" />
@@ -970,6 +1008,32 @@
 
                                         <Border Grid.Row="4" Style="{StaticResource SectionCardStyle}">
                                             <StackPanel>
+                                                <TextBlock Text="Position Detail" FontWeight="SemiBold" Margin="0,0,0,10" />
+                                                <Grid Margin="4,0,4,8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="10" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Position Name" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
+                                                    <TextBox Grid.Column="1" Margin="10,0,0,0" Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPositionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                    <Border Grid.Column="3" Background="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.BadgeBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Margin="0,0,0,0">
+                                                        <TextBlock Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.BadgeText}" Foreground="White" FontSize="11" FontWeight="SemiBold" />
+                                                    </Border>
+                                                    <CheckBox Grid.Column="4" Margin="10,0,0,0" IsChecked="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.IsSystemDefault, Mode=OneWay}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" />
+                                                </Grid>
+                                                <UniformGrid Columns="3">
+                                                    <StackPanel Margin="4"><TextBlock Text="X Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.X, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                                    <StackPanel Margin="4"><TextBlock Text="Y Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.Y, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                                    <StackPanel Margin="4"><TextBlock Text="Z Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.Z, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                                </UniformGrid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Row="6" Style="{StaticResource SectionCardStyle}">
+                                            <StackPanel>
                                                 <TextBlock Text="Layer Parameters" FontWeight="SemiBold" Margin="0,0,0,10" />
                                                 <UniformGrid Columns="2">
                                                     <StackPanel Margin="4"><TextBlock Text="Layer Height" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.LayerHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
@@ -978,7 +1042,7 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <Border Grid.Row="6" Style="{StaticResource SectionCardStyle}">
+                                        <Border Grid.Row="8" Style="{StaticResource SectionCardStyle}">
                                             <StackPanel>
                                                 <TextBlock Text="Vacuum and IO" FontWeight="SemiBold" Margin="0,0,0,10" />
                                                 <UniformGrid Columns="6">
@@ -992,7 +1056,7 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <WrapPanel Grid.Row="8" Orientation="Horizontal" Margin="4,4,4,4">
+                                        <WrapPanel Grid.Row="10" Orientation="Horizontal" Margin="4,4,4,4">
                                             <Button Content="Vacuum" Command="{Binding MagazineMonitor.SelectedMagazine.VacuumCommand, FallbackValue={x:Null}}" MinWidth="96" Style="{StaticResource SuccessButtonStyle}" />
                                             <Button Content="Blow" Command="{Binding MagazineMonitor.SelectedMagazine.BlowCommand, FallbackValue={x:Null}}" MinWidth="90" Style="{StaticResource WarningButtonStyle}" />
                                         </WrapPanel>

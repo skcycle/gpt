@@ -1,9 +1,11 @@
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Windows.Media;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
+using MotionControl.Infrastructure.Configuration;
 using MotionControl.Presentation.Commands;
 
 namespace MotionControl.Presentation.ViewModels;
@@ -15,6 +17,7 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
     private readonly IoControlService _ioControlService;
     private readonly Func<bool> _canControl;
     private readonly MagazineEventRuntimeState _magazineEventRuntimeState;
+    private MagazinePositionViewModel? _selectedPosition;
 
     public MagazineItemViewModel(Magazine magazine, Machine machine, IoControlService ioControlService, MagazineEventRuntimeState magazineEventRuntimeState, Func<bool> canControl)
     {
@@ -23,6 +26,8 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
         _ioControlService = ioControlService;
         _magazineEventRuntimeState = magazineEventRuntimeState;
         _canControl = canControl;
+        Positions = new ObservableCollection<MagazinePositionViewModel>(_magazine.Positions.Select(position => new MagazinePositionViewModel(position)));
+        _selectedPosition = Positions.FirstOrDefault(position => string.Equals(position.Name, _magazine.SelectedPositionName, StringComparison.OrdinalIgnoreCase)) ?? Positions.FirstOrDefault();
         VacuumCommand = new RelayCommand(async () => await ToggleVacuumAsync(), () => _canControl() && _magazine.VacuumOutputAddress >= 0);
         BlowCommand = new RelayCommand(async () => await ToggleBlowAsync(), () => _canControl() && _magazine.BlowOutputAddress >= 0);
     }
@@ -42,6 +47,38 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
     public double PickLiftHeight { get => _magazine.PickLiftHeight; set { if (_magazine.PickLiftHeight == value) return; UpdateMetadata(pickLiftHeight: value); OnPropertyChanged(); } }
     public int ActionTimeoutMs { get => _magazine.ActionTimeoutMs; set { if (_magazine.ActionTimeoutMs == value) return; UpdateMetadata(actionTimeoutMs: value); OnPropertyChanged(); } }
 
+    public ObservableCollection<MagazinePositionViewModel> Positions { get; }
+
+    public MagazinePositionViewModel? SelectedPosition
+    {
+        get => _selectedPosition ?? Positions.FirstOrDefault();
+        set
+        {
+            if (_selectedPosition == value) return;
+            _selectedPosition = value;
+            _magazine.SelectedPositionName = value?.Name;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasSelectedPosition));
+            OnPropertyChanged(nameof(CanDeleteSelectedPosition));
+            OnPropertyChanged(nameof(SelectedPositionName));
+        }
+    }
+
+    public bool HasSelectedPosition => SelectedPosition is not null;
+    public bool CanDeleteSelectedPosition => SelectedPosition is not null && !SelectedPosition.IsSystemDefault;
+    public string SelectedPositionName
+    {
+        get => SelectedPosition?.Name ?? string.Empty;
+        set
+        {
+            if (SelectedPosition is null || SelectedPosition.IsSystemDefault) return;
+            if (SelectedPosition.Name == value) return;
+            SelectedPosition.Name = value;
+            _magazine.SelectedPositionName = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool VacuumDoOn { get; private set; }
     public bool BlowDoOn { get; private set; }
     public bool MaterialPresentOn { get; private set; }
@@ -58,6 +95,40 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
     public ICommand BlowCommand { get; }
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void AddPosition()
+    {
+        var index = Positions.Count(position => !position.IsSystemDefault) + 1;
+        var position = new MagazinePositionConfigItem
+        {
+            Name = $"Position {index}",
+            Description = string.Empty,
+            Kind = MagazinePositionKinds.Normal,
+            X = 0,
+            Y = 0,
+            Z = 0
+        };
+
+        _magazine.AddPosition(position);
+        var vm = new MagazinePositionViewModel(_magazine.Positions.Last());
+        Positions.Add(vm);
+        SelectedPosition = vm;
+        OnPropertyChanged(nameof(CanDeleteSelectedPosition));
+    }
+
+    public bool DeleteSelectedPosition()
+    {
+        var selected = SelectedPosition;
+        if (selected is null || selected.IsSystemDefault) return false;
+
+        var removed = _magazine.DeleteSelectedPosition();
+        if (!removed) return false;
+
+        Positions.Remove(selected);
+        SelectedPosition = Positions.FirstOrDefault(position => string.Equals(position.Name, _magazine.SelectedPositionName, StringComparison.OrdinalIgnoreCase)) ?? Positions.FirstOrDefault();
+        OnPropertyChanged(nameof(CanDeleteSelectedPosition));
+        return true;
+    }
 
     public void Refresh()
     {
