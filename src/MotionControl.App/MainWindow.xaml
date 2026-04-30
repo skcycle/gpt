@@ -1017,24 +1017,6 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <Border Grid.Row="8" Style="{StaticResource SectionCardStyle}">
-                                            <StackPanel>
-                                                <TextBlock Text="Vacuum and IO" FontWeight="SemiBold" Margin="0,0,0,10" />
-                                                <UniformGrid Columns="6">
-                                                    <StackPanel Margin="4"><TextBlock Text="Vacuum DO" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.VacuumOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                                    <StackPanel Margin="4"><TextBlock Text="Blow DO" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.BlowOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                                    <StackPanel Margin="4"><TextBlock Text="料仓有无 IN" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.MaterialPresentInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                                    <StackPanel Margin="4"><TextBlock Text="当前层有料 IN" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.CurrentLayerHasMaterialInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                                    <StackPanel Margin="4"><TextBlock Text="料盘防呆 IN" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.TrayKeyingInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                                    <StackPanel Margin="4"><TextBlock Text="Vacuum Timeout(ms)" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.ActionTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                                </UniformGrid>
-                                            </StackPanel>
-                                        </Border>
-
-                                        <WrapPanel Grid.Row="10" Orientation="Horizontal" Margin="4,4,4,4">
-                                            <Button Content="Vacuum" Command="{Binding MagazineMonitor.SelectedMagazine.VacuumCommand, FallbackValue={x:Null}}" MinWidth="96" Style="{StaticResource SuccessButtonStyle}" />
-                                            <Button Content="Blow" Command="{Binding MagazineMonitor.SelectedMagazine.BlowCommand, FallbackValue={x:Null}}" MinWidth="90" Style="{StaticResource WarningButtonStyle}" />
-                                        </WrapPanel>
                                     </Grid>
                                 </ScrollViewer>
                             </Border>
