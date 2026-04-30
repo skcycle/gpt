@@ -1447,15 +1447,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             XAxisNo = magazine.XAxisNo,
             YAxisNo = magazine.YAxisNo,
             ZAxisNo = magazine.ZAxisNo,
-            VacuumOutputAddress = magazine.VacuumOutputAddress,
-            BlowOutputAddress = magazine.BlowOutputAddress,
             MaterialPresentInputAddress = magazine.MaterialPresentInputAddress,
             CurrentLayerHasMaterialInputAddress = magazine.CurrentLayerHasMaterialInputAddress,
             TrayKeyingInputAddress = magazine.TrayKeyingInputAddress,
             LayerCount = magazine.LayerCount,
             LayerHeight = magazine.LayerHeight,
             PickLiftHeight = magazine.PickLiftHeight,
-            ActionTimeoutMs = magazine.ActionTimeoutMs,
             Positions = magazine.Positions.Select(position => position.ToConfig()).ToList()
         }).ToList();
 

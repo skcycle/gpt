@@ -8,8 +8,6 @@ public sealed class MagazineRuntimeSyncService(Machine machine) : IMagazineRunti
 {
     public Task ApplyAsync(MagazineConfigItem magazine, CancellationToken cancellationToken = default)
     {
-        EnsureIoPointExists(magazine.VacuumOutputAddress, true);
-        EnsureIoPointExists(magazine.BlowOutputAddress, true);
         EnsureIoPointExists(magazine.MaterialPresentInputAddress, false);
         EnsureIoPointExists(magazine.CurrentLayerHasMaterialInputAddress, false);
         EnsureIoPointExists(magazine.TrayKeyingInputAddress, false);
@@ -18,13 +16,13 @@ public sealed class MagazineRuntimeSyncService(Machine machine) : IMagazineRunti
         if (existing is null)
         {
             var positions = magazine.Positions.Select(p => new MagazinePosition(p.Name, p.Description, string.IsNullOrWhiteSpace(p.Kind) ? MagazinePositionKinds.Normal : p.Kind, p.X, p.Y, p.Z));
-            var created = new Magazine(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.VacuumOutputAddress, magazine.BlowOutputAddress, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, magazine.ActionTimeoutMs, positions);
+            var created = new Magazine(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, positions);
             created.EnsureDefaultPositions();
             machine.AddMagazine(created);
             return Task.CompletedTask;
         }
 
-        existing.UpdateMetadata(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.VacuumOutputAddress, magazine.BlowOutputAddress, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, magazine.ActionTimeoutMs);
+        existing.UpdateMetadata(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight);
         existing.Positions.Clear();
         foreach (var position in magazine.Positions)
         {

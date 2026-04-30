@@ -24,13 +24,10 @@ public sealed class MagazineConfigAppService(string appSettingsPath) : IMagazine
             XAxisNo = -1,
             YAxisNo = -1,
             ZAxisNo = -1,
-            VacuumOutputAddress = -1,
-            BlowOutputAddress = -1,
             MaterialPresentInputAddress = -1,
             CurrentLayerHasMaterialInputAddress = -1,
             TrayKeyingInputAddress = -1,
-            LayerCount = 1,
-            ActionTimeoutMs = 3000
+            LayerCount = 1
         });
         root.MagazineMapping.Magazines.Add(item);
         await SaveRootAsync(root, cancellationToken);

@@ -31,7 +31,6 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
     public int LayerCount { get => _magazine.LayerCount; set { if (_magazine.LayerCount == value) return; UpdateMetadata(layerCount: value); OnPropertyChanged(); } }
     public double LayerHeight { get => _magazine.LayerHeight; set { if (_magazine.LayerHeight == value) return; UpdateMetadata(layerHeight: value); OnPropertyChanged(); } }
     public double PickLiftHeight { get => _magazine.PickLiftHeight; set { if (_magazine.PickLiftHeight == value) return; UpdateMetadata(pickLiftHeight: value); OnPropertyChanged(); } }
-    public int ActionTimeoutMs { get => _magazine.ActionTimeoutMs; set { if (_magazine.ActionTimeoutMs == value) return; UpdateMetadata(actionTimeoutMs: value); OnPropertyChanged(); } }
 
     public ObservableCollection<MagazinePositionViewModel> Positions { get; }
 
@@ -103,15 +102,12 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
         int? xAxisNo = null,
         int? yAxisNo = null,
         int? zAxisNo = null,
-        int? vacuumOutputAddress = null,
-        int? blowOutputAddress = null,
         int? materialPresentInputAddress = null,
         int? currentLayerHasMaterialInputAddress = null,
         int? trayKeyingInputAddress = null,
         int? layerCount = null,
         double? layerHeight = null,
-        double? pickLiftHeight = null,
-        int? actionTimeoutMs = null)
+        double? pickLiftHeight = null)
     {
         _magazine.UpdateMetadata(
             name ?? _magazine.Name,
@@ -119,15 +115,12 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
             xAxisNo ?? _magazine.XAxisNo,
             yAxisNo ?? _magazine.YAxisNo,
             zAxisNo ?? _magazine.ZAxisNo,
-            vacuumOutputAddress ?? _magazine.VacuumOutputAddress,
-            blowOutputAddress ?? _magazine.BlowOutputAddress,
             materialPresentInputAddress ?? _magazine.MaterialPresentInputAddress,
             currentLayerHasMaterialInputAddress ?? _magazine.CurrentLayerHasMaterialInputAddress,
             trayKeyingInputAddress ?? _magazine.TrayKeyingInputAddress,
             layerCount ?? _magazine.LayerCount,
             layerHeight ?? _magazine.LayerHeight,
-            pickLiftHeight ?? _magazine.PickLiftHeight,
-            actionTimeoutMs ?? _magazine.ActionTimeoutMs);
+            pickLiftHeight ?? _magazine.PickLiftHeight);
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

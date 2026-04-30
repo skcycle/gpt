@@ -7,14 +7,11 @@ public sealed class MagazineConfigItem
     public int XAxisNo { get; set; } = -1;
     public int YAxisNo { get; set; } = -1;
     public int ZAxisNo { get; set; } = -1;
-    public int VacuumOutputAddress { get; set; } = -1;
-    public int BlowOutputAddress { get; set; } = -1;
     public int MaterialPresentInputAddress { get; set; } = -1;
     public int CurrentLayerHasMaterialInputAddress { get; set; } = -1;
     public int TrayKeyingInputAddress { get; set; } = -1;
     public int LayerCount { get; set; } = 1;
     public double LayerHeight { get; set; }
     public double PickLiftHeight { get; set; }
-    public int ActionTimeoutMs { get; set; } = 3000;
     public List<MagazinePositionConfigItem> Positions { get; set; } = new();
 }

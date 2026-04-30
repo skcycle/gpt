@@ -29,8 +29,6 @@ public sealed class MagazineManagementAppService(
         var ioPoints = await ioConfigAppService.LoadIoPointsAsync(cancellationToken);
         var missingRefs = items.SelectMany(item => new[]
         {
-            (item.Name, Label: "Vacuum DO", Address: item.VacuumOutputAddress, IsOutput: true),
-            (item.Name, Label: "Blow DO", Address: item.BlowOutputAddress, IsOutput: true),
             (item.Name, Label: "料仓有无 DI", Address: item.MaterialPresentInputAddress, IsOutput: false),
             (item.Name, Label: "当前层有料 DI", Address: item.CurrentLayerHasMaterialInputAddress, IsOutput: false),
             (item.Name, Label: "料盘防呆 DI", Address: item.TrayKeyingInputAddress, IsOutput: false)
