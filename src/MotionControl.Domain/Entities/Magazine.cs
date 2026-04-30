@@ -20,7 +20,7 @@ public sealed class Magazine
         double layerHeight = 0,
         double pickLiftHeight = 0,
         int actionTimeoutMs = 3000,
-        IEnumerable<MagazinePositionConfigItem>? positions = null)
+        IEnumerable<MagazinePositionConfigItem>? configPositions = null)
     {
         Name = name;
         Description = description;
@@ -36,7 +36,7 @@ public sealed class Magazine
         LayerHeight = layerHeight;
         PickLiftHeight = pickLiftHeight;
         ActionTimeoutMs = actionTimeoutMs;
-        Positions = new ObservableCollection<MagazinePositionConfigItem>((positions ?? CreateDefaultPositions()).Select(ClonePosition));
+        Positions = new ObservableCollection<MagazinePosition>((configPositions ?? CreateDefaultConfigPositions()).Select(ToDomain));
         SelectedPositionName = Positions.FirstOrDefault()?.Name;
     }
 
@@ -54,7 +54,7 @@ public sealed class Magazine
     public double LayerHeight { get; private set; }
     public double PickLiftHeight { get; private set; }
     public int ActionTimeoutMs { get; private set; }
-    public ObservableCollection<MagazinePositionConfigItem> Positions { get; }
+    public ObservableCollection<MagazinePosition> Positions { get; }
     public string? SelectedPositionName { get; set; }
 
     public bool PendingVacuumCommand { get; private set; }
@@ -118,9 +118,9 @@ public sealed class Magazine
         return PendingVacuumCommand && VacuumCommandStartedAtUtc.HasValue && utcNow - VacuumCommandStartedAtUtc.Value >= TimeSpan.FromMilliseconds(ActionTimeoutMs);
     }
 
-    public void AddPosition(MagazinePositionConfigItem position)
+    public void AddPosition(MagazinePosition position)
     {
-        Positions.Add(ClonePosition(position));
+        Positions.Add(position);
         SelectedPositionName = position.Name;
     }
 
@@ -133,7 +133,7 @@ public sealed class Magazine
         return true;
     }
 
-    public MagazinePositionConfigItem? GetSelectedPosition()
+    public MagazinePosition? GetSelectedPosition()
     {
         return Positions.FirstOrDefault(p => string.Equals(p.Name, SelectedPositionName, StringComparison.OrdinalIgnoreCase))
                ?? Positions.FirstOrDefault();
@@ -162,15 +162,7 @@ public sealed class Magazine
             return;
         }
 
-        Positions.Insert(Positions.Count > 0 ? Math.Min(1, Positions.Count) : 0, new MagazinePositionConfigItem
-        {
-            Name = name,
-            Description = string.Empty,
-            Kind = kind,
-            X = 0,
-            Y = 0,
-            Z = 0
-        });
+        Positions.Insert(Positions.Count > 0 ? Math.Min(1, Positions.Count) : 0, new MagazinePosition(name, string.Empty, kind, 0, 0, 0));
 
         var ordered = Positions
             .OrderBy(p => GetKindOrder(p.Kind))
@@ -190,26 +182,18 @@ public sealed class Magazine
         };
     }
 
-    private static bool IsSystemPosition(MagazinePositionConfigItem position)
+    private static bool IsSystemPosition(MagazinePosition position)
     {
         return string.Equals(position.Kind, MagazinePositionKinds.PickStart, StringComparison.OrdinalIgnoreCase)
                || string.Equals(position.Kind, MagazinePositionKinds.InspectStart, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static MagazinePositionConfigItem ClonePosition(MagazinePositionConfigItem position)
+    private static MagazinePosition ToDomain(MagazinePositionConfigItem item)
     {
-        return new MagazinePositionConfigItem
-        {
-            Name = position.Name,
-            Description = position.Description,
-            Kind = string.IsNullOrWhiteSpace(position.Kind) ? MagazinePositionKinds.Normal : position.Kind,
-            X = position.X,
-            Y = position.Y,
-            Z = position.Z
-        };
+        return new MagazinePosition(item.Name, item.Description, string.IsNullOrWhiteSpace(item.Kind) ? MagazinePositionKinds.Normal : item.Kind, item.X, item.Y, item.Z);
     }
 
-    private static IEnumerable<MagazinePositionConfigItem> CreateDefaultPositions()
+    private static IEnumerable<MagazinePositionConfigItem> CreateDefaultConfigPositions()
     {
         return new[]
         {

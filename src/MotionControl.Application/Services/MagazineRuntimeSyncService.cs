@@ -27,15 +27,13 @@ public sealed class MagazineRuntimeSyncService(Machine machine) : IMagazineRunti
         existing.Positions.Clear();
         foreach (var position in magazine.Positions)
         {
-            existing.Positions.Add(new MagazinePositionConfigItem
-            {
-                Name = position.Name,
-                Description = position.Description,
-                Kind = position.Kind,
-                X = position.X,
-                Y = position.Y,
-                Z = position.Z
-            });
+            existing.Positions.Add(new MagazinePosition(
+                position.Name,
+                position.Description,
+                string.IsNullOrWhiteSpace(position.Kind) ? MagazinePositionKinds.Normal : position.Kind,
+                position.X,
+                position.Y,
+                position.Z));
         }
         existing.EnsureDefaultPositions();
         return Task.CompletedTask;

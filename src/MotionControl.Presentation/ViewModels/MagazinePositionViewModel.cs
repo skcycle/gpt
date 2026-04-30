@@ -1,64 +1,72 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Media;
+using MotionControl.Domain.Entities;
 using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Presentation.ViewModels;
 
 public sealed class MagazinePositionViewModel : INotifyPropertyChanged
 {
-    private readonly MagazinePositionConfigItem _item;
+    private readonly MagazinePosition _position;
 
-    public MagazinePositionViewModel(MagazinePositionConfigItem item)
+    public MagazinePositionViewModel(MagazinePosition position)
     {
-        _item = item;
+        _position = position;
     }
 
     public string Name
     {
-        get => _item.Name;
+        get => _position.Name;
         set
         {
             if (IsSystemDefault) return;
-            if (_item.Name == value) return;
-            _item.Name = value;
+            if (_position.Name == value) return;
+            _position.Name = value;
             OnPropertyChanged();
         }
     }
 
     public string Description
     {
-        get => _item.Description;
-        set { if (_item.Description == value) return; _item.Description = value; OnPropertyChanged(); }
+        get => _position.Description;
+        set { if (_position.Description == value) return; _position.Description = value; OnPropertyChanged(); }
     }
 
     public string Kind
     {
-        get => _item.Kind;
-        set { if (_item.Kind == value) return; _item.Kind = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsSystemDefault)); OnPropertyChanged(nameof(BadgeText)); OnPropertyChanged(nameof(BadgeBrush)); }
+        get => _position.Kind;
+        set
+        {
+            if (_position.Kind == value) return;
+            _position.Kind = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsSystemDefault));
+            OnPropertyChanged(nameof(BadgeText));
+            OnPropertyChanged(nameof(BadgeBrush));
+        }
     }
 
     public double X
     {
-        get => _item.X;
-        set { if (_item.X == value) return; _item.X = value; OnPropertyChanged(); }
+        get => _position.X;
+        set { if (_position.X == value) return; _position.X = value; OnPropertyChanged(); }
     }
 
     public double Y
     {
-        get => _item.Y;
-        set { if (_item.Y == value) return; _item.Y = value; OnPropertyChanged(); }
+        get => _position.Y;
+        set { if (_position.Y == value) return; _position.Y = value; OnPropertyChanged(); }
     }
 
     public double Z
     {
-        get => _item.Z;
-        set { if (_item.Z == value) return; _item.Z = value; OnPropertyChanged(); }
+        get => _position.Z;
+        set { if (_position.Z == value) return; _position.Z = value; OnPropertyChanged(); }
     }
 
     public bool IsSystemDefault =>
-        string.Equals(_item.Kind, MagazinePositionKinds.PickStart, StringComparison.OrdinalIgnoreCase)
-        || string.Equals(_item.Kind, MagazinePositionKinds.InspectStart, StringComparison.OrdinalIgnoreCase);
+        string.Equals(_position.Kind, MagazinePositionKinds.PickStart, StringComparison.OrdinalIgnoreCase)
+        || string.Equals(_position.Kind, MagazinePositionKinds.InspectStart, StringComparison.OrdinalIgnoreCase);
 
     public string BadgeText => Kind switch
     {
@@ -74,7 +82,20 @@ public sealed class MagazinePositionViewModel : INotifyPropertyChanged
         _ => Brushes.Transparent
     };
 
-    public MagazinePositionConfigItem ToConfig() => _item;
+    public MagazinePositionConfigItem ToConfig()
+    {
+        return new MagazinePositionConfigItem
+        {
+            Name = _position.Name,
+            Description = _position.Description,
+            Kind = _position.Kind,
+            X = _position.X,
+            Y = _position.Y,
+            Z = _position.Z
+        };
+    }
+
+    public MagazinePosition ToDomain() => _position;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

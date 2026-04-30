@@ -99,15 +99,7 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
     public void AddPosition()
     {
         var index = Positions.Count(position => !position.IsSystemDefault) + 1;
-        var position = new MagazinePositionConfigItem
-        {
-            Name = $"Position {index}",
-            Description = string.Empty,
-            Kind = MagazinePositionKinds.Normal,
-            X = 0,
-            Y = 0,
-            Z = 0
-        };
+        var position = new MagazinePosition($"Position {index}", string.Empty, MagazinePositionKinds.Normal, 0, 0, 0);
 
         _magazine.AddPosition(position);
         var vm = new MagazinePositionViewModel(_magazine.Positions.Last());
