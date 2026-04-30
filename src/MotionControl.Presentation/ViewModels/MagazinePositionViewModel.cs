@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Media;
 using MotionControl.Domain.Entities;
 using MotionControl.Infrastructure.Configuration;
 
