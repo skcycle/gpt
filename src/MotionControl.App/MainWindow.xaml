@@ -80,6 +80,15 @@
                             <TextBlock Grid.Column="1" Text="Cylinder" FontSize="14" VerticalAlignment="Center" />
                         </Grid>
                     </ToggleButton>
+                    <ToggleButton x:Name="NavMagazineButton" Style="{StaticResource NavItemButtonStyle}" Click="NavMagazine_Click">
+                        <Grid>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <Viewbox Width="16" Height="16" VerticalAlignment="Center" HorizontalAlignment="Left">
+                                <Path Fill="{StaticResource AccentBrushStrong}" Data="M4,5 L20,5 L20,9 L4,9 Z M4,11 L20,11 L20,15 L4,15 Z M4,17 L20,17 L20,21 L4,21 Z" />
+                            </Viewbox>
+                            <TextBlock Grid.Column="1" Text="Magazine" FontSize="14" VerticalAlignment="Center" />
+                        </Grid>
+                    </ToggleButton>
                     <ToggleButton x:Name="NavWorkHeadButton" Style="{StaticResource NavItemButtonStyle}" Click="NavWorkHead_Click">
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>

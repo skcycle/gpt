@@ -198,9 +198,10 @@ public partial class MainWindow : Window
     private void NavAxis_Click(object sender, RoutedEventArgs e) => NavigateTo(2, MainWindowViewModel.NavigationPage.Axis);
     private void NavIo_Click(object sender, RoutedEventArgs e) => NavigateTo(3, MainWindowViewModel.NavigationPage.Io);
     private void NavCylinder_Click(object sender, RoutedEventArgs e) => NavigateTo(4, MainWindowViewModel.NavigationPage.Cylinder);
-    private void NavWorkHead_Click(object sender, RoutedEventArgs e) => NavigateTo(5, MainWindowViewModel.NavigationPage.WorkHead);
-    private void NavPositionSetup_Click(object sender, RoutedEventArgs e) => NavigateTo(6, MainWindowViewModel.NavigationPage.PositionSetup);
-    private void NavAlarm_Click(object sender, RoutedEventArgs e) => NavigateTo(7, MainWindowViewModel.NavigationPage.Alarm);
+    private void NavMagazine_Click(object sender, RoutedEventArgs e) => NavigateTo(5, MainWindowViewModel.NavigationPage.Magazine);
+    private void NavWorkHead_Click(object sender, RoutedEventArgs e) => NavigateTo(6, MainWindowViewModel.NavigationPage.WorkHead);
+    private void NavPositionSetup_Click(object sender, RoutedEventArgs e) => NavigateTo(7, MainWindowViewModel.NavigationPage.PositionSetup);
+    private void NavAlarm_Click(object sender, RoutedEventArgs e) => NavigateTo(8, MainWindowViewModel.NavigationPage.Alarm);
 
     private void NavigateTo(int tabIndex, MainWindowViewModel.NavigationPage page)
     {
@@ -239,17 +240,21 @@ public partial class MainWindow : Window
         {
             cylinderButton.IsChecked = tabIndex == 4;
         }
+        if (FindName("NavMagazineButton") is System.Windows.Controls.Primitives.ToggleButton magazineButton)
+        {
+            magazineButton.IsChecked = tabIndex == 5;
+        }
         if (FindName("NavWorkHeadButton") is System.Windows.Controls.Primitives.ToggleButton workHeadButton)
         {
-            workHeadButton.IsChecked = tabIndex == 5;
+            workHeadButton.IsChecked = tabIndex == 6;
         }
         if (FindName("NavPositionSetupButton") is System.Windows.Controls.Primitives.ToggleButton positionSetupButton)
         {
-            positionSetupButton.IsChecked = tabIndex == 6;
+            positionSetupButton.IsChecked = tabIndex == 7;
         }
         if (FindName("NavAlarmButton") is System.Windows.Controls.Primitives.ToggleButton alarmButton)
         {
-            alarmButton.IsChecked = tabIndex == 7;
+            alarmButton.IsChecked = tabIndex == 8;
         }
     }
 
