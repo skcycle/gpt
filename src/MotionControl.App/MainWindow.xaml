@@ -947,16 +947,6 @@
                                               PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
-                                            <DataGridTemplateColumn Header="标识" Width="110">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <Border Background="{Binding BadgeBrush}" CornerRadius="4" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2">
-                                                            <TextBlock Text="{Binding BadgeText, TargetNullValue='', FallbackValue=''}" Foreground="White" FontSize="11" FontWeight="SemiBold" />
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-                                            <DataGridCheckBoxColumn Header="系统位" Binding="{Binding IsSystemDefault, Mode=OneWay}" Width="72" />
                                         </DataGrid.Columns>
                                     </DataGrid>
                                 </Grid>
@@ -1013,16 +1003,9 @@
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="Auto" />
                                                         <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="10" />
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Text="Position Name" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
                                                     <TextBox Grid.Column="1" Margin="10,0,0,0" Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPositionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                                    <Border Grid.Column="3" Background="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.BadgeBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Margin="0,0,0,0">
-                                                        <TextBlock Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.BadgeText}" Foreground="White" FontSize="11" FontWeight="SemiBold" />
-                                                    </Border>
-                                                    <CheckBox Grid.Column="4" Margin="10,0,0,0" IsChecked="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.IsSystemDefault, Mode=OneWay}" IsHitTestVisible="False" Focusable="False" VerticalAlignment="Center" />
                                                 </Grid>
                                                 <UniformGrid Columns="3">
                                                     <StackPanel Margin="4"><TextBlock Text="X Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.X, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
