@@ -1,5 +1,6 @@
 using System.Text.Json;
 using MotionControl.Application.Interfaces;
+using MotionControl.Domain.Entities;
 using MotionControl.Infrastructure.Configuration;
 
 namespace MotionControl.Application.Services;

@@ -17,7 +17,8 @@ public sealed class MagazineRuntimeSyncService(Machine machine) : IMagazineRunti
         var existing = machine.Magazines.FirstOrDefault(item => string.Equals(item.Name, magazine.Name, StringComparison.OrdinalIgnoreCase));
         if (existing is null)
         {
-            var created = new Magazine(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.VacuumOutputAddress, magazine.BlowOutputAddress, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, magazine.ActionTimeoutMs, magazine.Positions);
+            var positions = magazine.Positions.Select(p => new MagazinePosition(p.Name, p.Description, string.IsNullOrWhiteSpace(p.Kind) ? MagazinePositionKinds.Normal : p.Kind, p.X, p.Y, p.Z));
+            var created = new Magazine(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.VacuumOutputAddress, magazine.BlowOutputAddress, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, magazine.ActionTimeoutMs, positions);
             created.EnsureDefaultPositions();
             machine.AddMagazine(created);
             return Task.CompletedTask;

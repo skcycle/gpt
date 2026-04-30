@@ -1,7 +1,6 @@
 namespace MotionControl.Domain.Entities;
 
 using System.Collections.ObjectModel;
-using MotionControl.Infrastructure.Configuration;
 
 public sealed class Magazine
 {
@@ -20,7 +19,7 @@ public sealed class Magazine
         double layerHeight = 0,
         double pickLiftHeight = 0,
         int actionTimeoutMs = 3000,
-        IEnumerable<MagazinePositionConfigItem>? configPositions = null)
+        IEnumerable<MagazinePosition>? positions = null)
     {
         Name = name;
         Description = description;
@@ -36,7 +35,7 @@ public sealed class Magazine
         LayerHeight = layerHeight;
         PickLiftHeight = pickLiftHeight;
         ActionTimeoutMs = actionTimeoutMs;
-        Positions = new ObservableCollection<MagazinePosition>((configPositions ?? CreateDefaultConfigPositions()).Select(ToDomain));
+        Positions = new ObservableCollection<MagazinePosition>(positions ?? CreateDefaultPositions());
         SelectedPositionName = Positions.FirstOrDefault()?.Name;
     }
 
@@ -188,17 +187,12 @@ public sealed class Magazine
                || string.Equals(position.Kind, MagazinePositionKinds.InspectStart, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static MagazinePosition ToDomain(MagazinePositionConfigItem item)
-    {
-        return new MagazinePosition(item.Name, item.Description, string.IsNullOrWhiteSpace(item.Kind) ? MagazinePositionKinds.Normal : item.Kind, item.X, item.Y, item.Z);
-    }
-
-    private static IEnumerable<MagazinePositionConfigItem> CreateDefaultConfigPositions()
+    private static IEnumerable<MagazinePosition> CreateDefaultPositions()
     {
         return new[]
         {
-            new MagazinePositionConfigItem { Name = "取料起始位", Description = string.Empty, Kind = MagazinePositionKinds.PickStart },
-            new MagazinePositionConfigItem { Name = "检测起始位", Description = string.Empty, Kind = MagazinePositionKinds.InspectStart }
+            new MagazinePosition("取料起始位", string.Empty, MagazinePositionKinds.PickStart, 0, 0, 0),
+            new MagazinePosition("检测起始位", string.Empty, MagazinePositionKinds.InspectStart, 0, 0, 0)
         };
     }
 }
