@@ -1,9 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
-using System.Windows.Media;
-using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
 
@@ -13,22 +10,14 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
 {
     private readonly Magazine _magazine;
     private readonly Machine _machine;
-    private readonly IoControlService _ioControlService;
-    private readonly Func<bool> _canControl;
-    private readonly MagazineEventRuntimeState _magazineEventRuntimeState;
     private MagazinePositionViewModel? _selectedPosition;
 
-    public MagazineItemViewModel(Magazine magazine, Machine machine, IoControlService ioControlService, MagazineEventRuntimeState magazineEventRuntimeState, Func<bool> canControl)
+    public MagazineItemViewModel(Magazine magazine, Machine machine)
     {
         _magazine = magazine;
         _machine = machine;
-        _ioControlService = ioControlService;
-        _magazineEventRuntimeState = magazineEventRuntimeState;
-        _canControl = canControl;
         Positions = new ObservableCollection<MagazinePositionViewModel>(_magazine.Positions.Select(position => new MagazinePositionViewModel(position)));
         _selectedPosition = Positions.FirstOrDefault(position => string.Equals(position.Name, _magazine.SelectedPositionName, StringComparison.OrdinalIgnoreCase)) ?? Positions.FirstOrDefault();
-        VacuumCommand = new RelayCommand(async () => await ToggleVacuumAsync(), () => _canControl() && _magazine.VacuumOutputAddress >= 0);
-        BlowCommand = new RelayCommand(async () => await ToggleBlowAsync(), () => _canControl() && _magazine.BlowOutputAddress >= 0);
     }
 
     public string Name { get => _magazine.Name; set { if (_magazine.Name == value) return; UpdateMetadata(name: value); OnPropertyChanged(); } }
@@ -36,8 +25,6 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
     public int XAxisNo { get => _magazine.XAxisNo; set { if (_magazine.XAxisNo == value) return; UpdateMetadata(xAxisNo: value); OnPropertyChanged(); } }
     public int YAxisNo { get => _magazine.YAxisNo; set { if (_magazine.YAxisNo == value) return; UpdateMetadata(yAxisNo: value); OnPropertyChanged(); } }
     public int ZAxisNo { get => _magazine.ZAxisNo; set { if (_magazine.ZAxisNo == value) return; UpdateMetadata(zAxisNo: value); OnPropertyChanged(); } }
-    public int VacuumOutputAddress { get => _magazine.VacuumOutputAddress; set { if (_magazine.VacuumOutputAddress == value) return; UpdateMetadata(vacuumOutputAddress: value); OnPropertyChanged(); RaiseCanExecuteChanged(VacuumCommand); RaiseCanExecuteChanged(BlowCommand); } }
-    public int BlowOutputAddress { get => _magazine.BlowOutputAddress; set { if (_magazine.BlowOutputAddress == value) return; UpdateMetadata(blowOutputAddress: value); OnPropertyChanged(); RaiseCanExecuteChanged(BlowCommand); } }
     public int MaterialPresentInputAddress { get => _magazine.MaterialPresentInputAddress; set { if (_magazine.MaterialPresentInputAddress == value) return; UpdateMetadata(materialPresentInputAddress: value); OnPropertyChanged(); } }
     public int CurrentLayerHasMaterialInputAddress { get => _magazine.CurrentLayerHasMaterialInputAddress; set { if (_magazine.CurrentLayerHasMaterialInputAddress == value) return; UpdateMetadata(currentLayerHasMaterialInputAddress: value); OnPropertyChanged(); } }
     public int TrayKeyingInputAddress { get => _magazine.TrayKeyingInputAddress; set { if (_magazine.TrayKeyingInputAddress == value) return; UpdateMetadata(trayKeyingInputAddress: value); OnPropertyChanged(); } }
@@ -78,21 +65,6 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
         }
     }
 
-    public bool VacuumDoOn { get; private set; }
-    public bool BlowDoOn { get; private set; }
-    public bool MaterialPresentOn { get; private set; }
-    public bool CurrentLayerHasMaterialOn { get; private set; }
-    public bool TrayKeyingOn { get; private set; }
-
-    public Brush VacuumDoBrush => VacuumDoOn ? OnBrush : OffBrush;
-    public Brush BlowDoBrush => BlowDoOn ? OnBrush : OffBrush;
-    public Brush MaterialPresentBrush => MaterialPresentOn ? OnBrush : OffBrush;
-    public Brush CurrentLayerHasMaterialBrush => CurrentLayerHasMaterialOn ? OnBrush : OffBrush;
-    public Brush TrayKeyingBrush => TrayKeyingOn ? OnBrush : OffBrush;
-
-    public ICommand VacuumCommand { get; }
-    public ICommand BlowCommand { get; }
-
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public void AddPosition()
@@ -123,63 +95,6 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
 
     public void Refresh()
     {
-        VacuumDoOn = ReadOutput(_magazine.VacuumOutputAddress);
-        BlowDoOn = ReadOutput(_magazine.BlowOutputAddress);
-        MaterialPresentOn = ReadInput(_magazine.MaterialPresentInputAddress);
-        CurrentLayerHasMaterialOn = ReadInput(_magazine.CurrentLayerHasMaterialInputAddress);
-        TrayKeyingOn = ReadInput(_magazine.TrayKeyingInputAddress);
-
-        OnPropertyChanged(nameof(VacuumDoOn));
-        OnPropertyChanged(nameof(BlowDoOn));
-        OnPropertyChanged(nameof(MaterialPresentOn));
-        OnPropertyChanged(nameof(CurrentLayerHasMaterialOn));
-        OnPropertyChanged(nameof(TrayKeyingOn));
-        OnPropertyChanged(nameof(VacuumDoBrush));
-        OnPropertyChanged(nameof(BlowDoBrush));
-        OnPropertyChanged(nameof(MaterialPresentBrush));
-        OnPropertyChanged(nameof(CurrentLayerHasMaterialBrush));
-        OnPropertyChanged(nameof(TrayKeyingBrush));
-
-        EvaluateVacuumRuntime();
-        RaiseCanExecuteChanged(VacuumCommand);
-        RaiseCanExecuteChanged(BlowCommand);
-    }
-
-    private async Task ToggleVacuumAsync()
-    {
-        var next = !VacuumDoOn;
-        _magazineEventRuntimeState.Add(new MagazineEventRecord { MagazineName = _magazine.Name, EventType = "Command", Message = $"{_magazine.Name} vacuum {(next ? "on" : "off")} started" });
-        var result = await _ioControlService.SetOutputAsync(_magazine.VacuumOutputAddress, next);
-        if (!result.Success)
-        {
-            var code = $"MAG-{_magazine.Name}-VACUUM-COMMAND-FAILED";
-            var message = $"{_magazine.Name} vacuum command failed: {result.ErrorMessage}";
-            _machine.UpsertAlarm(code, message, _magazine.Name, "Magazine", "Error");
-            _magazineEventRuntimeState.Add(new MagazineEventRecord { MagazineName = _magazine.Name, EventType = "Failed", Message = message });
-            return;
-        }
-
-        _magazine.StartVacuumCommand();
-        _machine.ClearAlarm($"MAG-{_magazine.Name}-VACUUM-COMMAND-FAILED");
-        _magazineEventRuntimeState.Add(new MagazineEventRecord { MagazineName = _magazine.Name, EventType = "Success", Message = $"{_magazine.Name} vacuum {(next ? "on" : "off")} completed" });
-    }
-
-    private async Task ToggleBlowAsync()
-    {
-        var next = !BlowDoOn;
-        _magazineEventRuntimeState.Add(new MagazineEventRecord { MagazineName = _magazine.Name, EventType = "Command", Message = $"{_magazine.Name} blow {(next ? "on" : "off")} started" });
-        var result = await _ioControlService.SetOutputAsync(_magazine.BlowOutputAddress, next);
-        if (!result.Success)
-        {
-            var code = $"MAG-{_magazine.Name}-BLOW-COMMAND-FAILED";
-            var message = $"{_magazine.Name} blow command failed: {result.ErrorMessage}";
-            _machine.UpsertAlarm(code, message, _magazine.Name, "Magazine", "Error");
-            _magazineEventRuntimeState.Add(new MagazineEventRecord { MagazineName = _magazine.Name, EventType = "Failed", Message = message });
-            return;
-        }
-
-        _machine.ClearAlarm($"MAG-{_magazine.Name}-BLOW-COMMAND-FAILED");
-        _magazineEventRuntimeState.Add(new MagazineEventRecord { MagazineName = _magazine.Name, EventType = "Success", Message = $"{_magazine.Name} blow {(next ? "on" : "off")} completed" });
     }
 
     private void UpdateMetadata(
@@ -213,54 +128,6 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
             layerHeight ?? _magazine.LayerHeight,
             pickLiftHeight ?? _magazine.PickLiftHeight,
             actionTimeoutMs ?? _magazine.ActionTimeoutMs);
-    }
-
-    private void EvaluateVacuumRuntime()
-    {
-        var timeoutAlarmCode = $"MAG-{_magazine.Name}-VACUUM-TIMEOUT";
-        var conflictAlarmCode = $"MAG-{_magazine.Name}-VACUUM-CONFLICT";
-
-        if (VacuumDoOn && MaterialPresentOn && _magazine.PendingVacuumCommand && !_magazine.VacuumSuccessLogged)
-        {
-            _magazine.VacuumSuccessLogged = true;
-            _magazine.StopVacuumCommand();
-            _machine.ClearAlarm(timeoutAlarmCode);
-            _machine.ClearAlarm(conflictAlarmCode);
-            _magazineEventRuntimeState.Add(new MagazineEventRecord { MagazineName = _magazine.Name, EventType = "Success", Message = $"{_magazine.Name} vacuum sensor confirmed" });
-        }
-        else if (VacuumDoOn && !MaterialPresentOn && _magazine.HasVacuumTimedOut(DateTime.UtcNow) && !_magazine.VacuumTimeoutLogged)
-        {
-            _magazine.VacuumTimeoutLogged = true;
-            var message = $"{_magazine.Name} vacuum timeout";
-            _machine.UpsertAlarm(timeoutAlarmCode, message, _magazine.Name, "Magazine", "Error");
-            _magazineEventRuntimeState.Add(new MagazineEventRecord { MagazineName = _magazine.Name, EventType = "Failed", Message = message });
-        }
-
-        if (VacuumDoOn && BlowDoOn && !_magazine.VacuumConflictLogged)
-        {
-            _magazine.VacuumConflictLogged = true;
-            var message = $"{_magazine.Name} vacuum and blow are on at the same time";
-            _machine.UpsertAlarm(conflictAlarmCode, message, _magazine.Name, "Magazine", "Error");
-            _magazineEventRuntimeState.Add(new MagazineEventRecord { MagazineName = _magazine.Name, EventType = "Failed", Message = message });
-        }
-        else if ((!VacuumDoOn || !BlowDoOn) && _machine.ClearAlarm(conflictAlarmCode))
-        {
-            _magazine.VacuumConflictLogged = false;
-        }
-    }
-
-    private bool ReadOutput(int address) => address >= 0 && _machine.IoPoints.FirstOrDefault(point => point.IsOutput && point.Address == address)?.Value == true;
-    private bool ReadInput(int address) => address >= 0 && _machine.IoPoints.FirstOrDefault(point => !point.IsOutput && point.Address == address)?.Value == true;
-
-    private static readonly Brush OnBrush = new SolidColorBrush(Color.FromRgb(0, 200, 0));
-    private static readonly Brush OffBrush = new SolidColorBrush(Color.FromRgb(100, 100, 100));
-
-    private static void RaiseCanExecuteChanged(ICommand command)
-    {
-        if (command is RelayCommand relayCommand)
-        {
-            relayCommand.RaiseCanExecuteChanged();
-        }
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

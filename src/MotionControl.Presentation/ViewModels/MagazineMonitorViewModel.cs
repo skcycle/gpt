@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Presentation.ViewModels;
@@ -9,17 +8,11 @@ namespace MotionControl.Presentation.ViewModels;
 public sealed class MagazineMonitorViewModel : INotifyPropertyChanged
 {
     private readonly Machine _machine;
-    private readonly IoControlService _ioControlService;
-    private readonly Func<bool> _canControl;
-    private readonly MagazineEventRuntimeState _magazineEventRuntimeState;
     private MagazineItemViewModel? _selectedMagazine;
 
-    public MagazineMonitorViewModel(Machine machine, IoControlService ioControlService, MagazineEventRuntimeState magazineEventRuntimeState, Func<bool> canControl)
+    public MagazineMonitorViewModel(Machine machine)
     {
         _machine = machine;
-        _ioControlService = ioControlService;
-        _magazineEventRuntimeState = magazineEventRuntimeState;
-        _canControl = canControl;
         Magazines = new ObservableCollection<MagazineItemViewModel>(_machine.Magazines.Select(BuildViewModel));
     }
 
@@ -38,15 +31,13 @@ public sealed class MagazineMonitorViewModel : INotifyPropertyChanged
             }
 
             _selectedMagazine = value;
-            OnPropertyChanged();
 
             if (value is not null)
             {
                 value.PropertyChanged += OnSelectedMagazinePropertyChanged;
-                RaiseCanExecuteChanged(value.VacuumCommand);
-                RaiseCanExecuteChanged(value.BlowCommand);
             }
 
+            OnPropertyChanged();
             SelectedMagazinePositionChanged?.Invoke();
         }
     }
@@ -83,21 +74,13 @@ public sealed class MagazineMonitorViewModel : INotifyPropertyChanged
         if (SelectedMagazine == existing) SelectedMagazine = Magazines.FirstOrDefault();
     }
 
-    private MagazineItemViewModel BuildViewModel(Magazine magazine) => new(magazine, _machine, _ioControlService, _magazineEventRuntimeState, _canControl);
+    private MagazineItemViewModel BuildViewModel(Magazine magazine) => new(magazine, _machine);
 
     private void OnSelectedMagazinePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(MagazineItemViewModel.SelectedPosition))
         {
             SelectedMagazinePositionChanged?.Invoke();
-        }
-    }
-
-    private static void RaiseCanExecuteChanged(System.Windows.Input.ICommand command)
-    {
-        if (command is MotionControl.Presentation.Commands.RelayCommand relayCommand)
-        {
-            relayCommand.RaiseCanExecuteChanged();
         }
     }
 

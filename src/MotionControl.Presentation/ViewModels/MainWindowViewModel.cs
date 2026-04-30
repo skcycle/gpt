@@ -125,7 +125,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         PositionSetupEventLog = new PositionSetupEventLogViewModel(positionSetupEventRuntimeState);
         CylinderMonitor = new CylinderMonitorViewModel(machine, ioControlService, cylinderEventRuntimeState, CanWriteIoOutputs);
         CylinderMonitor.SelectedCylinderChanged += _ => (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        MagazineMonitor = new MagazineMonitorViewModel(machine, ioControlService, magazineEventRuntimeState, CanWriteIoOutputs);
+        MagazineMonitor = new MagazineMonitorViewModel(machine);
         MagazineMonitor.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(MagazineMonitorViewModel.SelectedMagazine))
