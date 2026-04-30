@@ -27,6 +27,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         Axis,
         Io,
         Cylinder,
+        Magazine,
         WorkHead,
         PositionSetup,
         Alarm
@@ -36,6 +37,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private readonly IAxisManagementAppService _axisManagementAppService;
     private readonly IIoManagementAppService _ioManagementAppService;
     private readonly ICylinderManagementAppService _cylinderManagementAppService;
+    private readonly IMagazineManagementAppService _magazineManagementAppService;
     private readonly IWorkHeadManagementAppService _workHeadManagementAppService;
     private readonly IPositionSetupManagementAppService _positionSetupManagementAppService;
     private readonly ISystemAppService _systemAppService;
@@ -44,6 +46,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private readonly IoMonitorCoordinator _ioMonitorCoordinator;
     private readonly CommandFeedbackRuntimeState _commandFeedbackRuntimeState;
     private readonly CylinderEventRuntimeState _cylinderEventRuntimeState;
+    private readonly MagazineEventRuntimeState _magazineEventRuntimeState;
     private readonly PositionSetupEventRuntimeState _positionSetupEventRuntimeState;
     private readonly WorkHeadEventRuntimeState _workHeadEventRuntimeState;
     private readonly ControllerRuntimeState _controllerRuntimeState;
@@ -54,6 +57,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private DateTime _lastIoRefreshUtc = DateTime.MinValue;
     private DateTime _lastIoEventRefreshUtc = DateTime.MinValue;
     private DateTime _lastCylinderRefreshUtc = DateTime.MinValue;
+    private DateTime _lastMagazineRefreshUtc = DateTime.MinValue;
     private DateTime _lastWorkHeadRefreshUtc = DateTime.MinValue;
     private DateTime _lastPositionSetupRefreshUtc = DateTime.MinValue;
     private string _currentBeijingTime = GetBeijingTimeString();
@@ -79,6 +83,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         MotionControl.Control.Interfaces.IAxisControlService axisControlService,
         IIoManagementAppService ioManagementAppService,
         ICylinderManagementAppService cylinderManagementAppService,
+        IMagazineManagementAppService magazineManagementAppService,
         IWorkHeadManagementAppService workHeadManagementAppService,
         IPositionSetupManagementAppService positionSetupManagementAppService,
         ControllerRuntimeState controllerRuntimeState,
@@ -86,6 +91,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         CommandFeedbackRuntimeState commandFeedbackRuntimeState,
         IoEventRuntimeState ioEventRuntimeState,
         CylinderEventRuntimeState cylinderEventRuntimeState,
+        MagazineEventRuntimeState magazineEventRuntimeState,
         WorkHeadEventRuntimeState workHeadEventRuntimeState,
         PositionSetupEventRuntimeState positionSetupEventRuntimeState,
         IoControlService ioControlService)
@@ -95,10 +101,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _axisManagementAppService = axisManagementAppService;
         _ioManagementAppService = ioManagementAppService;
         _cylinderManagementAppService = cylinderManagementAppService;
+        _magazineManagementAppService = magazineManagementAppService;
         _workHeadManagementAppService = workHeadManagementAppService;
         _positionSetupManagementAppService = positionSetupManagementAppService;
         _commandFeedbackRuntimeState = commandFeedbackRuntimeState;
         _cylinderEventRuntimeState = cylinderEventRuntimeState;
+        _magazineEventRuntimeState = magazineEventRuntimeState;
         _workHeadEventRuntimeState = workHeadEventRuntimeState;
         _positionSetupEventRuntimeState = positionSetupEventRuntimeState;
         _commandFeedbackRuntimeState.FeedbackChanged += () => RefreshViewModels(force: true);
@@ -112,10 +120,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IoMonitor = new IoMonitorViewModel(machine, ioControlService, commandFeedbackRuntimeState, CanWriteIoOutputs);
         IoEventLog = new IoEventLogViewModel(ioEventRuntimeState);
         CylinderEventLog = new CylinderEventLogViewModel(cylinderEventRuntimeState);
+        MagazineEventLog = new MagazineEventLogViewModel(magazineEventRuntimeState);
         WorkHeadEventLog = new WorkHeadEventLogViewModel(workHeadEventRuntimeState);
         PositionSetupEventLog = new PositionSetupEventLogViewModel(positionSetupEventRuntimeState);
         CylinderMonitor = new CylinderMonitorViewModel(machine, ioControlService, cylinderEventRuntimeState, CanWriteIoOutputs);
         CylinderMonitor.SelectedCylinderChanged += _ => (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        MagazineMonitor = new MagazineMonitorViewModel(machine, ioControlService, magazineEventRuntimeState, CanWriteIoOutputs);
+        MagazineMonitor.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MagazineMonitorViewModel.SelectedMagazine))
+            {
+                (DeleteMagazineCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
+        };
         WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, motionAppService, workHeadEventRuntimeState, CanWriteIoOutputs);
         WorkHeadMonitor.PropertyChanged += (_, e) =>
         {
@@ -245,6 +262,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         DeleteCylinderCommand = new RelayCommand(async () => await DeleteSelectedCylinderAsync(), () => CylinderMonitor.SelectedCylinder is not null && CanEditIoConfiguration());
         SaveCylinderConfigCommand = new RelayCommand(async () => await SaveCylinderConfigAsync(), CanEditIoConfiguration);
         LoadCylinderConfigCommand = new RelayCommand(async () => await LoadCylinderConfigAsync(), CanEditIoConfiguration);
+        AddMagazineCommand = new RelayCommand(async () => await AddMagazineAsync(), CanEditIoConfiguration);
+        DeleteMagazineCommand = new RelayCommand(async () => await DeleteSelectedMagazineAsync(), () => MagazineMonitor.SelectedMagazine is not null && CanEditIoConfiguration());
+        SaveMagazineConfigCommand = new RelayCommand(async () => await SaveMagazineConfigAsync(), CanEditIoConfiguration);
+        LoadMagazineConfigCommand = new RelayCommand(async () => await LoadMagazineConfigAsync(), CanEditIoConfiguration);
         AddWorkHeadCommand = new RelayCommand(async () => await AddWorkHeadAsync(), CanEditIoConfiguration);
         DeleteWorkHeadCommand = new RelayCommand(async () => await DeleteSelectedWorkHeadAsync(), () => WorkHeadMonitor.SelectedWorkHead is not null && CanEditIoConfiguration());
         SaveWorkHeadConfigCommand = new RelayCommand(async () => await SaveWorkHeadConfigAsync(), CanEditIoConfiguration);
@@ -295,6 +316,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         NavigationPage.Axis => "Axis Console",
         NavigationPage.Io => "IO Monitor",
         NavigationPage.Cylinder => "Cylinder Monitor",
+        NavigationPage.Magazine => "Magazine Monitor",
         NavigationPage.WorkHead => "Work Head",
         NavigationPage.PositionSetup => "Position Setup",
         NavigationPage.Alarm => "Alarm Center",
@@ -308,6 +330,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         NavigationPage.Axis => "Axis control, jog operation and controller parameters.",
         NavigationPage.Io => "Digital input and output configuration with runtime status.",
         NavigationPage.Cylinder => "Cylinder configuration, runtime state and event tracking.",
+        NavigationPage.Magazine => "Magazine configuration, runtime state and layer parameter setup.",
         NavigationPage.WorkHead => "Work head objects, position management and vacuum IO setup.",
         NavigationPage.PositionSetup => "Reusable position objects, axis mapping and target values.",
         NavigationPage.Alarm => "Active alarms, severity overview and alarm investigation.",
@@ -368,9 +391,11 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public IoMonitorViewModel IoMonitor { get; }
     public IoEventLogViewModel IoEventLog { get; }
     public CylinderMonitorViewModel CylinderMonitor { get; }
+    public MagazineMonitorViewModel MagazineMonitor { get; }
     public WorkHeadMonitorViewModel WorkHeadMonitor { get; }
     public PositionSetupMonitorViewModel PositionSetupMonitor { get; }
     public CylinderEventLogViewModel CylinderEventLog { get; }
+    public MagazineEventLogViewModel MagazineEventLog { get; }
     public WorkHeadEventLogViewModel WorkHeadEventLog { get; }
     public PositionSetupEventLogViewModel PositionSetupEventLog { get; }
     public AxisParameterEditorViewModel AxisParameterEditor { get; }
@@ -393,6 +418,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public ICommand DeleteCylinderCommand { get; }
     public ICommand SaveCylinderConfigCommand { get; }
     public ICommand LoadCylinderConfigCommand { get; }
+    public ICommand AddMagazineCommand { get; }
+    public ICommand DeleteMagazineCommand { get; }
+    public ICommand SaveMagazineConfigCommand { get; }
+    public ICommand LoadMagazineConfigCommand { get; }
     public ICommand AddWorkHeadCommand { get; }
     public ICommand DeleteWorkHeadCommand { get; }
     public ICommand SaveWorkHeadConfigCommand { get; }
@@ -449,6 +478,10 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         (DeleteCylinderCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (SaveCylinderConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (LoadCylinderConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (AddMagazineCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (DeleteMagazineCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (SaveMagazineConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (LoadMagazineConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (AddWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (DeleteWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (SaveWorkHeadConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
@@ -491,6 +524,13 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             CylinderMonitor.RefreshAll();
             CylinderEventLog.Refresh();
             _lastCylinderRefreshUtc = now;
+        }
+
+        if (force || now - _lastMagazineRefreshUtc >= TimeSpan.FromMilliseconds(300))
+        {
+            MagazineMonitor.RefreshAll();
+            MagazineEventLog.Refresh();
+            _lastMagazineRefreshUtc = now;
         }
 
         if (force || now - _lastWorkHeadRefreshUtc >= TimeSpan.FromMilliseconds(300))
@@ -1176,6 +1216,107 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         await _cylinderManagementAppService.LoadCylindersAsync();
         CylinderMonitor.ReloadFromMachine();
         OperationStatus = "Cylinder 配置已重新加载";
+        RefreshViewModels(force: true);
+    }
+
+    private Task AddMagazineAsync()
+    {
+        var index = MagazineMonitor.Magazines.Count + 1;
+        var names = MagazineMonitor.Magazines.Select(c => c.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var name = $"Magazine {index}";
+        while (names.Contains(name))
+        {
+            index++;
+            name = $"Magazine {index}";
+        }
+
+        var magazine = new Magazine(name, string.Empty, -1, -1, -1, -1, -1, -1, -1, -1, 1, 0, 0, 3000);
+        MagazineMonitor.AddMagazine(magazine);
+        OperationStatus = $"Magazine {name} 已新增（未保存）";
+        RefreshViewModels(force: true);
+        return Task.CompletedTask;
+    }
+
+    private Task DeleteSelectedMagazineAsync()
+    {
+        var selected = MagazineMonitor.SelectedMagazine;
+        if (selected is null) return Task.CompletedTask;
+        if (!UiGuards.Confirm(_dialogService, "删除 Magazine", $"确定删除 Magazine {selected.Name} 吗？删除后需点击 Save 才会写入配置。"))
+        {
+            OperationStatus = "已取消删除 Magazine";
+            return Task.CompletedTask;
+        }
+
+        MagazineMonitor.RemoveMagazine(selected.Name);
+        OperationStatus = $"Magazine {selected.Name} 已删除（未保存）";
+        RefreshViewModels(force: true);
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveMagazineConfigAsync()
+    {
+        var configuredAxisNos = MagazineMonitor.Magazines
+            .SelectMany(magazine => new[] { magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo })
+            .Where(no => no >= 0)
+            .Distinct()
+            .ToList();
+        var missingAxes = configuredAxisNos.Where(no => !_machine.Axes.Any(ax => ax.Id.Value == no)).ToList();
+        if (missingAxes.Count > 0)
+        {
+            _dialogService.ShowWarning($"以下轴号未在 Axis Monitor 中配置，无法保存 Magazine：\n{string.Join(", ", missingAxes)}\n\n请先在 Axis Console 中添加这些轴。", "轴号未配置");
+            OperationStatus = $"Magazine 保存失败：轴 {string.Join(", ", missingAxes)} 未配置";
+            return;
+        }
+
+        var items = MagazineMonitor.Magazines.Select(magazine => new MotionControl.Infrastructure.Configuration.MagazineConfigItem
+        {
+            Name = magazine.Name,
+            Description = magazine.Description,
+            XAxisNo = magazine.XAxisNo,
+            YAxisNo = magazine.YAxisNo,
+            ZAxisNo = magazine.ZAxisNo,
+            VacuumOutputAddress = magazine.VacuumOutputAddress,
+            BlowOutputAddress = magazine.BlowOutputAddress,
+            MaterialPresentInputAddress = magazine.MaterialPresentInputAddress,
+            CurrentLayerHasMaterialInputAddress = magazine.CurrentLayerHasMaterialInputAddress,
+            TrayKeyingInputAddress = magazine.TrayKeyingInputAddress,
+            LayerCount = magazine.LayerCount,
+            LayerHeight = magazine.LayerHeight,
+            PickLiftHeight = magazine.PickLiftHeight,
+            ActionTimeoutMs = magazine.ActionTimeoutMs
+        }).ToList();
+
+        if (!UiGuards.Confirm(_dialogService, "保存 Magazine 配置", "确定覆盖当前 Magazine 配置到 appsettings.json 吗？"))
+        {
+            OperationStatus = "已取消保存 Magazine 配置";
+            return;
+        }
+
+        try
+        {
+            await _magazineManagementAppService.SaveMagazinesAsync(items);
+            await _magazineManagementAppService.LoadMagazinesAsync();
+            OperationStatus = $"Magazine 配置已保存，共 {items.Count} 个料仓";
+            RefreshViewModels(force: true);
+        }
+        catch (InvalidOperationException ex)
+        {
+            OperationStatus = ex.Message;
+            _dialogService.ShowError(ex.Message, "Magazine 配置保存失败");
+        }
+    }
+
+    private async Task LoadMagazineConfigAsync()
+    {
+        if (!UiGuards.Confirm(_dialogService, "加载 Magazine 配置", "确定从 appsettings.json 重新加载 Magazine 配置吗？未保存修改将丢失。"))
+        {
+            OperationStatus = "已取消加载 Magazine 配置";
+            return;
+        }
+
+        await _magazineManagementAppService.LoadMagazinesAsync();
+        MagazineMonitor.ReloadFromMachine();
+        OperationStatus = "Magazine 配置已重新加载";
         RefreshViewModels(force: true);
     }
 

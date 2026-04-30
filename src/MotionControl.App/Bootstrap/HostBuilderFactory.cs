@@ -35,6 +35,7 @@ public static class HostBuilderFactory
                 services.Configure<IoMappingOptions>(context.Configuration.GetSection("IoMapping"));
                 services.Configure<CylinderMappingOptions>(context.Configuration.GetSection("CylinderMapping"));
                 services.Configure<WorkHeadMappingOptions>(context.Configuration.GetSection("WorkHeadMapping"));
+                services.Configure<MagazineMappingOptions>(context.Configuration.GetSection("MagazineMapping"));
                 services.Configure<PositionSetupMappingOptions>(context.Configuration.GetSection("PositionSetupMapping"));
 
                 var axisMappingOptions = new AxisMappingOptions();
@@ -45,7 +46,9 @@ public static class HostBuilderFactory
                 context.Configuration.GetSection("CylinderMapping").Bind(cylinderMappingOptions);
                 var workHeadMappingOptions = new WorkHeadMappingOptions();
                 context.Configuration.GetSection("WorkHeadMapping").Bind(workHeadMappingOptions);
-                services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions, ioMappingOptions.Points, cylinderMappingOptions.Cylinders, workHeadMappingOptions.WorkHeads));
+                var magazineMappingOptions = new MagazineMappingOptions();
+                context.Configuration.GetSection("MagazineMapping").Bind(magazineMappingOptions);
+                services.AddSingleton(MachineFactory.CreateDefaultMachine(axisMappingOptions, ioMappingOptions.Points, cylinderMappingOptions.Cylinders, workHeadMappingOptions.WorkHeads, magazineMappingOptions.Magazines));
 
                 var zmcControllerOptions = new ZmcControllerOptions();
                 context.Configuration.GetSection("ZmcController").Bind(zmcControllerOptions);
@@ -81,6 +84,9 @@ public static class HostBuilderFactory
                 services.AddSingleton<IWorkHeadRuntimeSyncService, WorkHeadRuntimeSyncService>();
                 services.AddSingleton<IWorkHeadConfigAppService>(_ => new WorkHeadConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
                 services.AddSingleton<IWorkHeadManagementAppService, WorkHeadManagementAppService>();
+                services.AddSingleton<IMagazineRuntimeSyncService, MagazineRuntimeSyncService>();
+                services.AddSingleton<IMagazineConfigAppService>(_ => new MagazineConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
+                services.AddSingleton<IMagazineManagementAppService, MagazineManagementAppService>();
                 services.AddSingleton<IPositionSetupConfigAppService>(_ => new PositionSetupConfigAppService(Path.Combine(AppContext.BaseDirectory, "appsettings.json")));
                 services.AddSingleton<IPositionSetupManagementAppService, PositionSetupManagementAppService>();
 
@@ -91,6 +97,7 @@ public static class HostBuilderFactory
                 services.AddSingleton<IoEventRuntimeState>();
                 services.AddSingleton<CylinderEventRuntimeState>();
                 services.AddSingleton<WorkHeadEventRuntimeState>();
+                services.AddSingleton<MagazineEventRuntimeState>();
                 services.AddSingleton<PositionSetupEventRuntimeState>();
                 services.AddSingleton<FaultRecoveryService>();
                 services.AddSingleton<AxisPollingService>();

@@ -8,6 +8,7 @@ public sealed class Machine
     private readonly List<IoPoint> _ioPoints;
     private readonly List<Cylinder> _cylinders;
     private readonly List<WorkHead> _workHeads;
+    private readonly List<Magazine> _magazines;
     private readonly List<Alarm> _alarms;
 
     public Machine(
@@ -16,6 +17,7 @@ public sealed class Machine
         IReadOnlyCollection<IoPoint>? ioPoints = null,
         IReadOnlyCollection<Cylinder>? cylinders = null,
         IReadOnlyCollection<WorkHead>? workHeads = null,
+        IReadOnlyCollection<Magazine>? magazines = null,
         IReadOnlyCollection<Alarm>? alarms = null)
     {
         _axes = axes.ToList();
@@ -23,6 +25,7 @@ public sealed class Machine
         _ioPoints = ioPoints?.ToList() ?? new List<IoPoint>();
         _cylinders = cylinders?.ToList() ?? new List<Cylinder>();
         _workHeads = workHeads?.ToList() ?? new List<WorkHead>();
+        _magazines = magazines?.ToList() ?? new List<Magazine>();
         _alarms = alarms?.ToList() ?? new List<Alarm>();
     }
 
@@ -31,6 +34,7 @@ public sealed class Machine
     public IReadOnlyCollection<IoPoint> IoPoints => _ioPoints;
     public IReadOnlyCollection<Cylinder> Cylinders => _cylinders;
     public IReadOnlyCollection<WorkHead> WorkHeads => _workHeads;
+    public IReadOnlyCollection<Magazine> Magazines => _magazines;
     public IReadOnlyCollection<Alarm> Alarms => _alarms;
     public SystemState CurrentState { get; private set; } = SystemState.Initializing;
     public bool IsConnected { get; private set; }
@@ -124,6 +128,28 @@ public sealed class Machine
         }
 
         _workHeads.Remove(workHead);
+        return true;
+    }
+
+    public void AddMagazine(Magazine magazine)
+    {
+        if (_magazines.Any(existing => string.Equals(existing.Name, magazine.Name, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        _magazines.Add(magazine);
+    }
+
+    public bool RemoveMagazine(string name)
+    {
+        var magazine = _magazines.FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (magazine is null)
+        {
+            return false;
+        }
+
+        _magazines.Remove(magazine);
         return true;
     }
 
