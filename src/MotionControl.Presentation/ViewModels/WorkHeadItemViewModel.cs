@@ -36,18 +36,18 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         TeachPositionCommand = new RelayCommand(TeachSelectedPosition, canTeachMove);
         MovePositionCommand = new RelayCommand(async () => await MoveSelectedPositionAsync(), canTeachMove);
         // Force initial CanExecute evaluation so buttons are correctly disabled when Positions is empty
-        (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        RaiseCanExecuteChanged(TeachPositionCommand);
+        RaiseCanExecuteChanged(MovePositionCommand);
     }
 
     public string Name { get => _workHead.Name; set { if (_workHead.Name == value) return; UpdateMetadata(name: value); OnPropertyChanged(); } }
     public string Description { get => _workHead.Description; set { if (_workHead.Description == value) return; UpdateMetadata(description: value); OnPropertyChanged(); } }
-    public int XAxisNo { get => _workHead.XAxisNo; set { if (Positions.Count == 0) return; if (_workHead.XAxisNo == value) return; UpdateMetadata(xAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsXAxisConfigured)); (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
-    public int YAxisNo { get => _workHead.YAxisNo; set { if (Positions.Count == 0) return; if (_workHead.YAxisNo == value) return; UpdateMetadata(yAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsYAxisConfigured)); (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
-    public int ZAxisNo { get => _workHead.ZAxisNo; set { if (Positions.Count == 0) return; if (_workHead.ZAxisNo == value) return; UpdateMetadata(zAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsZAxisConfigured)); (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
-    public int RAxisNo { get => _workHead.RAxisNo; set { if (Positions.Count == 0) return; if (_workHead.RAxisNo == value) return; UpdateMetadata(rAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsRAxisConfigured)); (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
-    public int VacuumOutputAddress { get => _workHead.VacuumOutputAddress; set { if (_workHead.VacuumOutputAddress == value) return; UpdateMetadata(vacuumOutputAddress: value); OnPropertyChanged(); (VacuumCommand as RelayCommand)?.RaiseCanExecuteChanged(); (BlowCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
-    public int BlowOutputAddress { get => _workHead.BlowOutputAddress; set { if (_workHead.BlowOutputAddress == value) return; UpdateMetadata(blowOutputAddress: value); OnPropertyChanged(); (BlowCommand as RelayCommand)?.RaiseCanExecuteChanged(); } }
+    public int XAxisNo { get => _workHead.XAxisNo; set { if (Positions.Count == 0) return; if (_workHead.XAxisNo == value) return; UpdateMetadata(xAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsXAxisConfigured)); RaiseCanExecuteChanged(TeachPositionCommand); RaiseCanExecuteChanged(MovePositionCommand); } }
+    public int YAxisNo { get => _workHead.YAxisNo; set { if (Positions.Count == 0) return; if (_workHead.YAxisNo == value) return; UpdateMetadata(yAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsYAxisConfigured)); RaiseCanExecuteChanged(TeachPositionCommand); RaiseCanExecuteChanged(MovePositionCommand); } }
+    public int ZAxisNo { get => _workHead.ZAxisNo; set { if (Positions.Count == 0) return; if (_workHead.ZAxisNo == value) return; UpdateMetadata(zAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsZAxisConfigured)); RaiseCanExecuteChanged(TeachPositionCommand); RaiseCanExecuteChanged(MovePositionCommand); } }
+    public int RAxisNo { get => _workHead.RAxisNo; set { if (Positions.Count == 0) return; if (_workHead.RAxisNo == value) return; UpdateMetadata(rAxisNo: value); OnPropertyChanged(); OnPropertyChanged(nameof(IsRAxisConfigured)); RaiseCanExecuteChanged(TeachPositionCommand); RaiseCanExecuteChanged(MovePositionCommand); } }
+    public int VacuumOutputAddress { get => _workHead.VacuumOutputAddress; set { if (_workHead.VacuumOutputAddress == value) return; UpdateMetadata(vacuumOutputAddress: value); OnPropertyChanged(); RaiseCanExecuteChanged(VacuumCommand); RaiseCanExecuteChanged(BlowCommand); } }
+    public int BlowOutputAddress { get => _workHead.BlowOutputAddress; set { if (_workHead.BlowOutputAddress == value) return; UpdateMetadata(blowOutputAddress: value); OnPropertyChanged(); RaiseCanExecuteChanged(BlowCommand); } }
     public int VacuumInputAddress { get => _workHead.VacuumInputAddress; set { if (_workHead.VacuumInputAddress == value) return; UpdateMetadata(vacuumInputAddress: value); OnPropertyChanged(); } }
     public int GeneralOutputAddress1 { get => _workHead.GeneralOutputAddress1; set { if (_workHead.GeneralOutputAddress1 == value) return; UpdateMetadata(generalOutputAddress1: value); OnPropertyChanged(); } }
     public int GeneralOutputAddress2 { get => _workHead.GeneralOutputAddress2; set { if (_workHead.GeneralOutputAddress2 == value) return; UpdateMetadata(generalOutputAddress2: value); OnPropertyChanged(); } }
@@ -121,8 +121,8 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         _workHead.AddPosition(new WorkHeadPosition(name, string.Empty, 0, 0, 0, 0));
         _workHead.SelectedPositionName = name;
         RaisePositionChanged();
-        (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        RaiseCanExecuteChanged(TeachPositionCommand);
+        RaiseCanExecuteChanged(MovePositionCommand);
     }
 
     public void DeleteSelectedPosition()
@@ -132,8 +132,8 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         _workHead.RemovePosition(removed);
         _workHead.SelectedPositionName = _workHead.Positions.FirstOrDefault()?.Name;
         RaisePositionChanged();
-        (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        RaiseCanExecuteChanged(TeachPositionCommand);
+        RaiseCanExecuteChanged(MovePositionCommand);
     }
 
     public void Refresh()
@@ -157,8 +157,8 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(VacuumOutputAddress)); OnPropertyChanged(nameof(BlowOutputAddress)); OnPropertyChanged(nameof(VacuumInputAddress)); OnPropertyChanged(nameof(GeneralOutputAddress1)); OnPropertyChanged(nameof(GeneralOutputAddress2)); OnPropertyChanged(nameof(GeneralInputAddress1)); OnPropertyChanged(nameof(GeneralInputAddress2)); OnPropertyChanged(nameof(VacuumTimeoutMs)); OnPropertyChanged(nameof(SafeZ));
         RaisePositionChanged();
         EvaluateVacuumRuntime();
-        (VacuumCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        (BlowCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        RaiseCanExecuteChanged(VacuumCommand);
+        RaiseCanExecuteChanged(BlowCommand);
     }
 
     private async Task ToggleVacuumAsync()
@@ -405,8 +405,16 @@ public sealed class WorkHeadItemViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(PositionY));
         OnPropertyChanged(nameof(PositionZ));
         OnPropertyChanged(nameof(PositionR));
-        (TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
-        (MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        RaiseCanExecuteChanged(TeachPositionCommand);
+        RaiseCanExecuteChanged(MovePositionCommand);
+    }
+
+    private static void RaiseCanExecuteChanged(ICommand command)
+    {
+        if (command is RelayCommand relayCommand)
+        {
+            relayCommand.RaiseCanExecuteChanged();
+        }
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

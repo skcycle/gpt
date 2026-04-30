@@ -6,8 +6,6 @@ using System.Runtime.CompilerServices;
 using MotionControl.Application.Interfaces;
 using MotionControl.Control.Services;
 using MotionControl.Domain.Entities;
-using MotionControl.Presentation.Commands;
-
 namespace MotionControl.Presentation.ViewModels;
 
 public sealed class WorkHeadMonitorViewModel : INotifyPropertyChanged
@@ -30,7 +28,21 @@ public sealed class WorkHeadMonitorViewModel : INotifyPropertyChanged
     }
 
     public ObservableCollection<WorkHeadItemViewModel> WorkHeads { get; }
-    public WorkHeadItemViewModel? SelectedWorkHead { get => _selectedWorkHead; set { if (_selectedWorkHead == value) return; _selectedWorkHead = value; OnPropertyChanged(); if (value is WorkHeadItemViewModel vm) { (vm.TeachPositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (vm.MovePositionCommand as RelayCommand)?.RaiseCanExecuteChanged(); (vm.VacuumCommand as RelayCommand)?.RaiseCanExecuteChanged(); (vm.BlowCommand as RelayCommand)?.RaiseCanExecuteChanged(); } } }
+    public WorkHeadItemViewModel? SelectedWorkHead
+    {
+        get => _selectedWorkHead;
+        set
+        {
+            if (_selectedWorkHead == value) return;
+            _selectedWorkHead = value;
+            OnPropertyChanged();
+            if (value is null) return;
+            RaiseCanExecuteChanged(value.TeachPositionCommand);
+            RaiseCanExecuteChanged(value.MovePositionCommand);
+            RaiseCanExecuteChanged(value.VacuumCommand);
+            RaiseCanExecuteChanged(value.BlowCommand);
+        }
+    }
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public void RefreshAll()
@@ -64,6 +76,15 @@ public sealed class WorkHeadMonitorViewModel : INotifyPropertyChanged
     }
 
     private WorkHeadItemViewModel BuildViewModel(WorkHead workHead) => new(workHead, _machine, _ioControlService, _motionAppService, _workHeadEventRuntimeState, _canControl);
+
+    private static void RaiseCanExecuteChanged(System.Windows.Input.ICommand command)
+    {
+        if (command is MotionControl.Presentation.Commands.RelayCommand relayCommand)
+        {
+            relayCommand.RaiseCanExecuteChanged();
+        }
+    }
+
     private void SyncCollections()
     {
         var sourceNames = _machine.WorkHeads.Select(item => item.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
