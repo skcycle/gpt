@@ -13,12 +13,22 @@ public sealed class Alarm
     }
 
     public string Code { get; }
-    public string Message { get; }
-    public DateTime OccurredAt { get; }
-    public string Source { get; }
-    public string Category { get; }
-    public string Severity { get; }
+    public string Message { get; private set; }
+    public DateTime OccurredAt { get; private set; }
+    public string Source { get; private set; }
+    public string Category { get; private set; }
+    public string Severity { get; private set; }
     public bool IsActive { get; private set; } = true;
+
+    public void Update(string message, DateTime occurredAt, string source, string category, string severity)
+    {
+        Message = message;
+        OccurredAt = occurredAt;
+        Source = source;
+        Category = category;
+        Severity = severity;
+        IsActive = true;
+    }
 
     public void Clear() => IsActive = false;
 }

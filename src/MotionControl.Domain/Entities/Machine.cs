@@ -129,14 +129,16 @@ public sealed class Machine
 
     public bool UpsertAlarm(string code, string message, string source = "System", string category = "General", string severity = "Error")
     {
+        var now = DateTime.Now;
         var existing = _alarms.FirstOrDefault(alarm => alarm.Code == code && alarm.IsActive);
         if (existing is not null)
         {
+            existing.Update(message, now, source, category, severity);
             return false;
         }
 
         _alarms.RemoveAll(alarm => alarm.Code == code && !alarm.IsActive);
-        _alarms.Add(new Alarm(code, message, DateTime.Now, source, category, severity));
+        _alarms.Add(new Alarm(code, message, now, source, category, severity));
         return true;
     }
 
