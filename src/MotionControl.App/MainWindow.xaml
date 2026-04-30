@@ -1003,6 +1003,11 @@
                                             </StackPanel>
                                         </Border>
 
+                                        <WrapPanel Orientation="Horizontal" Margin="4,4,4,4">
+                                            <Button Content="Teach" Command="{Binding TeachMagazinePositionCommand}" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
+                                            <Button Content="Move" Command="{Binding MoveMagazinePositionCommand}" MinWidth="90" />
+                                        </WrapPanel>
+
                                     </Grid>
                                 </ScrollViewer>
                             </Border>

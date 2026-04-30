@@ -274,6 +274,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         DeleteMagazinePositionCommand = new RelayCommand(DeleteSelectedMagazinePosition, () => MagazineMonitor.SelectedMagazine?.CanDeleteSelectedPosition == true);
         SaveMagazineConfigCommand = new RelayCommand(async () => await SaveMagazineConfigAsync(), CanEditIoConfiguration);
         LoadMagazineConfigCommand = new RelayCommand(async () => await LoadMagazineConfigAsync(), CanEditIoConfiguration);
+        TeachMagazinePositionCommand = new RelayCommand(TeachSelectedMagazinePosition, () => MagazineMonitor.SelectedMagazine?.SelectedPosition is not null && HasConfiguredAxesForMagazine());
+        MoveMagazinePositionCommand = new RelayCommand(async () => await MoveSelectedMagazinePositionAsync(), () => MagazineMonitor.SelectedMagazine?.SelectedPosition is not null && HasConfiguredAxesForMagazine());
         AddWorkHeadCommand = new RelayCommand(async () => await AddWorkHeadAsync(), CanEditIoConfiguration);
         DeleteWorkHeadCommand = new RelayCommand(async () => await DeleteSelectedWorkHeadAsync(), () => WorkHeadMonitor.SelectedWorkHead is not null && CanEditIoConfiguration());
         SaveWorkHeadConfigCommand = new RelayCommand(async () => await SaveWorkHeadConfigAsync(), CanEditIoConfiguration);
@@ -432,6 +434,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public ICommand DeleteMagazinePositionCommand { get; }
     public ICommand SaveMagazineConfigCommand { get; }
     public ICommand LoadMagazineConfigCommand { get; }
+    public ICommand TeachMagazinePositionCommand { get; }
+    public ICommand MoveMagazinePositionCommand { get; }
     public ICommand AddWorkHeadCommand { get; }
     public ICommand DeleteWorkHeadCommand { get; }
     public ICommand SaveWorkHeadConfigCommand { get; }
@@ -1305,6 +1309,122 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         RefreshViewModels(force: true);
     }
 
+    private bool HasConfiguredAxesForMagazine()
+    {
+        var magazine = MagazineMonitor.SelectedMagazine;
+        if (magazine is null) return false;
+        var configuredAxes = new[] { magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo }.Where(no => no >= 0).ToList();
+        if (configuredAxes.Count == 0) return false;
+        return configuredAxes.All(no => _machine.Axes.Any(ax => ax.Id.Value == no));
+    }
+
+    private void TeachSelectedMagazinePosition()
+    {
+        var magazine = MagazineMonitor.SelectedMagazine;
+        var selected = magazine?.SelectedPosition;
+        if (magazine is null || selected is null)
+        {
+            OperationStatus = "请先选择 Magazine 及其位置点";
+            return;
+        }
+
+        var configuredAxes = new[] { magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo }.Where(no => no >= 0).ToList();
+        if (configuredAxes.Count == 0)
+        {
+            OperationStatus = $"{magazine.Name} 没有可 Teach 的轴，请先配置轴映射";
+            return;
+        }
+
+        var missingAxes = configuredAxes.Where(no => _machine.Axes.All(ax => ax.Id.Value != no)).ToList();
+        if (missingAxes.Count > 0)
+        {
+            var message = $"{magazine.Name} 存在未配置到运行时的轴: {string.Join(", ", missingAxes)}";
+            OperationStatus = message;
+            return;
+        }
+
+        try
+        {
+            if (magazine.XAxisNo >= 0) { var a = _machine.Axes.First(ax => ax.Id.Value == magazine.XAxisNo); selected.X = ToEngineeringPosition(a); }
+            if (magazine.YAxisNo >= 0) { var a = _machine.Axes.First(ax => ax.Id.Value == magazine.YAxisNo); selected.Y = ToEngineeringPosition(a); }
+            if (magazine.ZAxisNo >= 0) { var a = _machine.Axes.First(ax => ax.Id.Value == magazine.ZAxisNo); selected.Z = ToEngineeringPosition(a); }
+
+            magazine.Refresh();
+            OperationStatus = $"{magazine.Name}:{selected.Name} 当前坐标已 Teach";
+            MagazineEventLogRecord($"{magazine.Name}:{selected.Name}", "Teach", $"{magazine.Name}:{selected.Name} teach completed");
+        }
+        catch (Exception ex)
+        {
+            OperationStatus = $"{magazine.Name}:{selected.Name} Teach 失败: {ex.Message}";
+        }
+    }
+
+    private async Task MoveSelectedMagazinePositionAsync()
+    {
+        var magazine = MagazineMonitor.SelectedMagazine;
+        var selected = magazine?.SelectedPosition;
+        if (magazine is null || selected is null)
+        {
+            OperationStatus = "请先选择 Magazine 及其位置点";
+            return;
+        }
+
+        var configuredAxes = new[] { magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo }.Where(no => no >= 0).ToList();
+        if (configuredAxes.Count == 0)
+        {
+            OperationStatus = $"{magazine.Name} 没有可运动的轴，请先配置轴映射";
+            return;
+        }
+
+        var missingAxes = configuredAxes.Where(no => _machine.Axes.All(ax => ax.Id.Value != no)).ToList();
+        if (missingAxes.Count > 0)
+        {
+            var message = $"{magazine.Name} 存在未配置到运行时的轴: {string.Join(", ", missingAxes)}";
+            OperationStatus = message;
+            return;
+        }
+
+        var eventName = $"{magazine.Name}:{selected.Name}";
+        OperationStatus = $"{eventName} 运动中...";
+        MagazineEventLogRecord(eventName, "Command", $"{eventName} move started");
+
+        try
+        {
+            var moves = new List<Task<DeviceResult>>();
+            if (magazine.XAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.XAxisNo, selected.X)));
+            if (magazine.YAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.YAxisNo, selected.Y)));
+            if (magazine.ZAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.ZAxisNo, selected.Z)));
+
+            var results = await Task.WhenAll(moves);
+            var failed = results.FirstOrDefault(r => !r.Success);
+            if (failed is not null)
+            {
+                var message = $"{magazine.Name} 运动失败: {failed.ErrorMessage}";
+                OperationStatus = message;
+                MagazineEventLogRecord(eventName, "Failed", message);
+                return;
+            }
+
+            magazine.Refresh();
+            OperationStatus = $"{eventName} 已定位至 ({selected.X:F2}, {selected.Y:F2}, {selected.Z:F2})";
+            MagazineEventLogRecord(eventName, "Success", $"{eventName} move completed");
+        }
+        catch (Exception ex)
+        {
+            OperationStatus = $"{eventName} 运动异常: {ex.Message}";
+            MagazineEventLogRecord(eventName, "Failed", $"{eventName} move failed: {ex.Message}");
+        }
+    }
+
+    private MotionControl.Application.DTOs.MoveAxisCommandDto MakeMoveDto(int axisNo, double target)
+    {
+        var axis = _machine.Axes.First(a => a.Id.Value == axisNo);
+        var vel = axis.WorkVelocity > 0 ? axis.WorkVelocity : 100;
+        var acc = axis.Acceleration > 0 ? axis.Acceleration : 100;
+        var dec = axis.Deceleration > 0 ? axis.Deceleration : 100;
+        return new MotionControl.Application.DTOs.MoveAxisCommandDto(axisNo, target, vel, acc, dec);
+    }
+
     private async Task SaveMagazineConfigAsync()
     {
         var configuredAxisNos = MagazineMonitor.Magazines
@@ -1872,6 +1992,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             Message = message
         });
         PositionSetupEventLog.Refresh();
+    }
+
+    private void MagazineEventLogRecord(string magazinePositionName, string eventType, string message)
+    {
+        _magazineEventRuntimeState.Add(new MagazineEventRecord
+        {
+            MagazineName = magazinePositionName,
+            EventType = eventType,
+            Message = message
+        });
+        MagazineEventLog.Refresh();
     }
 
     public void ReportStatus(string message)
