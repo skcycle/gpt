@@ -981,6 +981,17 @@
                                         </Border>
 
                                         <Border Grid.Row="2" Style="{StaticResource SectionCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Position Detail" FontWeight="SemiBold" Margin="0,0,0,10" />
+                                                <UniformGrid Columns="3">
+                                                    <StackPanel Margin="4"><TextBlock Text="X Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.X, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                                    <StackPanel Margin="4"><TextBlock Text="Y Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.Y, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                                    <StackPanel Margin="4"><TextBlock Text="Z Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.Z, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                                </UniformGrid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Row="4" Style="{StaticResource SectionCardStyle}">
                                             <Grid Margin="4,0,4,0">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
@@ -994,25 +1005,6 @@
                                                 <TextBlock Grid.Column="3" Text="Layer Count" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
                                                 <TextBox Grid.Column="4" Margin="10,0,0,0" Text="{Binding MagazineMonitor.SelectedMagazine.LayerCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                             </Grid>
-                                        </Border>
-
-                                        <Border Grid.Row="4" Style="{StaticResource SectionCardStyle}">
-                                            <StackPanel>
-                                                <TextBlock Text="Position Detail" FontWeight="SemiBold" Margin="0,0,0,10" />
-                                                <Grid Margin="4,0,4,8">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBlock Text="Position Name" Foreground="{StaticResource SecondaryTextBrush}" VerticalAlignment="Center" />
-                                                    <TextBox Grid.Column="1" Margin="10,0,0,0" Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPositionName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                                </Grid>
-                                                <UniformGrid Columns="3">
-                                                    <StackPanel Margin="4"><TextBlock Text="X Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.X, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                                    <StackPanel Margin="4"><TextBlock Text="Y Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.Y, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                                    <StackPanel Margin="4"><TextBlock Text="Z Pos" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.SelectedPosition.Z, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                                </UniformGrid>
-                                            </StackPanel>
                                         </Border>
 
                                         <Border Grid.Row="6" Style="{StaticResource SectionCardStyle}">
