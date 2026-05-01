@@ -1519,6 +1519,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 await Task.Delay(magazine.ScanSettlingMs);
             }
 
+            magazine.Refresh();
+
             for (var layerIndex = 0; layerIndex < totalLayers; layerIndex++)
             {
                 if (layerIndex > 0)
@@ -1538,9 +1540,12 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                     {
                         await Task.Delay(magazine.ScanSettlingMs);
                     }
+
+                    magazine.Refresh();
                 }
 
                 var hasMaterial = sensor.Value;
+                magazine.Refresh();
                 var resultText = hasMaterial ? "有料" : "无料";
                 MagazineEventLogRecord(eventName, "Scan", $"{magazine.Name} 第{layerIndex + 1}层检测结果: {resultText}");
             }
