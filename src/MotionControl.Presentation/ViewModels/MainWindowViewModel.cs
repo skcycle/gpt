@@ -1244,7 +1244,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             name = $"Magazine {index}";
         }
 
-        var magazine = new Magazine(name, string.Empty, -1, -1, -1, -1, -1, -1, -1, -1, 1, 0, 0, 3000);
+        var magazine = new Magazine(name, string.Empty, -1, -1, -1, -1, -1, -1, 1, 0, 0);
         magazine.EnsureDefaultPositions();
         MagazineMonitor.AddMagazine(magazine);
         OperationStatus = $"Magazine {name} 已新增（未保存）";
