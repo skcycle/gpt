@@ -1563,6 +1563,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
     private async Task WaitForMagazineScanWindowAsync(MagazineItemViewModel magazine, IoPoint sensor)
     {
+        await Task.Delay(100);
+        magazine.Refresh();
+
         if (magazine.ScanSettlingMs <= 0 || sensor.Value) return;
 
         var startedAt = DateTime.UtcNow;
