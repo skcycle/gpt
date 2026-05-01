@@ -1003,9 +1003,18 @@
                                             <Border Grid.Column="2" Style="{StaticResource SectionCardStyle}">
                                                 <StackPanel>
                                                     <TextBlock Text="Current Layer Status" FontWeight="SemiBold" Margin="0,0,0,10" />
-                                                    <Border CornerRadius="8" Background="{Binding MagazineMonitor.SelectedMagazine.CurrentLayerStatusBrush}" Padding="14" Margin="4">
-                                                        <TextBlock Text="{Binding MagazineMonitor.SelectedMagazine.CurrentLayerStatusText}" Foreground="White" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                                    </Border>
+                                                    <ItemsControl ItemsSource="{Binding MagazineMonitor.SelectedMagazine.LayerStatuses}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <UniformGrid Columns="2" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Margin="4" Height="32" CornerRadius="6" Background="{Binding StatusBrush}" />
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                 </StackPanel>
                                             </Border>
                                         </Grid>

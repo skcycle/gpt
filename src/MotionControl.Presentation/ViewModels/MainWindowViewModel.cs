@@ -1493,6 +1493,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
         var eventName = $"{magazine.Name}:{inspectStart.Name}";
         var totalLayers = Math.Max(1, magazine.LayerCount);
+        magazine.ResetLayerStatuses();
         OperationStatus = $"{magazine.Name} Scan 中...";
         MagazineEventLogRecord(eventName, "Command", $"{eventName} scan started, layers={totalLayers}, step={magazine.LayerHeight:F2}, settling={magazine.ScanSettlingMs}ms");
 
@@ -1545,6 +1546,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 }
 
                 var hasMaterial = sensor.Value;
+                magazine.SetLayerScanStatus(layerIndex, hasMaterial);
                 magazine.Refresh();
                 var resultText = hasMaterial ? "有料" : "无料";
                 MagazineEventLogRecord(eventName, "Scan", $"{magazine.Name} 第{layerIndex + 1}层检测结果: {resultText}");

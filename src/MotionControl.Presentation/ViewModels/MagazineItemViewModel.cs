@@ -5,23 +5,51 @@ using System.Windows.Media;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
 
+public sealed class MagazineLayerStatusViewModel : INotifyPropertyChanged
+{
+    private Brush _statusBrush = new SolidColorBrush(Color.FromRgb(90, 90, 90));
+
+    public int LayerIndex { get; }
+    public Brush StatusBrush
+    {
+        get => _statusBrush;
+        set
+        {
+            if (Equals(_statusBrush, value)) return;
+            _statusBrush = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StatusBrush)));
+        }
+    }
+
+    public MagazineLayerStatusViewModel(int layerIndex)
+    {
+        LayerIndex = layerIndex;
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+}
+
+
 namespace MotionControl.Presentation.ViewModels;
 
 public sealed class MagazineItemViewModel : INotifyPropertyChanged
 {
+    private static readonly Brush UnknownBrush = new SolidColorBrush(Color.FromRgb(90, 90, 90));
+    private static readonly Brush NoMaterialBrush = new SolidColorBrush(Color.FromRgb(100, 100, 100));
+    private static readonly Brush HasMaterialBrush = new SolidColorBrush(Color.FromRgb(0, 200, 0));
+
     private readonly Magazine _magazine;
     private readonly Machine _machine;
     private MagazinePositionViewModel? _selectedPosition;
-    private string _currentLayerStatusText = "未配置";
-    private Brush _currentLayerStatusBrush = new SolidColorBrush(Color.FromRgb(90, 90, 90));
 
     public MagazineItemViewModel(Magazine magazine, Machine machine)
     {
         _magazine = magazine;
         _machine = machine;
         Positions = new ObservableCollection<MagazinePositionViewModel>(_magazine.Positions.Select(position => new MagazinePositionViewModel(position)));
+        LayerStatuses = new ObservableCollection<MagazineLayerStatusViewModel>();
         _selectedPosition = Positions.FirstOrDefault(position => string.Equals(position.Name, _magazine.SelectedPositionName, StringComparison.OrdinalIgnoreCase)) ?? Positions.FirstOrDefault();
-        Refresh();
+        SyncLayerStatuses();
     }
 
     public string Name { get => _magazine.Name; set { if (_magazine.Name == value) return; UpdateMetadata(name: value); OnPropertyChanged(); } }
@@ -30,16 +58,15 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
     public int YAxisNo { get => _magazine.YAxisNo; set { if (_magazine.YAxisNo == value) return; UpdateMetadata(yAxisNo: value); OnPropertyChanged(); } }
     public int ZAxisNo { get => _magazine.ZAxisNo; set { if (_magazine.ZAxisNo == value) return; UpdateMetadata(zAxisNo: value); OnPropertyChanged(); } }
     public int MaterialPresentInputAddress { get => _magazine.MaterialPresentInputAddress; set { if (_magazine.MaterialPresentInputAddress == value) return; UpdateMetadata(materialPresentInputAddress: value); OnPropertyChanged(); } }
-    public int CurrentLayerHasMaterialInputAddress { get => _magazine.CurrentLayerHasMaterialInputAddress; set { if (_magazine.CurrentLayerHasMaterialInputAddress == value) return; UpdateMetadata(currentLayerHasMaterialInputAddress: value); OnPropertyChanged(); } }
+    public int CurrentLayerHasMaterialInputAddress { get => _magazine.CurrentLayerHasMaterialInputAddress; set { if (_magazine.CurrentLayerHasMaterialInputAddress == value) return; UpdateMetadata(currentLayerHasMaterialInputAddress: value); OnPropertyChanged(); Refresh(); } }
     public int TrayKeyingInputAddress { get => _magazine.TrayKeyingInputAddress; set { if (_magazine.TrayKeyingInputAddress == value) return; UpdateMetadata(trayKeyingInputAddress: value); OnPropertyChanged(); } }
-    public int LayerCount { get => _magazine.LayerCount; set { if (_magazine.LayerCount == value) return; UpdateMetadata(layerCount: value); OnPropertyChanged(); } }
+    public int LayerCount { get => _magazine.LayerCount; set { if (_magazine.LayerCount == value) return; UpdateMetadata(layerCount: value); OnPropertyChanged(); SyncLayerStatuses(); } }
     public double LayerHeight { get => _magazine.LayerHeight; set { if (_magazine.LayerHeight == value) return; UpdateMetadata(layerHeight: value); OnPropertyChanged(); } }
     public double PickLiftHeight { get => _magazine.PickLiftHeight; set { if (_magazine.PickLiftHeight == value) return; UpdateMetadata(pickLiftHeight: value); OnPropertyChanged(); } }
     public int ScanSettlingMs { get => _magazine.ScanSettlingMs; set { if (_magazine.ScanSettlingMs == value) return; UpdateMetadata(scanSettlingMs: value); OnPropertyChanged(); } }
 
     public ObservableCollection<MagazinePositionViewModel> Positions { get; }
-    public string CurrentLayerStatusText => _currentLayerStatusText;
-    public Brush CurrentLayerStatusBrush => _currentLayerStatusBrush;
+    public ObservableCollection<MagazineLayerStatusViewModel> LayerStatuses { get; }
 
     public MagazinePositionViewModel? SelectedPosition
     {
@@ -101,36 +128,53 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
 
     public void Refresh()
     {
-        var (text, brush) = ResolveCurrentLayerStatus();
-        if (_currentLayerStatusText != text)
-        {
-            _currentLayerStatusText = text;
-            OnPropertyChanged(nameof(CurrentLayerStatusText));
-        }
-
-        if (!Equals(_currentLayerStatusBrush, brush))
-        {
-            _currentLayerStatusBrush = brush;
-            OnPropertyChanged(nameof(CurrentLayerStatusBrush));
-        }
-    }
-
-    private (string Text, Brush Brush) ResolveCurrentLayerStatus()
-    {
         if (_magazine.CurrentLayerHasMaterialInputAddress < 0)
         {
-            return ("未配置", new SolidColorBrush(Color.FromRgb(90, 90, 90)));
+            ResetLayerStatuses();
+            return;
         }
 
         var io = _machine.IoPoints.FirstOrDefault(point => !point.IsOutput && point.Address == _magazine.CurrentLayerHasMaterialInputAddress);
         if (io is null)
         {
-            return ("未知", new SolidColorBrush(Color.FromRgb(160, 120, 40)));
+            ResetLayerStatuses();
+            return;
+        }
+    }
+
+    public void ResetLayerStatuses()
+    {
+        SyncLayerStatuses();
+        foreach (var layer in LayerStatuses)
+        {
+            layer.StatusBrush = UnknownBrush;
+        }
+    }
+
+    public void SetLayerScanStatus(int layerIndex, bool hasMaterial)
+    {
+        SyncLayerStatuses();
+        if (layerIndex < 0 || layerIndex >= LayerStatuses.Count) return;
+        LayerStatuses[layerIndex].StatusBrush = hasMaterial ? HasMaterialBrush : NoMaterialBrush;
+    }
+
+    private void SyncLayerStatuses()
+    {
+        var targetCount = Math.Max(1, _magazine.LayerCount);
+        while (LayerStatuses.Count < targetCount)
+        {
+            LayerStatuses.Add(new MagazineLayerStatusViewModel(LayerStatuses.Count + 1));
         }
 
-        return io.Value
-            ? ("有料", new SolidColorBrush(Color.FromRgb(0, 200, 0)))
-            : ("无料", new SolidColorBrush(Color.FromRgb(100, 100, 100)));
+        while (LayerStatuses.Count > targetCount)
+        {
+            LayerStatuses.RemoveAt(LayerStatuses.Count - 1);
+        }
+
+        foreach (var layer in LayerStatuses.Where(layer => layer.StatusBrush is null))
+        {
+            layer.StatusBrush = UnknownBrush;
+        }
     }
 
     private void UpdateMetadata(

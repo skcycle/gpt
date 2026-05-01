@@ -135,6 +135,9 @@ public sealed class AxisParameterAppService(string appSettingsPath) : IAxisParam
         public AxisMappingOptions AxisMapping { get; set; } = new();
         public IoMappingOptions IoMapping { get; set; } = new();
         public CylinderMappingOptions CylinderMapping { get; set; } = new();
+        public MagazineMappingOptions MagazineMapping { get; set; } = new();
+        public WorkHeadMappingOptions WorkHeadMapping { get; set; } = new();
+        public PositionSetupMappingOptions PositionSetupMapping { get; set; } = new();
     }
 
     private sealed class ZmcControllerConfig
