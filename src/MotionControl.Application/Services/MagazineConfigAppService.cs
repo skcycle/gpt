@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using MotionControl.Application.Interfaces;
 using MotionControl.Domain.Entities;
 using MotionControl.Infrastructure.Configuration;
@@ -55,12 +56,20 @@ public sealed class MagazineConfigAppService(string appSettingsPath) : IMagazine
     {
         if (!File.Exists(appSettingsPath)) return new AppSettingsRoot();
         var json = await File.ReadAllTextAsync(appSettingsPath, cancellationToken);
-        return JsonSerializer.Deserialize<AppSettingsRoot>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new AppSettingsRoot();
+        return JsonSerializer.Deserialize<AppSettingsRoot>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        }) ?? new AppSettingsRoot();
     }
 
     private async Task SaveRootAsync(AppSettingsRoot root, CancellationToken cancellationToken)
     {
-        var json = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(root, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Converters = { new JsonStringEnumConverter() }
+        });
         await File.WriteAllTextAsync(appSettingsPath, json, cancellationToken);
     }
 

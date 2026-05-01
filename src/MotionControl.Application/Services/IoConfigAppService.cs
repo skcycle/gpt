@@ -89,7 +89,11 @@ public sealed class IoConfigAppService(string appSettingsPath) : IIoConfigAppSer
 
     private async Task SaveRootAsync(AppSettingsRoot root, CancellationToken cancellationToken)
     {
-        var json = JsonSerializer.Serialize(root, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(root, new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Converters = { new JsonStringEnumConverter() }
+        });
         await File.WriteAllTextAsync(appSettingsPath, json, cancellationToken);
     }
 

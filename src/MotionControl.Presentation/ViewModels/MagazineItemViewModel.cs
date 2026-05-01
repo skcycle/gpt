@@ -5,6 +5,8 @@ using System.Windows.Media;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
 
+namespace MotionControl.Presentation.ViewModels;
+
 public sealed class MagazineLayerStatusViewModel : INotifyPropertyChanged
 {
     private Brush _statusBrush = new SolidColorBrush(Color.FromRgb(90, 90, 90));
@@ -28,9 +30,6 @@ public sealed class MagazineLayerStatusViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 }
-
-
-namespace MotionControl.Presentation.ViewModels;
 
 public sealed class MagazineItemViewModel : INotifyPropertyChanged
 {
