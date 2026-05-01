@@ -1003,7 +1003,7 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <Border Style="{StaticResource SectionCardStyle}">
+                                        <Border Grid.Row="6" Style="{StaticResource SectionCardStyle}">
                                             <StackPanel>
                                                 <TextBlock Text="IO Inputs" FontWeight="SemiBold" Margin="0,0,0,10" />
                                                 <UniformGrid Columns="3">
@@ -1014,7 +1014,7 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <WrapPanel Orientation="Horizontal" Margin="4,4,4,4">
+                                        <WrapPanel Grid.Row="8" Orientation="Horizontal" Margin="4,4,4,4">
                                             <Button Content="Teach" Command="{Binding TeachMagazinePositionCommand}" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
                                             <Button Content="Move" Command="{Binding MoveMagazinePositionCommand}" MinWidth="90" />
                                         </WrapPanel>
