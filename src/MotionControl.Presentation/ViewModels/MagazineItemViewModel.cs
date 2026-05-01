@@ -31,6 +31,7 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
     public int LayerCount { get => _magazine.LayerCount; set { if (_magazine.LayerCount == value) return; UpdateMetadata(layerCount: value); OnPropertyChanged(); } }
     public double LayerHeight { get => _magazine.LayerHeight; set { if (_magazine.LayerHeight == value) return; UpdateMetadata(layerHeight: value); OnPropertyChanged(); } }
     public double PickLiftHeight { get => _magazine.PickLiftHeight; set { if (_magazine.PickLiftHeight == value) return; UpdateMetadata(pickLiftHeight: value); OnPropertyChanged(); } }
+    public int ScanSettlingMs { get => _magazine.ScanSettlingMs; set { if (_magazine.ScanSettlingMs == value) return; UpdateMetadata(scanSettlingMs: value); OnPropertyChanged(); } }
 
     public ObservableCollection<MagazinePositionViewModel> Positions { get; }
 
@@ -107,7 +108,8 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
         int? trayKeyingInputAddress = null,
         int? layerCount = null,
         double? layerHeight = null,
-        double? pickLiftHeight = null)
+        double? pickLiftHeight = null,
+        int? scanSettlingMs = null)
     {
         _magazine.UpdateMetadata(
             name ?? _magazine.Name,
@@ -120,7 +122,8 @@ public sealed class MagazineItemViewModel : INotifyPropertyChanged
             trayKeyingInputAddress ?? _magazine.TrayKeyingInputAddress,
             layerCount ?? _magazine.LayerCount,
             layerHeight ?? _magazine.LayerHeight,
-            pickLiftHeight ?? _magazine.PickLiftHeight);
+            pickLiftHeight ?? _magazine.PickLiftHeight,
+            scanSettlingMs ?? _magazine.ScanSettlingMs);
     }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

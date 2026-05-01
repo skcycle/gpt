@@ -13,5 +13,6 @@ public sealed class MagazineConfigItem
     public int LayerCount { get; set; } = 1;
     public double LayerHeight { get; set; }
     public double PickLiftHeight { get; set; }
+    public int ScanSettlingMs { get; set; } = 200;
     public List<MagazinePositionConfigItem> Positions { get; set; } = new();
 }

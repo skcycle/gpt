@@ -133,11 +133,17 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 (DeleteMagazineCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 (AddMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 (DeleteMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (TeachMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (MoveMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (ScanMagazineCommand as RelayCommand)?.RaiseCanExecuteChanged();
             }
         };
         MagazineMonitor.SelectedMagazinePositionChanged += () =>
         {
             (DeleteMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (TeachMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (MoveMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (ScanMagazineCommand as RelayCommand)?.RaiseCanExecuteChanged();
         };
         WorkHeadMonitor = new WorkHeadMonitorViewModel(machine, ioControlService, motionAppService, workHeadEventRuntimeState, CanWriteIoOutputs);
         WorkHeadMonitor.PropertyChanged += (_, e) =>
@@ -276,6 +282,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         LoadMagazineConfigCommand = new RelayCommand(async () => await LoadMagazineConfigAsync(), CanEditIoConfiguration);
         TeachMagazinePositionCommand = new RelayCommand(TeachSelectedMagazinePosition, () => MagazineMonitor.SelectedMagazine?.SelectedPosition is not null && HasConfiguredAxesForMagazine());
         MoveMagazinePositionCommand = new RelayCommand(async () => await MoveSelectedMagazinePositionAsync(), () => MagazineMonitor.SelectedMagazine?.SelectedPosition is not null && HasConfiguredAxesForMagazine());
+        ScanMagazineCommand = new RelayCommand(async () => await ScanMagazineAsync(), CanScanMagazine);
         AddWorkHeadCommand = new RelayCommand(async () => await AddWorkHeadAsync(), CanEditIoConfiguration);
         DeleteWorkHeadCommand = new RelayCommand(async () => await DeleteSelectedWorkHeadAsync(), () => WorkHeadMonitor.SelectedWorkHead is not null && CanEditIoConfiguration());
         SaveWorkHeadConfigCommand = new RelayCommand(async () => await SaveWorkHeadConfigAsync(), CanEditIoConfiguration);
@@ -436,6 +443,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public ICommand LoadMagazineConfigCommand { get; }
     public ICommand TeachMagazinePositionCommand { get; }
     public ICommand MoveMagazinePositionCommand { get; }
+    public ICommand ScanMagazineCommand { get; }
     public ICommand AddWorkHeadCommand { get; }
     public ICommand DeleteWorkHeadCommand { get; }
     public ICommand SaveWorkHeadConfigCommand { get; }
@@ -496,6 +504,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         (DeleteMagazineCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (SaveMagazineConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (LoadMagazineConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (TeachMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (MoveMagazinePositionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+        (ScanMagazineCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (AddWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (DeleteWorkHeadCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (SaveWorkHeadConfigCommand as RelayCommand)?.RaiseCanExecuteChanged();
@@ -1244,7 +1255,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             name = $"Magazine {index}";
         }
 
-        var magazine = new Magazine(name, string.Empty, -1, -1, -1, -1, -1, -1, 1, 0, 0);
+        var magazine = new Magazine(name, string.Empty, -1, -1, -1, -1, -1, -1, 1, 0, 0, 200);
         magazine.EnsureDefaultPositions();
         MagazineMonitor.AddMagazine(magazine);
         OperationStatus = $"Magazine {name} 已新增（未保存）";
@@ -1316,6 +1327,16 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         var configuredAxes = new[] { magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo }.Where(no => no >= 0).ToList();
         if (configuredAxes.Count == 0) return false;
         return configuredAxes.All(no => _machine.Axes.Any(ax => ax.Id.Value == no));
+    }
+
+    private bool CanScanMagazine()
+    {
+        var magazine = MagazineMonitor.SelectedMagazine;
+        if (magazine is null) return false;
+        if (!HasConfiguredAxesForMagazine()) return false;
+        if (magazine.ZAxisNo < 0) return false;
+        if (magazine.CurrentLayerHasMaterialInputAddress < 0) return false;
+        return magazine.Positions.Any(position => string.Equals(position.Kind, MagazinePositionKinds.InspectStart, StringComparison.OrdinalIgnoreCase));
     }
 
     private void TeachSelectedMagazinePosition()
@@ -1416,6 +1437,131 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         }
     }
 
+    private async Task ScanMagazineAsync()
+    {
+        var magazine = MagazineMonitor.SelectedMagazine;
+        if (magazine is null)
+        {
+            OperationStatus = "请先选择 Magazine";
+            return;
+        }
+
+        var scanAlarmCode = $"SYS-MAGAZINE-{magazine.Name.ToUpperInvariant().Replace(" ", "-")}-SCAN-FAILED";
+        var inspectStart = magazine.Positions.FirstOrDefault(position => string.Equals(position.Kind, MagazinePositionKinds.InspectStart, StringComparison.OrdinalIgnoreCase));
+        if (inspectStart is null)
+        {
+            var message = $"{magazine.Name} 缺少检测起始位 InspectStart";
+            OperationStatus = message;
+            _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+            return;
+        }
+
+        if (magazine.CurrentLayerHasMaterialInputAddress < 0)
+        {
+            var message = $"{magazine.Name} 未配置当前层检测 IN";
+            OperationStatus = message;
+            _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+            return;
+        }
+
+        if (magazine.ZAxisNo < 0)
+        {
+            var message = $"{magazine.Name} 未配置 Z 轴，无法执行 Scan";
+            OperationStatus = message;
+            _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+            return;
+        }
+
+        var configuredAxes = new[] { magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo }.Where(no => no >= 0).ToList();
+        var missingAxes = configuredAxes.Where(no => _machine.Axes.All(ax => ax.Id.Value != no)).ToList();
+        if (missingAxes.Count > 0)
+        {
+            var message = $"{magazine.Name} 存在未配置到运行时的轴: {string.Join(", ", missingAxes)}";
+            OperationStatus = message;
+            _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+            return;
+        }
+
+        var sensor = _machine.IoPoints.FirstOrDefault(io => !io.IsOutput && io.Address == magazine.CurrentLayerHasMaterialInputAddress);
+        if (sensor is null)
+        {
+            var message = $"{magazine.Name} 当前层检测 IN {magazine.CurrentLayerHasMaterialInputAddress} 不存在于运行时 IO";
+            OperationStatus = message;
+            _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+            return;
+        }
+
+        var eventName = $"{magazine.Name}:{inspectStart.Name}";
+        var totalLayers = Math.Max(1, magazine.LayerCount);
+        OperationStatus = $"{magazine.Name} Scan 中...";
+        MagazineEventLogRecord(eventName, "Command", $"{eventName} scan started, layers={totalLayers}, step={magazine.LayerHeight:F2}, settling={magazine.ScanSettlingMs}ms");
+
+        try
+        {
+            var moveToInspectStart = new List<Task<DeviceResult>>();
+            if (magazine.XAxisNo >= 0) moveToInspectStart.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.XAxisNo, inspectStart.X)));
+            if (magazine.YAxisNo >= 0) moveToInspectStart.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.YAxisNo, inspectStart.Y)));
+            if (magazine.ZAxisNo >= 0) moveToInspectStart.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.ZAxisNo, inspectStart.Z)));
+
+            var startMoveResults = await Task.WhenAll(moveToInspectStart);
+            var startMoveFailed = startMoveResults.FirstOrDefault(r => !r.Success);
+            if (startMoveFailed is not null)
+            {
+                var message = $"{magazine.Name} 定位检测起始位失败: {startMoveFailed.ErrorMessage}";
+                OperationStatus = message;
+                _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+                MagazineEventLogRecord(eventName, "Failed", message);
+                return;
+            }
+
+            if (magazine.ScanSettlingMs > 0)
+            {
+                await Task.Delay(magazine.ScanSettlingMs);
+            }
+
+            for (var layerIndex = 0; layerIndex < totalLayers; layerIndex++)
+            {
+                if (layerIndex > 0)
+                {
+                    var targetZ = inspectStart.Z + layerIndex * magazine.LayerHeight;
+                    var zMove = await _motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.ZAxisNo, targetZ));
+                    if (!zMove.Success)
+                    {
+                        var message = $"{magazine.Name} 第{layerIndex + 1}层抬升失败: {zMove.ErrorMessage}";
+                        OperationStatus = message;
+                        _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+                        MagazineEventLogRecord(eventName, "Failed", message);
+                        return;
+                    }
+
+                    if (magazine.ScanSettlingMs > 0)
+                    {
+                        await Task.Delay(magazine.ScanSettlingMs);
+                    }
+                }
+
+                var hasMaterial = sensor.Value;
+                var resultText = hasMaterial ? "有料" : "无料";
+                MagazineEventLogRecord(eventName, "Scan", $"{magazine.Name} 第{layerIndex + 1}层检测结果: {resultText}");
+            }
+
+            if (_machine.ClearAlarm(scanAlarmCode))
+            {
+                MagazineEventLogRecord(eventName, "AlarmCleared", $"{eventName} cleared alarm {scanAlarmCode}");
+            }
+
+            OperationStatus = $"{magazine.Name} Scan 完成，共扫描 {totalLayers} 层";
+            MagazineEventLogRecord(eventName, "Success", $"{eventName} scan completed, layers={totalLayers}");
+        }
+        catch (Exception ex)
+        {
+            var message = $"{magazine.Name} Scan 异常: {ex.Message}";
+            OperationStatus = message;
+            _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+            MagazineEventLogRecord(eventName, "Failed", $"{eventName} scan failed: {ex.Message}");
+        }
+    }
+
     private MotionControl.Application.DTOs.MoveAxisCommandDto MakeMoveDto(int axisNo, double target)
     {
         var axis = _machine.Axes.First(a => a.Id.Value == axisNo);
@@ -1453,6 +1599,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             LayerCount = magazine.LayerCount,
             LayerHeight = magazine.LayerHeight,
             PickLiftHeight = magazine.PickLiftHeight,
+            ScanSettlingMs = magazine.ScanSettlingMs,
             Positions = magazine.Positions.Select(position => position.ToConfig()).ToList()
         }).ToList();
 

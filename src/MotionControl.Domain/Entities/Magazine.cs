@@ -16,6 +16,7 @@ public sealed class Magazine
         int layerCount = 1,
         double layerHeight = 0,
         double pickLiftHeight = 0,
+        int scanSettlingMs = 200,
         IEnumerable<MagazinePosition>? positions = null)
     {
         Name = name;
@@ -29,6 +30,7 @@ public sealed class Magazine
         LayerCount = layerCount;
         LayerHeight = layerHeight;
         PickLiftHeight = pickLiftHeight;
+        ScanSettlingMs = scanSettlingMs;
         Positions = new ObservableCollection<MagazinePosition>(positions ?? CreateDefaultPositions());
         SelectedPositionName = Positions.FirstOrDefault()?.Name;
     }
@@ -44,6 +46,7 @@ public sealed class Magazine
     public int LayerCount { get; private set; }
     public double LayerHeight { get; private set; }
     public double PickLiftHeight { get; private set; }
+    public int ScanSettlingMs { get; private set; }
     public ObservableCollection<MagazinePosition> Positions { get; }
     public string? SelectedPositionName { get; set; }
 
@@ -58,7 +61,8 @@ public sealed class Magazine
         int trayKeyingInputAddress,
         int layerCount,
         double layerHeight,
-        double pickLiftHeight)
+        double pickLiftHeight,
+        int scanSettlingMs)
     {
         Name = name;
         Description = description;
@@ -71,6 +75,7 @@ public sealed class Magazine
         LayerCount = layerCount;
         LayerHeight = layerHeight;
         PickLiftHeight = pickLiftHeight;
+        ScanSettlingMs = scanSettlingMs;
     }
 
     public void AddPosition(MagazinePosition position)

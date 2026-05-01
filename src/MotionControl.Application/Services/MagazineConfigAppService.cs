@@ -27,7 +27,8 @@ public sealed class MagazineConfigAppService(string appSettingsPath) : IMagazine
             MaterialPresentInputAddress = -1,
             CurrentLayerHasMaterialInputAddress = -1,
             TrayKeyingInputAddress = -1,
-            LayerCount = 1
+            LayerCount = 1,
+            ScanSettlingMs = 200
         });
         root.MagazineMapping.Magazines.Add(item);
         await SaveRootAsync(root, cancellationToken);

@@ -16,13 +16,13 @@ public sealed class MagazineRuntimeSyncService(Machine machine) : IMagazineRunti
         if (existing is null)
         {
             var positions = magazine.Positions.Select(p => new MagazinePosition(p.Name, p.Description, string.IsNullOrWhiteSpace(p.Kind) ? MagazinePositionKinds.Normal : p.Kind, p.X, p.Y, p.Z));
-            var created = new Magazine(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, positions);
+            var created = new Magazine(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, magazine.ScanSettlingMs, positions);
             created.EnsureDefaultPositions();
             machine.AddMagazine(created);
             return Task.CompletedTask;
         }
 
-        existing.UpdateMetadata(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight);
+        existing.UpdateMetadata(magazine.Name, magazine.Description, magazine.XAxisNo, magazine.YAxisNo, magazine.ZAxisNo, magazine.MaterialPresentInputAddress, magazine.CurrentLayerHasMaterialInputAddress, magazine.TrayKeyingInputAddress, magazine.LayerCount, magazine.LayerHeight, magazine.PickLiftHeight, magazine.ScanSettlingMs);
         existing.Positions.Clear();
         foreach (var position in magazine.Positions)
         {

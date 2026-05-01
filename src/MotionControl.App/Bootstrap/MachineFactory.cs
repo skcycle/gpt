@@ -60,7 +60,7 @@ public static class MachineFactory
             .ToArray();
 
         var magazines = (magazineConfigs ?? Array.Empty<MotionControl.Infrastructure.Configuration.MagazineConfigItem>())
-            .Select(item => new Magazine(item.Name, item.Description, item.XAxisNo, item.YAxisNo, item.ZAxisNo, item.MaterialPresentInputAddress, item.CurrentLayerHasMaterialInputAddress, item.TrayKeyingInputAddress, item.LayerCount, item.LayerHeight, item.PickLiftHeight))
+            .Select(item => new Magazine(item.Name, item.Description, item.XAxisNo, item.YAxisNo, item.ZAxisNo, item.MaterialPresentInputAddress, item.CurrentLayerHasMaterialInputAddress, item.TrayKeyingInputAddress, item.LayerCount, item.LayerHeight, item.PickLiftHeight, item.ScanSettlingMs))
             .ToArray();
 
         var alarms = new[]
