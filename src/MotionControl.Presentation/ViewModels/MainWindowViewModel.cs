@@ -1515,11 +1515,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 return;
             }
 
-            if (magazine.ScanSettlingMs > 0)
-            {
-                await Task.Delay(magazine.ScanSettlingMs);
-            }
-
+            await WaitForMagazineScanWindowAsync(magazine, sensor);
             magazine.Refresh();
 
             for (var layerIndex = 0; layerIndex < totalLayers; layerIndex++)
@@ -1537,11 +1533,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                         return;
                     }
 
-                    if (magazine.ScanSettlingMs > 0)
-                    {
-                        await Task.Delay(magazine.ScanSettlingMs);
-                    }
-
+                    await WaitForMagazineScanWindowAsync(magazine, sensor);
                     magazine.Refresh();
                 }
 
@@ -1566,6 +1558,19 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             OperationStatus = message;
             _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
             MagazineEventLogRecord(eventName, "Failed", $"{eventName} scan failed: {ex.Message}");
+        }
+    }
+
+    private async Task WaitForMagazineScanWindowAsync(MagazineItemViewModel magazine, IoPoint sensor)
+    {
+        if (magazine.ScanSettlingMs <= 0 || sensor.Value) return;
+
+        var startedAt = DateTime.UtcNow;
+        while (DateTime.UtcNow - startedAt < TimeSpan.FromMilliseconds(magazine.ScanSettlingMs))
+        {
+            if (sensor.Value) return;
+            await Task.Delay(20);
+            magazine.Refresh();
         }
     }
 
