@@ -13,9 +13,7 @@ public sealed class ZmcEtherCatStatusProvider(ZmcAxisNativeFacade axisNativeFaca
     public EtherCatControllerStatus CreateStatus(bool isConnected, int axisCount)
     {
         if (!isConnected || !axisNativeFacade.IsConnected)
-        {
             return CreateDisconnectedStatus();
-        }
 
         try
         {
@@ -39,12 +37,12 @@ public sealed class ZmcEtherCatStatusProvider(ZmcAxisNativeFacade axisNativeFaca
         };
     }
 
-    private EtherCatSlaveStatus[] ReadBusStatus()
+    private EtherCatControllerStatus ReadBusStatus()
     {
         int nodeCount = 0;
         var result = axisNativeFacade.GetBusNodeCount(ref nodeCount);
         if (result != 0 || nodeCount <= 0)
-            return Array.Empty<EtherCatSlaveStatus>();
+            return CreateDisconnectedStatus();
 
         nodeCount = Math.Min(nodeCount, 128);
         var slaves = new EtherCatSlaveStatus[nodeCount];
@@ -55,7 +53,25 @@ public sealed class ZmcEtherCatStatusProvider(ZmcAxisNativeFacade axisNativeFaca
             slaves[i] = ReadSlaveStatus(node, i);
         }
 
-        return slaves;
+        var onlineSlaveCount = slaves.Count(s => s.IsOnline);
+        var offlineSlaveCount = slaves.Length - onlineSlaveCount;
+        var alarmSlaveCount = slaves.Count(s => s.HasAlarm);
+
+        return new EtherCatControllerStatus
+        {
+            IsConnected = true,
+            IsOperational = onlineSlaveCount > 0,
+            ExpectedSlaveCount = slaves.Length,
+            OnlineSlaveCount = onlineSlaveCount,
+            OfflineSlaveCount = offlineSlaveCount,
+            AlarmSlaveCount = alarmSlaveCount,
+            HasOfflineSlave = offlineSlaveCount > 0,
+            HasAnySlaveAlarm = alarmSlaveCount > 0,
+            SummaryState = alarmSlaveCount > 0 ? "Alarm" : offlineSlaveCount > 0 ? "Warning" : "Healthy",
+            NetworkState = "Operational",
+            ControllerModel = "ZMC432EtherCAT",
+            Slaves = slaves,
+        };
     }
 
     private EtherCatSlaveStatus ReadSlaveStatus(uint node, int index)
