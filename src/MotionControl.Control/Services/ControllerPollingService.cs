@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Device.Abstractions.Results;
@@ -14,13 +16,15 @@ public sealed class ControllerPollingService(
     IoPollingService ioPollingService,
     AlarmPollingService alarmPollingService,
     SystemStateMachine systemStateMachine,
-    CommandFeedbackRuntimeState commandFeedbackRuntimeState)
+    CommandFeedbackRuntimeState commandFeedbackRuntimeState,
+    ILogger<ControllerPollingService>? logger = null)
 {
+    private readonly ILogger<ControllerPollingService> _logger = logger ?? NullLogger<ControllerPollingService>.Instance;
     private readonly SemaphoreSlim _pollLock = new(1, 1);
     private readonly object _startStopLock = new();
     private static readonly TimeSpan[] ReconnectBackoff = { TimeSpan.Zero, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(10) };
     private int _consecutiveFailures;
-    private int _reconnectInProgress; // 0 = idle, 1 = in progress
+    private int _reconnectInProgress;
     private bool _isRunning;
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -29,6 +33,8 @@ public sealed class ControllerPollingService(
         {
             if (_isRunning) return;
         }
+
+        _logger.LogInformation("Controller polling starting…");
 
         var connectingState = systemStateMachine.OnConnectingRequested();
         if (machine.CurrentState != connectingState)
@@ -51,6 +57,7 @@ public sealed class ControllerPollingService(
         {
             if (!result.Success)
             {
+                _logger.LogError("Controller connect failed after all retries: {Error}", result.ErrorMessage);
                 machine.SetConnected(false);
                 machine.UpsertAlarm("SYS-CONTROLLER-DISCONNECTED", $"Controller connect failed: {result.ErrorMessage}", "System", "Communication", "Error");
                 commandFeedbackRuntimeState.Add(new CommandFeedback { CommandName = "Connect", Status = "Failed", Message = result.ErrorMessage ?? "Unknown error" });
@@ -59,6 +66,7 @@ public sealed class ControllerPollingService(
                 return;
             }
 
+            _logger.LogInformation("Controller connected successfully");
             machine.SetConnected(true);
             _isRunning = true;
             _consecutiveFailures = 0;
@@ -81,12 +89,14 @@ public sealed class ControllerPollingService(
             _isRunning = false;
         }
 
+        _logger.LogInformation("Controller polling stopping");
         await motionController.DisconnectAsync(cancellationToken);
         machine.SetConnected(false);
     }
 
     public async Task ReconnectAsync(CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Controller reconnect initiated");
         await StopAsync(cancellationToken);
         await StartAsync(cancellationToken);
     }
@@ -114,6 +124,7 @@ public sealed class ControllerPollingService(
             var nextSystemState = systemStateMachine.OnPolling(machine, controllerStatus);
             if (previousSystemState != nextSystemState)
             {
+                _logger.LogDebug("System state transition: {Previous} -> {Next}", previousSystemState, nextSystemState);
                 commandFeedbackRuntimeState.Add(new CommandFeedback
                 {
                     CommandName = "SystemState",
@@ -126,9 +137,10 @@ public sealed class ControllerPollingService(
             _consecutiveFailures = 0;
             _reconnectInProgress = 0;
         }
-        catch
+        catch (Exception ex)
         {
             var failures = Interlocked.Increment(ref _consecutiveFailures);
+            _logger.LogWarning(ex, "Poll cycle failed (consecutive failures={Failures})", failures);
             machine.SetConnected(false);
             controllerRuntimeState.Update(new MotionControl.Device.Abstractions.Models.EtherCatControllerStatus
             {
@@ -138,22 +150,25 @@ public sealed class ControllerPollingService(
                 Slaves = Array.Empty<MotionControl.Device.Abstractions.Models.EtherCatSlaveStatus>(),
             });
 
-            // 防止排队多个重连任务：仅当没有重连进行中时才启动
             if (ShouldAttemptReconnect(failures)
                 && Interlocked.CompareExchange(ref _reconnectInProgress, 1, 0) == 0)
             {
                 var delayIndex = Math.Min(failures - 1, ReconnectBackoff.Length - 1);
                 var delay = ReconnectBackoff[delayIndex];
+                _logger.LogWarning("Scheduling reconnect attempt in {DelayMs}ms (failures={Failures})",
+                    (int)delay.TotalMilliseconds, failures);
                 _ = Task.Run(async () =>
                 {
                     try
                     {
                         await Task.Delay(delay);
+                        _logger.LogInformation("Reconnect attempt starting");
                         await ReconnectAsync(CancellationToken.None);
+                        _logger.LogInformation("Reconnect succeeded");
                     }
-                    catch
+                    catch (Exception reconnectEx)
                     {
-                        // 重连失败留给下一轮轮询处理
+                        _logger.LogError(reconnectEx, "Reconnect attempt failed");
                     }
                     finally
                     {
@@ -168,9 +183,6 @@ public sealed class ControllerPollingService(
         }
     }
 
-    /// <summary>
-    /// 每隔 4 次连续失败尝试一次重连（避免每次都重连造成网络风暴）。
-    /// </summary>
     private static bool ShouldAttemptReconnect(int consecutiveFailures)
         => consecutiveFailures > 1 && consecutiveFailures % 4 == 0;
 }

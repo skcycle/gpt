@@ -23,6 +23,12 @@ namespace MotionControl.Device.Zmc.Native;
 /// 单步操作（读状态、IO、使能/失能）可真正并发 — SDK 已证明
 /// 单实例多线程用；复合操作（MoveAbsolute 等）因 _multiStepLock 会串行化
 /// 所有轴的运动指令序列。这是保守安全策略，与控制器单命令队列的物理现实一致。
+/// </para>
+/// <para><b>⚠ 锁顺序规则（新增方法必须遵守）</b></para>
+/// 1. 单步操作：只拿 _handleLock 读锁（无需 _multiStepLock）
+/// 2. 复合操作：先拿 _handleLock 读锁，再拿 _multiStepLock，释放时反序
+/// 3. Connect/Disconnect：拿 _handleLock 写锁（排他，等所有读写锁释放）
+/// <b>禁止</b>：先拿 _multiStepLock 再拿 _handleLock（会导致与 Connect 死锁）
 /// </summary>
 public sealed class ZmcAxisNativeFacade
 {

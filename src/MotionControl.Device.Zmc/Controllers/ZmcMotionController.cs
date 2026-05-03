@@ -19,7 +19,7 @@ public sealed class ZmcMotionController(
         return await Task.Run(() =>
         {
             var result = axisNativeFacade.Connect(options.IpAddress);
-            return result == 0 ? DeviceResult.Ok() : DeviceResult.Fail("控制器连接失败");
+            return result == 0 ? DeviceResult.Ok() : DeviceResult.Fail($"控制器连接失败 (native={result})");
         }, cancellationToken);
     }
 
@@ -29,7 +29,7 @@ public sealed class ZmcMotionController(
         return await Task.Run(() =>
         {
             var result = axisNativeFacade.Disconnect();
-            return result == 0 ? DeviceResult.Ok() : DeviceResult.Fail("控制器断开连接失败");
+            return result == 0 ? DeviceResult.Ok() : DeviceResult.Fail($"控制器断开连接失败 (native={result})");
         }, cancellationToken);
     }
 
@@ -46,7 +46,6 @@ public sealed class ZmcMotionController(
             var homeStatus = 0;
             var busEnableStatus = 0;
 
-            // 逐项检查返回值：任何关键读取失败 → 整个反馈标记无效
             var dposOk = axisNativeFacade.GetAxisDpos(axisNo, ref dpos) == 0;
             var mposOk = axisNativeFacade.GetAxisMpos(axisNo, ref mpos) == 0;
             var speedOk = axisNativeFacade.GetAxisSpeed(axisNo, ref speed) == 0;
@@ -54,14 +53,16 @@ public sealed class ZmcMotionController(
             var status2Result = axisNativeFacade.GetAxisStatus2(axisNo, -1, ref axisStatus, ref idle, ref homeStatus, ref busEnableStatus);
             if (status2Result != 0)
             {
-                axisNativeFacade.GetAxisIdle(axisNo, ref idle);
-                axisNativeFacade.GetAxisStatus(axisNo, ref axisStatus);
+                // Fallback 链：两步都检查返回值，任一步失败 → 整个反馈无效
+                var idleOk = axisNativeFacade.GetAxisIdle(axisNo, ref idle) == 0;
+                var statusOk = axisNativeFacade.GetAxisStatus(axisNo, ref axisStatus) == 0;
+                if (!idleOk || !statusOk)
+                    return AxisFeedback.Invalid(axisNo);
             }
 
             var axisEnable = 0;
             var enableOk = axisNativeFacade.GetAxisEnable(axisNo, ref axisEnable) == 0;
 
-            // dpos/mpos/speed 是核心反馈数据，任一个失败都标记无效
             if (!dposOk || !mposOk)
                 return AxisFeedback.Invalid(axisNo);
 
@@ -70,46 +71,46 @@ public sealed class ZmcMotionController(
     }
 
     public async Task<DeviceResult> EnableAxisAsync(int axisNo, CancellationToken cancellationToken = default)
-        => await RunCommandAsync(() => axisNativeFacade.EnableAxis(axisNo),
-            success: DeviceResult.Ok(),
-            failure: DeviceResult.Fail($"轴 {axisNo} 使能失败"),
+        => await RunAsync(() => axisNativeFacade.EnableAxis(axisNo),
+            ok: DeviceResult.Ok(),
+            fail: r => DeviceResult.Fail($"轴 {axisNo} 使能失败 (native={r})"),
             cancellationToken);
 
     public async Task<DeviceResult> DisableAxisAsync(int axisNo, CancellationToken cancellationToken = default)
-        => await RunCommandAsync(() => axisNativeFacade.DisableAxis(axisNo),
-            success: DeviceResult.Ok(),
-            failure: DeviceResult.Fail($"轴 {axisNo} 失能失败"),
+        => await RunAsync(() => axisNativeFacade.DisableAxis(axisNo),
+            ok: DeviceResult.Ok(),
+            fail: r => DeviceResult.Fail($"轴 {axisNo} 失能失败 (native={r})"),
             cancellationToken);
 
     public async Task<DeviceResult> HomeAxisAsync(int axisNo, CancellationToken cancellationToken = default)
-        => await RunCommandAsync(() => axisNativeFacade.HomeAxis(axisNo),
-            success: DeviceResult.Ok(),
-            failure: DeviceResult.Fail($"轴 {axisNo} 回零失败"),
+        => await RunAsync(() => axisNativeFacade.HomeAxis(axisNo),
+            ok: DeviceResult.Ok(),
+            fail: r => DeviceResult.Fail($"轴 {axisNo} 回零失败 (native={r})"),
             cancellationToken);
 
     public async Task<DeviceResult> MoveAbsoluteAsync(int axisNo, AxisMoveCommand command, CancellationToken cancellationToken = default)
-        => await RunCommandAsync(
+        => await RunAsync(
             () => axisNativeFacade.MoveAbsolute(axisNo, command.Position, command.Velocity, command.Acceleration, command.Deceleration),
-            success: DeviceResult.Ok(),
-            failure: DeviceResult.Fail($"轴 {axisNo} 定位失败"),
+            ok: DeviceResult.Ok(),
+            fail: r => DeviceResult.Fail($"轴 {axisNo} 定位失败 (native={r})"),
             cancellationToken);
 
     public async Task<DeviceResult> JogAxisAsync(int axisNo, double velocity, bool positiveDirection, CancellationToken cancellationToken = default)
-        => await RunCommandAsync(() => axisNativeFacade.JogAxis(axisNo, velocity, positiveDirection),
-            success: DeviceResult.Ok(),
-            failure: DeviceResult.Fail($"轴 {axisNo} Jog 失败"),
+        => await RunAsync(() => axisNativeFacade.JogAxis(axisNo, velocity, positiveDirection),
+            ok: DeviceResult.Ok(),
+            fail: r => DeviceResult.Fail($"轴 {axisNo} Jog 失败 (native={r})"),
             cancellationToken);
 
     public async Task<DeviceResult> StopAxisAsync(int axisNo, CancellationToken cancellationToken = default)
-        => await RunCommandAsync(() => axisNativeFacade.StopAxis(axisNo),
-            success: DeviceResult.Ok(),
-            failure: DeviceResult.Fail($"轴 {axisNo} 停止失败"),
+        => await RunAsync(() => axisNativeFacade.StopAxis(axisNo),
+            ok: DeviceResult.Ok(),
+            fail: r => DeviceResult.Fail($"轴 {axisNo} 停止失败 (native={r})"),
             cancellationToken);
 
     public async Task<DeviceResult> RapidStopAsync(int mode, CancellationToken cancellationToken = default)
-        => await RunCommandAsync(() => axisNativeFacade.RapidStop(mode),
-            success: DeviceResult.Ok(),
-            failure: DeviceResult.Fail("快速停止失败"),
+        => await RunAsync(() => axisNativeFacade.RapidStop(mode),
+            ok: DeviceResult.Ok(),
+            fail: r => DeviceResult.Fail($"快速停止失败 (native={r})"),
             cancellationToken);
 
     public async Task<DeviceResult> ResetAxisAlarmAsync(int axisNo, CancellationToken cancellationToken = default)
@@ -119,20 +120,16 @@ public sealed class ZmcMotionController(
         {
             var driveResult = axisNativeFacade.ClearDriveAlarm(axisNo);
             if (driveResult != 0)
-                return DeviceResult.Fail($"轴 {axisNo} 驱动器报警清除失败");
+                return DeviceResult.Fail($"轴 {axisNo} 驱动器报警清除失败 (native={driveResult})");
 
             var zmcResult = axisNativeFacade.ClearZmcAlarm(axisNo);
             if (zmcResult != 0)
-                return DeviceResult.Fail($"轴 {axisNo} 自身报警清除失败");
+                return DeviceResult.Fail($"轴 {axisNo} 自身报警清除失败 (native={zmcResult})");
 
             return DeviceResult.Ok();
         }, cancellationToken);
     }
 
-    /// <summary>
-    /// 读取 IO 点位值。读取失败时抛异常（不再静默返回 false），
-    /// 让调用方（轮询服务）通过 catch 处理，避免将"读失败"与"OFF"混淆。
-    /// </summary>
     public async Task<bool> GetIoPointValueAsync(int address, bool isOutput, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -147,16 +144,16 @@ public sealed class ZmcMotionController(
 
             if (result != 0)
                 throw new InvalidOperationException(
-                    $"IO read failed: {(isOutput ? "output" : "input")} addr={address} result={result}");
+                    $"IO read failed: {(isOutput ? "output" : "input")} addr={address} native={result}");
 
             return value != 0;
         }, cancellationToken);
     }
 
     public async Task<DeviceResult> SetIoPointValueAsync(int address, bool value, CancellationToken cancellationToken = default)
-        => await RunCommandAsync(() => axisNativeFacade.SetOutput(address, value ? 1 : 0),
-            success: DeviceResult.Ok(),
-            failure: DeviceResult.Fail($"DO {address} 输出失败"),
+        => await RunAsync(() => axisNativeFacade.SetOutput(address, value ? 1 : 0),
+            ok: DeviceResult.Ok(),
+            fail: r => DeviceResult.Fail($"DO {address} 输出失败 (native={r})"),
             cancellationToken);
 
     public async Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default)
@@ -177,13 +174,17 @@ public sealed class ZmcMotionController(
         }, cancellationToken);
     }
 
-    private static async Task<DeviceResult> RunCommandAsync(
+    private static async Task<DeviceResult> RunAsync(
         Func<int> command,
-        DeviceResult success,
-        DeviceResult failure,
+        DeviceResult ok,
+        Func<int, DeviceResult> fail,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return await Task.Run(() => command() == 0 ? success : failure, cancellationToken);
+        return await Task.Run(() =>
+        {
+            var result = command();
+            return result == 0 ? ok : fail(result);
+        }, cancellationToken);
     }
 }

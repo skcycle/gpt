@@ -1045,44 +1045,40 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 }
             }
 
-            var planarMoves = new List<(string axisName, Task<DeviceResult> task)>();
+            // 多轴运动显式串行执行。底层 ZmcAxisNativeFacade._multiStepLock
+            // 会串行化所有复合运动命令（SPEED→ACCEL→DECEL→Move），
+            // 上层显式 await 与底层行为一致，避免误导后续维护者。
             if (workHead.XAxisNo >= 0)
             {
-                planarMoves.Add(("X", _motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
-                    workHead.XAxisNo,
-                    WorkHeadTargetX,
-                    WorkHeadMoveVelocity,
-                    WorkHeadMoveAcceleration,
-                    WorkHeadMoveDeceleration))));
+                var r = await _motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
+                    workHead.XAxisNo, WorkHeadTargetX, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration));
+                if (!r.Success)
+                {
+                    var message = $"{workHead.Name} X轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    _commandFeedbackRuntimeState.AddFailed("WorkHeadMove", message: message);
+                    return;
+                }
             }
             if (workHead.YAxisNo >= 0)
             {
-                planarMoves.Add(("Y", _motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
-                    workHead.YAxisNo,
-                    WorkHeadTargetY,
-                    WorkHeadMoveVelocity,
-                    WorkHeadMoveAcceleration,
-                    WorkHeadMoveDeceleration))));
+                var r = await _motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
+                    workHead.YAxisNo, WorkHeadTargetY, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration));
+                if (!r.Success)
+                {
+                    var message = $"{workHead.Name} Y轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    _commandFeedbackRuntimeState.AddFailed("WorkHeadMove", message: message);
+                    return;
+                }
             }
             if (workHead.RAxisNo >= 0)
             {
-                planarMoves.Add(("R", _motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
-                    workHead.RAxisNo,
-                    WorkHeadTargetR,
-                    WorkHeadMoveVelocity,
-                    WorkHeadMoveAcceleration,
-                    WorkHeadMoveDeceleration))));
-            }
-
-            if (planarMoves.Count > 0)
-            {
-                var results = await Task.WhenAll(planarMoves.Select(x => x.task));
-                var failedIndex = Array.FindIndex(results, r => !r.Success);
-                if (failedIndex >= 0)
+                var r = await _motionAppService.MoveAbsoluteAsync(new MotionControl.Application.DTOs.MoveAxisCommandDto(
+                    workHead.RAxisNo, WorkHeadTargetR, WorkHeadMoveVelocity, WorkHeadMoveAcceleration, WorkHeadMoveDeceleration));
+                if (!r.Success)
                 {
-                    var failedMove = planarMoves[failedIndex];
-                    var failedResult = results[failedIndex];
-                    var message = $"{workHead.Name} {failedMove.axisName}轴运动失败: {failedResult.ErrorMessage}";
+                    var message = $"{workHead.Name} R轴运动失败: {r.ErrorMessage}";
                     OperationStatus = message;
                     _commandFeedbackRuntimeState.AddFailed("WorkHeadMove", message: message);
                     return;
@@ -1423,19 +1419,40 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
         try
         {
-            var moves = new List<Task<DeviceResult>>();
-            if (magazine.XAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.XAxisNo, selected.X)));
-            if (magazine.YAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.YAxisNo, selected.Y)));
-            if (magazine.ZAxisNo >= 0) moves.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.ZAxisNo, selected.Z)));
-
-            var results = await Task.WhenAll(moves);
-            var failed = results.FirstOrDefault(r => !r.Success);
-            if (failed is not null)
+            // 多轴运动显式串行：底层 _multiStepLock 已保证单句柄下命令串行化，
+            // 上层显式 await 与底层语义一致。
+            if (magazine.XAxisNo >= 0)
             {
-                var message = $"{magazine.Name} 运动失败: {failed.ErrorMessage}";
-                OperationStatus = message;
-                MagazineEventLogRecord(eventName, "Failed", message);
-                return;
+                var r = await _motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.XAxisNo, selected.X));
+                if (!r.Success)
+                {
+                    var message = $"{magazine.Name} X轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    MagazineEventLogRecord(eventName, "Failed", message);
+                    return;
+                }
+            }
+            if (magazine.YAxisNo >= 0)
+            {
+                var r = await _motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.YAxisNo, selected.Y));
+                if (!r.Success)
+                {
+                    var message = $"{magazine.Name} Y轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    MagazineEventLogRecord(eventName, "Failed", message);
+                    return;
+                }
+            }
+            if (magazine.ZAxisNo >= 0)
+            {
+                var r = await _motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.ZAxisNo, selected.Z));
+                if (!r.Success)
+                {
+                    var message = $"{magazine.Name} Z轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    MagazineEventLogRecord(eventName, "Failed", message);
+                    return;
+                }
             }
 
             magazine.Refresh();
@@ -1511,20 +1528,42 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
 
         try
         {
-            var moveToInspectStart = new List<Task<DeviceResult>>();
-            if (magazine.XAxisNo >= 0) moveToInspectStart.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.XAxisNo, inspectStart.X)));
-            if (magazine.YAxisNo >= 0) moveToInspectStart.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.YAxisNo, inspectStart.Y)));
-            if (magazine.ZAxisNo >= 0) moveToInspectStart.Add(_motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.ZAxisNo, inspectStart.Z)));
-
-            var startMoveResults = await Task.WhenAll(moveToInspectStart);
-            var startMoveFailed = startMoveResults.FirstOrDefault(r => !r.Success);
-            if (startMoveFailed is not null)
+            // 显式串行：底层 _multiStepLock 串行化复合命令
+            if (magazine.XAxisNo >= 0)
             {
-                var message = $"{magazine.Name} 定位检测起始位失败: {startMoveFailed.ErrorMessage}";
-                OperationStatus = message;
-                _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
-                MagazineEventLogRecord(eventName, "Failed", message);
-                return;
+                var r = await _motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.XAxisNo, inspectStart.X));
+                if (!r.Success)
+                {
+                    var message = $"{magazine.Name} 定位检测起始位X轴失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+                    MagazineEventLogRecord(eventName, "Failed", message);
+                    return;
+                }
+            }
+            if (magazine.YAxisNo >= 0)
+            {
+                var r = await _motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.YAxisNo, inspectStart.Y));
+                if (!r.Success)
+                {
+                    var message = $"{magazine.Name} 定位检测起始位Y轴失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+                    MagazineEventLogRecord(eventName, "Failed", message);
+                    return;
+                }
+            }
+            if (magazine.ZAxisNo >= 0)
+            {
+                var r = await _motionAppService.MoveAbsoluteAsync(MakeMoveDto(magazine.ZAxisNo, inspectStart.Z));
+                if (!r.Success)
+                {
+                    var message = $"{magazine.Name} 定位检测起始位Z轴失败: {r.ErrorMessage}";
+                    OperationStatus = message;
+                    _machine.UpsertAlarm(scanAlarmCode, message, magazine.Name, "Magazine", "Error");
+                    MagazineEventLogRecord(eventName, "Failed", message);
+                    return;
+                }
             }
 
             await WaitForMagazineScanWindowAsync(magazine, sensor);
@@ -1999,9 +2038,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             _commandFeedbackRuntimeState.AddStarted("PositionSetupMove", message: $"{eventName} started");
             PositionSetupEventLogRecord(eventName, "Command", $"{eventName} move started");
 
-            var planarMoves = new List<Task<DeviceResult>>();
-
-            // 安全顺序: 先抬 Z 到 SafeZ，再其它轴并发，最后 Z 到目标
+            // 安全顺序: 先抬 Z 到 SafeZ，再其它轴串行，最后 Z 到目标。
+            // 所有运动底层通过 _multiStepLock 串行化，上层显式 await 与之一致。
             if (setupItem.ZAxisNo >= 0)
             {
                 var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.ZAxisNo, setupItem.SafeZ));
@@ -2016,24 +2054,81 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                 }
             }
 
-            if (setupItem.XxAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.XxAxisNo, selectedPos.XxPosition)));
-            if (setupItem.XAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.XAxisNo, selectedPos.XPosition)));
-            if (setupItem.YAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.YAxisNo, selectedPos.YPosition)));
-            if (setupItem.UAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.UAxisNo, selectedPos.UPosition)));
-            if (setupItem.VAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.VAxisNo, selectedPos.VPosition)));
-            if (setupItem.WAxisNo >= 0) planarMoves.Add(_motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.WAxisNo, selectedPos.WPosition)));
-
-            if (planarMoves.Count > 0)
+            if (setupItem.XxAxisNo >= 0)
             {
-                var results = await Task.WhenAll(planarMoves);
-                var failed = results.FirstOrDefault(r => !r.Success);
-                if (failed is not null)
+                var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.XxAxisNo, selectedPos.XxPosition));
+                if (!r.Success)
                 {
-                    var message = $"{setupItem.Name} 运动失败: {failed.ErrorMessage}";
-                    OperationStatus = message;
-                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", message, setupItem.Name, "PositionSetup", "Error");
-                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: message);
-                    PositionSetupEventLogRecord(eventName, "Failed", message);
+                    var msg = $"{setupItem.Name} Xx轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = msg;
+                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", msg, setupItem.Name, "PositionSetup", "Error");
+                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: msg);
+                    PositionSetupEventLogRecord(eventName, "Failed", msg);
+                    return;
+                }
+            }
+            if (setupItem.XAxisNo >= 0)
+            {
+                var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.XAxisNo, selectedPos.XPosition));
+                if (!r.Success)
+                {
+                    var msg = $"{setupItem.Name} X轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = msg;
+                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", msg, setupItem.Name, "PositionSetup", "Error");
+                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: msg);
+                    PositionSetupEventLogRecord(eventName, "Failed", msg);
+                    return;
+                }
+            }
+            if (setupItem.YAxisNo >= 0)
+            {
+                var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.YAxisNo, selectedPos.YPosition));
+                if (!r.Success)
+                {
+                    var msg = $"{setupItem.Name} Y轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = msg;
+                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", msg, setupItem.Name, "PositionSetup", "Error");
+                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: msg);
+                    PositionSetupEventLogRecord(eventName, "Failed", msg);
+                    return;
+                }
+            }
+            if (setupItem.UAxisNo >= 0)
+            {
+                var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.UAxisNo, selectedPos.UPosition));
+                if (!r.Success)
+                {
+                    var msg = $"{setupItem.Name} U轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = msg;
+                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", msg, setupItem.Name, "PositionSetup", "Error");
+                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: msg);
+                    PositionSetupEventLogRecord(eventName, "Failed", msg);
+                    return;
+                }
+            }
+            if (setupItem.VAxisNo >= 0)
+            {
+                var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.VAxisNo, selectedPos.VPosition));
+                if (!r.Success)
+                {
+                    var msg = $"{setupItem.Name} V轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = msg;
+                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", msg, setupItem.Name, "PositionSetup", "Error");
+                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: msg);
+                    PositionSetupEventLogRecord(eventName, "Failed", msg);
+                    return;
+                }
+            }
+            if (setupItem.WAxisNo >= 0)
+            {
+                var r = await _motionAppService.MoveAbsoluteAsync(BuildMove(setupItem.WAxisNo, selectedPos.WPosition));
+                if (!r.Success)
+                {
+                    var msg = $"{setupItem.Name} W轴运动失败: {r.ErrorMessage}";
+                    OperationStatus = msg;
+                    _machine.UpsertAlarm("SYS-POSITIONSETUP-MOVE-FAILED", msg, setupItem.Name, "PositionSetup", "Error");
+                    _commandFeedbackRuntimeState.AddFailed("PositionSetupMove", message: msg);
+                    PositionSetupEventLogRecord(eventName, "Failed", msg);
                     return;
                 }
             }
