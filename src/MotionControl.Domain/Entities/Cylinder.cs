@@ -177,6 +177,15 @@ public sealed class Cylinder
         }
     }
 
+    public void ClearPendingCommand()
+    {
+        lock (_stateLock)
+        {
+            _pendingCommand = CylinderCommandType.None;
+            _lastCommandStartedAtUtc = null;
+        }
+    }
+
     private void ClearPendingCommandLocked()
     {
         _pendingCommand = CylinderCommandType.None;
