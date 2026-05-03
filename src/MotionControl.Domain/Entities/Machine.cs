@@ -4,6 +4,7 @@ namespace MotionControl.Domain.Entities;
 
 public sealed class Machine
 {
+    private readonly object _collectionsLock = new();
     private readonly List<Axis> _axes;
     private readonly List<IoPoint> _ioPoints;
     private readonly List<Cylinder> _cylinders;
@@ -29,13 +30,41 @@ public sealed class Machine
         _alarms = alarms?.ToList() ?? new List<Alarm>();
     }
 
-    public IReadOnlyCollection<Axis> Axes => _axes;
+    /// <summary>
+    /// 返回集合快照，避免轮询线程迭代时被 UI 线程修改导致 Collection was modified。
+    /// </summary>
+    public IReadOnlyCollection<Axis> Axes
+    {
+        get { lock (_collectionsLock) { return _axes.ToList(); } }
+    }
+
     public IReadOnlyCollection<AxisGroup> Groups { get; }
-    public IReadOnlyCollection<IoPoint> IoPoints => _ioPoints;
-    public IReadOnlyCollection<Cylinder> Cylinders => _cylinders;
-    public IReadOnlyCollection<WorkHead> WorkHeads => _workHeads;
-    public IReadOnlyCollection<Magazine> Magazines => _magazines;
-    public IReadOnlyCollection<Alarm> Alarms => _alarms;
+
+    public IReadOnlyCollection<IoPoint> IoPoints
+    {
+        get { lock (_collectionsLock) { return _ioPoints.ToList(); } }
+    }
+
+    public IReadOnlyCollection<Cylinder> Cylinders
+    {
+        get { lock (_collectionsLock) { return _cylinders.ToList(); } }
+    }
+
+    public IReadOnlyCollection<WorkHead> WorkHeads
+    {
+        get { lock (_collectionsLock) { return _workHeads.ToList(); } }
+    }
+
+    public IReadOnlyCollection<Magazine> Magazines
+    {
+        get { lock (_collectionsLock) { return _magazines.ToList(); } }
+    }
+
+    public IReadOnlyCollection<Alarm> Alarms
+    {
+        get { lock (_collectionsLock) { return _alarms.ToList(); } }
+    }
+
     public SystemState CurrentState { get; private set; } = SystemState.Initializing;
     public bool IsConnected { get; private set; }
 
@@ -45,138 +74,135 @@ public sealed class Machine
 
     public void AddAxis(Axis axis)
     {
-        if (_axes.Any(existing => existing.Id.Value == axis.Id.Value))
+        lock (_collectionsLock)
         {
-            return;
+            if (_axes.Any(existing => existing.Id.Value == axis.Id.Value))
+                return;
+            _axes.Add(axis);
         }
-
-        _axes.Add(axis);
     }
 
     public bool RemoveAxis(int axisNo)
     {
-        var axis = _axes.FirstOrDefault(item => item.Id.Value == axisNo);
-        if (axis is null)
+        lock (_collectionsLock)
         {
-            return false;
+            var axis = _axes.FirstOrDefault(item => item.Id.Value == axisNo);
+            if (axis is null) return false;
+            _axes.Remove(axis);
+            return true;
         }
-
-        _axes.Remove(axis);
-        return true;
     }
 
     public void AddIoPoint(IoPoint ioPoint)
     {
-        if (_ioPoints.Any(existing => existing.IsOutput == ioPoint.IsOutput && existing.Address == ioPoint.Address))
+        lock (_collectionsLock)
         {
-            return;
+            if (_ioPoints.Any(existing => existing.IsOutput == ioPoint.IsOutput && existing.Address == ioPoint.Address))
+                return;
+            _ioPoints.Add(ioPoint);
         }
-
-        _ioPoints.Add(ioPoint);
     }
 
     public bool RemoveIoPoint(bool isOutput, int address)
     {
-        var ioPoint = _ioPoints.FirstOrDefault(item => item.IsOutput == isOutput && item.Address == address);
-        if (ioPoint is null)
+        lock (_collectionsLock)
         {
-            return false;
+            var ioPoint = _ioPoints.FirstOrDefault(item => item.IsOutput == isOutput && item.Address == address);
+            if (ioPoint is null) return false;
+            _ioPoints.Remove(ioPoint);
+            return true;
         }
-
-        _ioPoints.Remove(ioPoint);
-        return true;
     }
 
     public void AddCylinder(Cylinder cylinder)
     {
-        if (_cylinders.Any(existing => string.Equals(existing.Name, cylinder.Name, StringComparison.OrdinalIgnoreCase)))
+        lock (_collectionsLock)
         {
-            return;
+            if (_cylinders.Any(existing => string.Equals(existing.Name, cylinder.Name, StringComparison.OrdinalIgnoreCase)))
+                return;
+            _cylinders.Add(cylinder);
         }
-
-        _cylinders.Add(cylinder);
     }
 
     public bool RemoveCylinder(string name)
     {
-        var cylinder = _cylinders.FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
-        if (cylinder is null)
+        lock (_collectionsLock)
         {
-            return false;
+            var cylinder = _cylinders.FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (cylinder is null) return false;
+            _cylinders.Remove(cylinder);
+            return true;
         }
-
-        _cylinders.Remove(cylinder);
-        return true;
     }
 
     public void AddWorkHead(WorkHead workHead)
     {
-        if (_workHeads.Any(existing => string.Equals(existing.Name, workHead.Name, StringComparison.OrdinalIgnoreCase)))
+        lock (_collectionsLock)
         {
-            return;
+            if (_workHeads.Any(existing => string.Equals(existing.Name, workHead.Name, StringComparison.OrdinalIgnoreCase)))
+                return;
+            _workHeads.Add(workHead);
         }
-
-        _workHeads.Add(workHead);
     }
 
     public bool RemoveWorkHead(string name)
     {
-        var workHead = _workHeads.FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
-        if (workHead is null)
+        lock (_collectionsLock)
         {
-            return false;
+            var workHead = _workHeads.FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (workHead is null) return false;
+            _workHeads.Remove(workHead);
+            return true;
         }
-
-        _workHeads.Remove(workHead);
-        return true;
     }
 
     public void AddMagazine(Magazine magazine)
     {
-        if (_magazines.Any(existing => string.Equals(existing.Name, magazine.Name, StringComparison.OrdinalIgnoreCase)))
+        lock (_collectionsLock)
         {
-            return;
+            if (_magazines.Any(existing => string.Equals(existing.Name, magazine.Name, StringComparison.OrdinalIgnoreCase)))
+                return;
+            _magazines.Add(magazine);
         }
-
-        _magazines.Add(magazine);
     }
 
     public bool RemoveMagazine(string name)
     {
-        var magazine = _magazines.FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
-        if (magazine is null)
+        lock (_collectionsLock)
         {
-            return false;
+            var magazine = _magazines.FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase));
+            if (magazine is null) return false;
+            _magazines.Remove(magazine);
+            return true;
         }
-
-        _magazines.Remove(magazine);
-        return true;
     }
 
     public bool UpsertAlarm(string code, string message, string source = "System", string category = "General", string severity = "Error")
     {
-        var now = DateTime.Now;
-        var existing = _alarms.FirstOrDefault(alarm => alarm.Code == code && alarm.IsActive);
-        if (existing is not null)
+        lock (_collectionsLock)
         {
-            existing.Update(message, now, source, category, severity);
-            return false;
-        }
+            var now = DateTime.Now;
+            var existing = _alarms.FirstOrDefault(alarm => alarm.Code == code && alarm.IsActive);
+            if (existing is not null)
+            {
+                existing.Update(message, now, source, category, severity);
+                return false;
+            }
 
-        _alarms.RemoveAll(alarm => alarm.Code == code && !alarm.IsActive);
-        _alarms.Add(new Alarm(code, message, now, source, category, severity));
-        return true;
+            _alarms.RemoveAll(alarm => alarm.Code == code && !alarm.IsActive);
+            _alarms.Add(new Alarm(code, message, now, source, category, severity));
+            return true;
+        }
     }
 
     public bool ClearAlarm(string code)
     {
-        var existing = _alarms.FirstOrDefault(alarm => alarm.Code == code && alarm.IsActive);
-        if (existing is null)
+        lock (_collectionsLock)
         {
-            return false;
+            var existing = _alarms.FirstOrDefault(alarm => alarm.Code == code && alarm.IsActive);
+            if (existing is null) return false;
+            existing.Clear();
+            return true;
         }
-
-        existing.Clear();
-        return true;
     }
 }

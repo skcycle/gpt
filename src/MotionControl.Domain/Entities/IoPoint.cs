@@ -2,25 +2,59 @@ namespace MotionControl.Domain.Entities;
 
 public sealed class IoPoint
 {
+    private readonly object _stateLock = new();
+
     public IoPoint(string name, int address, bool isOutput, string description = "")
     {
-        Name = name;
-        Address = address;
+        _name = name;
+        _address = address;
         IsOutput = isOutput;
-        Description = description;
+        _description = description;
     }
 
-    public string Name { get; private set; }
-    public int Address { get; private set; }
-    public bool IsOutput { get; }
-    public string Description { get; private set; }
-    public bool Value { get; private set; }
+    private string _name;
+    public string Name
+    {
+        get { lock (_stateLock) return _name; }
+        private set { lock (_stateLock) _name = value; }
+    }
 
-    public void Update(bool value) => Value = value;
+    private int _address;
+    public int Address
+    {
+        get { lock (_stateLock) return _address; }
+        private set { lock (_stateLock) _address = value; }
+    }
+
+    public bool IsOutput { get; }
+
+    private string _description;
+    public string Description
+    {
+        get { lock (_stateLock) return _description; }
+        private set { lock (_stateLock) _description = value; }
+    }
+
+    private bool _value;
+    public bool Value
+    {
+        get { lock (_stateLock) return _value; }
+        private set { lock (_stateLock) _value = value; }
+    }
+
+    /// <summary>轮询线程更新 IO 值（线程安全）。</summary>
+    public void Update(bool value)
+    {
+        lock (_stateLock) { _value = value; }
+    }
+
     public void UpdateMetadata(string name, int address, string description)
     {
-        Name = name;
-        Address = address;
-        Description = description;
+        lock (_stateLock)
+        {
+            _name = name;
+            _address = address;
+            _description = description;
+        }
     }
 }
