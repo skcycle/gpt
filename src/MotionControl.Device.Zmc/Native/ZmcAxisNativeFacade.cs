@@ -23,7 +23,7 @@ namespace MotionControl.Device.Zmc.Native;
 /// 单步操作（读状态、IO、使能/失能）可真正并发 — SDK 已证明
 /// 单实例多线程用；复合操作（MoveAbsolute 等）因 _multiStepLock 会串行化
 /// 所有轴的运动指令序列。这是保守安全策略，与控制器单命令队列的物理现实一致。
-/// </para>
+///
 /// <para><b>⚠ 锁顺序规则（新增方法必须遵守）</b></para>
 /// 1. 单步操作：只拿 _handleLock 读锁（无需 _multiStepLock）
 /// 2. 复合操作：先拿 _handleLock 读锁，再拿 _multiStepLock，释放时反序
@@ -34,15 +34,9 @@ public sealed class ZmcAxisNativeFacade
 {
     private const string ConnectionProbeCommand = "?SPEED(0)";
 
-    // 连接串行化：防止多线程同时建联
     private readonly object _connectLock = new();
-
-    // handle 生命周期保护：读锁=操作进行中，写锁=连接/断开
     private readonly ReaderWriterLockSlim _handleLock = new();
-
-    // 复合操作串行化：保证 SPEED→ACCEL→DECEL→Move 原子性
     private readonly object _multiStepLock = new();
-
     private readonly ILogger<ZmcAxisNativeFacade> _logger;
     private IntPtr _handle = IntPtr.Zero;
 
@@ -55,7 +49,6 @@ public sealed class ZmcAxisNativeFacade
 
     // ── 连接状态 ──
 
-    /// <summary>获取当前连接状态（读锁，可与操作并发）。</summary>
     public bool IsConnected
     {
         get
@@ -108,19 +101,15 @@ public sealed class ZmcAxisNativeFacade
         }
     }
 
-    /// <summary>
-    /// 断开连接。写锁保证 Close 时没有进行中的操作。
-    /// </summary>
     public int Disconnect()
     {
         _handleLock.EnterWriteLock();
         try
         {
             if (_handle == IntPtr.Zero) return 0;
-
             _logger.LogDebug("ZMC disconnecting");
             var handle = _handle;
-            _handle = IntPtr.Zero; // 先标记断开
+            _handle = IntPtr.Zero;
             return SafeClose(handle);
         }
         finally
@@ -136,8 +125,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("EnableAxis", -1);
-            return SafeCall(() => ZmcNativeApi.DirectSetAxisEnable(_handle, axisNo, 1), "EnableAxis", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("EnableAxis");
+            try
+            {
+                var r = ZmcNativeApi.DirectSetAxisEnable(_handle, axisNo, 1);
+                if (r != 0) _logger.LogWarning("ZMC EnableAxis failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC EnableAxis exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -147,8 +142,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("DisableAxis", -1);
-            return SafeCall(() => ZmcNativeApi.DirectSetAxisEnable(_handle, axisNo, 0), "DisableAxis", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("DisableAxis");
+            try
+            {
+                var r = ZmcNativeApi.DirectSetAxisEnable(_handle, axisNo, 0);
+                if (r != 0) _logger.LogWarning("ZMC DisableAxis failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC DisableAxis exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -158,8 +159,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("GetAxisEnable", -1);
-            return SafeCall(() => ZmcNativeApi.DirectGetAxisEnable(_handle, axisNo, ref value), "GetAxisEnable", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetAxisEnable");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetAxisEnable(_handle, axisNo, ref value);
+                if (r != 0) _logger.LogWarning("ZMC GetAxisEnable failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetAxisEnable exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -169,8 +176,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("HomeAxis", -1);
-            return SafeCall(() => ExecuteNativeCommand(_handle, $"DATUM({axisNo})"), "HomeAxis", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("HomeAxis");
+            try
+            {
+                var r = ExecuteNativeCommand(_handle, $"DATUM({axisNo})");
+                if (r != 0) _logger.LogWarning("ZMC HomeAxis failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC HomeAxis exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -180,8 +193,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("ClearDriveAlarm", -1);
-            return SafeCall(() => ExecuteNativeCommand(_handle, $"ALMCLR({axisNo})"), "ClearDriveAlarm", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("ClearDriveAlarm");
+            try
+            {
+                var r = ExecuteNativeCommand(_handle, $"ALMCLR({axisNo})");
+                if (r != 0) _logger.LogWarning("ZMC ClearDriveAlarm failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC ClearDriveAlarm exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -191,8 +210,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("ClearZmcAlarm", -1);
-            return SafeCall(() => ExecuteNativeCommand(_handle, $"DATUM({axisNo},0)"), "ClearZmcAlarm", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("ClearZmcAlarm");
+            try
+            {
+                var r = ExecuteNativeCommand(_handle, $"DATUM({axisNo},0)");
+                if (r != 0) _logger.LogWarning("ZMC ClearZmcAlarm failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC ClearZmcAlarm exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -202,8 +227,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("StopAxis", -1);
-            return SafeCall(() => ZmcNativeApi.DirectSingleCancel(_handle, axisNo, 2), "StopAxis", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("StopAxis");
+            try
+            {
+                var r = ZmcNativeApi.DirectSingleCancel(_handle, axisNo, 2);
+                if (r != 0) _logger.LogWarning("ZMC StopAxis failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC StopAxis exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -213,8 +244,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("RapidStop", -1);
-            return SafeCall(() => ExecuteNativeCommand(_handle, $"RAPIDSTOP({mode})"), "RapidStop");
+            if (_handle == IntPtr.Zero) return LogNotConnected("RapidStop");
+            try
+            {
+                var r = ExecuteNativeCommand(_handle, $"RAPIDSTOP({mode})");
+                if (r != 0) _logger.LogWarning("ZMC RapidStop failed: result={Result} mode={Mode}", r, mode);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC RapidStop exception: mode={Mode}", mode); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -224,8 +261,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("GetDpos", -1);
-            return SafeCall(() => ZmcNativeApi.DirectGetDpos(_handle, axisNo, ref value), "GetDpos", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetDpos");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetDpos(_handle, axisNo, ref value);
+                if (r != 0) _logger.LogWarning("ZMC GetDpos failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetDpos exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -235,8 +278,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("GetMpos", -1);
-            return SafeCall(() => ZmcNativeApi.DirectGetMpos(_handle, axisNo, ref value), "GetMpos", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetMpos");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetMpos(_handle, axisNo, ref value);
+                if (r != 0) _logger.LogWarning("ZMC GetMpos failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetMpos exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -246,8 +295,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("GetSpeed", -1);
-            return SafeCall(() => ZmcNativeApi.DirectGetSpeed(_handle, axisNo, ref value), "GetSpeed", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetSpeed");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetSpeed(_handle, axisNo, ref value);
+                if (r != 0) _logger.LogWarning("ZMC GetSpeed failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetSpeed exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -257,8 +312,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("GetIdle", -1);
-            return SafeCall(() => ZmcNativeApi.DirectGetIfIdle(_handle, axisNo, ref value), "GetIdle", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetIdle");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetIfIdle(_handle, axisNo, ref value);
+                if (r != 0) _logger.LogWarning("ZMC GetIdle failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetIdle exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -268,8 +329,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("GetAxisStatus", -1);
-            return SafeCall(() => ZmcNativeApi.DirectGetAxisStatus(_handle, axisNo, ref value), "GetAxisStatus", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetAxisStatus");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetAxisStatus(_handle, axisNo, ref value);
+                if (r != 0) _logger.LogWarning("ZMC GetAxisStatus failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetAxisStatus exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -279,8 +346,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("GetAxisStatus2", -1);
-            return SafeCall(() => ZmcNativeApi.DirectGetAxisStatus2(_handle, axisNo, homeIn, ref axisStatus, ref idle, ref homeStatus, ref busEnableStatus), "GetAxisStatus2", axisNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetAxisStatus2");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetAxisStatus2(_handle, axisNo, homeIn, ref axisStatus, ref idle, ref homeStatus, ref busEnableStatus);
+                if (r != 0) _logger.LogWarning("ZMC GetAxisStatus2 failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetAxisStatus2 exception: axis={AxisNo}", axisNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -290,8 +363,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("GetInput", -1);
-            return SafeCall(() => ZmcNativeApi.DirectGetIn(_handle, ioNo, ref value), "GetInput", ioNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetInput");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetIn(_handle, ioNo, ref value);
+                if (r != 0) _logger.LogWarning("ZMC GetInput failed: result={Result} io={IoNo}", r, ioNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetInput exception: io={IoNo}", ioNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -301,8 +380,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("GetOutput", -1);
-            return SafeCall(() => ZmcNativeApi.DirectGetOp(_handle, ioNo, ref value), "GetOutput", ioNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetOutput");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetOp(_handle, ioNo, ref value);
+                if (r != 0) _logger.LogWarning("ZMC GetOutput failed: result={Result} io={IoNo}", r, ioNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetOutput exception: io={IoNo}", ioNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -312,8 +397,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("SetOutput", -1);
-            return SafeCall(() => ZmcNativeApi.DirectSetOp(_handle, ioNo, value), "SetOutput", ioNo);
+            if (_handle == IntPtr.Zero) return LogNotConnected("SetOutput");
+            try
+            {
+                var r = ZmcNativeApi.DirectSetOp(_handle, ioNo, value);
+                if (r != 0) _logger.LogWarning("ZMC SetOutput failed: result={Result} io={IoNo}", r, ioNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC SetOutput exception: io={IoNo}", ioNo); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -324,11 +415,14 @@ public sealed class ZmcAxisNativeFacade
         try
         {
             if (_handle == IntPtr.Zero) return -1;
-            return SafeCall(() =>
+            try
             {
                 var buffer = new StringBuilder(64);
-                return ZmcNativeApi.Execute(_handle, ConnectionProbeCommand, buffer, 64);
-            }, "ProbeConnection");
+                var r = ZmcNativeApi.Execute(_handle, ConnectionProbeCommand, buffer, 64);
+                if (r != 0) _logger.LogWarning("ZMC ProbeConnection failed: result={Result}", r);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC ProbeConnection exception"); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -366,8 +460,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("BusNodeCount", -1);
-            return SafeCall(() => ZmcNativeApi.BusCmdGetNodeNum(_handle, 0, ref count), "BusNodeCount");
+            if (_handle == IntPtr.Zero) return LogNotConnected("BusNodeCount");
+            try
+            {
+                var r = ZmcNativeApi.BusCmdGetNodeNum(_handle, 0, ref count);
+                if (r != 0) _logger.LogWarning("ZMC BusNodeCount failed: result={Result}", r);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC BusNodeCount exception"); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -377,8 +477,14 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("BusNodeInfo", -1);
-            return SafeCall(() => ZmcNativeApi.BusCmdGetNodeInfo(_handle, 0, node, sel, ref value), "BusNodeInfo", (int)node);
+            if (_handle == IntPtr.Zero) return LogNotConnected("BusNodeInfo");
+            try
+            {
+                var r = ZmcNativeApi.BusCmdGetNodeInfo(_handle, 0, node, sel, ref value);
+                if (r != 0) _logger.LogWarning("ZMC BusNodeInfo failed: result={Result} node={Node} sel={Sel}", r, node, sel);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC BusNodeInfo exception: node={Node} sel={Sel}", node, sel); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
@@ -388,44 +494,42 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("BusNodeStatus", -1);
-            return SafeCall(() => ZmcNativeApi.BusCmdGetNodeStatus(_handle, 0, node, ref status), "BusNodeStatus", (int)node);
+            if (_handle == IntPtr.Zero) return LogNotConnected("BusNodeStatus");
+            try
+            {
+                var r = ZmcNativeApi.BusCmdGetNodeStatus(_handle, 0, node, ref status);
+                if (r != 0) _logger.LogWarning("ZMC BusNodeStatus failed: result={Result} node={Node}", r, node);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC BusNodeStatus exception: node={Node}", node); return -1; }
         }
         finally { _handleLock.ExitReadLock(); }
     }
 
     // ── 多步复合操作（读锁 + _multiStepLock） ──
 
-    /// <summary>
-    /// 绝对定位运动。_multiStepLock 保证参数设置与执行指令的原子性。
-    /// _handleLock 读锁保证操作期间连接不被关闭。
-    /// </summary>
     public int MoveAbsolute(int axisNo, double position, double velocity, double acceleration, double deceleration)
     {
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("MoveAbsolute", -1);
+            if (_handle == IntPtr.Zero) return LogNotConnected("MoveAbsolute");
 
             lock (_multiStepLock)
             {
                 try
                 {
                     var r1 = ExecuteNativeCommand(_handle, $"SPEED({axisNo})={velocity}");
-                    if (r1 != 0) return LogAndReturn("MoveAbsolute/SPEED", r1);
+                    if (r1 != 0) { _logger.LogWarning("ZMC MoveAbsolute/SPEED failed: result={Result} axis={AxisNo}", r1, axisNo); return r1; }
                     var r2 = ExecuteNativeCommand(_handle, $"ACCEL({axisNo})={acceleration}");
-                    if (r2 != 0) return LogAndReturn("MoveAbsolute/ACCEL", r2);
+                    if (r2 != 0) { _logger.LogWarning("ZMC MoveAbsolute/ACCEL failed: result={Result} axis={AxisNo}", r2, axisNo); return r2; }
                     var r3 = ExecuteNativeCommand(_handle, $"DECEL({axisNo})={deceleration}");
-                    if (r3 != 0) return LogAndReturn("MoveAbsolute/DECEL", r3);
+                    if (r3 != 0) { _logger.LogWarning("ZMC MoveAbsolute/DECEL failed: result={Result} axis={AxisNo}", r3, axisNo); return r3; }
                     var r4 = ZmcNativeApi.DirectSingleMoveAbs(_handle, axisNo, (float)position);
-                    if (r4 != 0) return LogAndReturn("MoveAbsolute/MoveAbs", r4);
+                    if (r4 != 0) { _logger.LogWarning("ZMC MoveAbsolute/MoveAbs failed: result={Result} axis={AxisNo}", r4, axisNo); return r4; }
                     return 0;
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "MoveAbsolute exception: axis={AxisNo}", axisNo);
-                    return -1;
-                }
+                catch (Exception ex) { _logger.LogError(ex, "ZMC MoveAbsolute exception: axis={AxisNo}", axisNo); return -1; }
             }
         }
         finally { _handleLock.ExitReadLock(); }
@@ -436,23 +540,19 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("JogAxis", -1);
+            if (_handle == IntPtr.Zero) return LogNotConnected("JogAxis");
 
             lock (_multiStepLock)
             {
                 try
                 {
                     var setup = ExecuteNativeCommand(_handle, $"SPEED({axisNo})={velocity}");
-                    if (setup != 0) return LogAndReturn("JogAxis/SPEED", setup);
+                    if (setup != 0) { _logger.LogWarning("ZMC JogAxis/SPEED failed: result={Result} axis={AxisNo}", setup, axisNo); return setup; }
                     var r = ZmcNativeApi.DirectSingleVmove(_handle, axisNo, positiveDirection ? 1 : -1);
-                    if (r != 0) return LogAndReturn("JogAxis/Vmove", r);
+                    if (r != 0) { _logger.LogWarning("ZMC JogAxis/Vmove failed: result={Result} axis={AxisNo}", r, axisNo); return r; }
                     return 0;
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "JogAxis exception: axis={AxisNo}", axisNo);
-                    return -1;
-                }
+                catch (Exception ex) { _logger.LogError(ex, "ZMC JogAxis exception: axis={AxisNo}", axisNo); return -1; }
             }
         }
         finally { _handleLock.ExitReadLock(); }
@@ -463,23 +563,19 @@ public sealed class ZmcAxisNativeFacade
         _handleLock.EnterReadLock();
         try
         {
-            if (_handle == IntPtr.Zero) return LogAndReturn("WriteAxisParams", -1);
+            if (_handle == IntPtr.Zero) return LogNotConnected("WriteAxisParams");
 
             lock (_multiStepLock)
             {
                 try
                 {
                     var r1 = ExecuteNativeCommand(_handle, $"SPEED({axisNo})={workVelocity}");
-                    if (r1 != 0) return LogAndReturn("WriteAxisParams/SPEED", r1);
+                    if (r1 != 0) { _logger.LogWarning("ZMC WriteAxisParams/SPEED failed: result={Result} axis={AxisNo}", r1, axisNo); return r1; }
                     var r2 = ExecuteNativeCommand(_handle, $"CREEP({axisNo})={setupVelocity}");
-                    if (r2 != 0) return LogAndReturn("WriteAxisParams/CREEP", r2);
+                    if (r2 != 0) { _logger.LogWarning("ZMC WriteAxisParams/CREEP failed: result={Result} axis={AxisNo}", r2, axisNo); return r2; }
                     return 0;
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "WriteAxisParameters exception: axis={AxisNo}", axisNo);
-                    return -1;
-                }
+                catch (Exception ex) { _logger.LogError(ex, "ZMC WriteAxisParams exception: axis={AxisNo}", axisNo); return -1; }
             }
         }
         finally { _handleLock.ExitReadLock(); }
@@ -493,27 +589,10 @@ public sealed class ZmcAxisNativeFacade
         return ZmcNativeApi.Execute(handle, command, buffer, 256);
     }
 
-    private int SafeCall(Func<int> nativeCall, string operation, int? axisOrIo = null)
+    private int LogNotConnected(string operation)
     {
-        try
-        {
-            var result = nativeCall();
-            if (result != 0)
-                _logger.LogWarning("ZMC {Operation} failed: result={Result} id={Id}", operation, result, axisOrIo);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "ZMC {Operation} exception: id={Id}", operation, axisOrIo);
-            return -1;
-        }
-    }
-
-    private int LogAndReturn(string operation, int result)
-    {
-        if (result != 0)
-            _logger.LogWarning("ZMC {Operation} returned {Result}", operation, result);
-        return result;
+        _logger.LogWarning("ZMC {Operation} skipped: not connected", operation);
+        return -1;
     }
 
     private int SafeClose(IntPtr handle)
