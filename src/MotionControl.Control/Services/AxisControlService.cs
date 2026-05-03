@@ -3,6 +3,7 @@ using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Device.Abstractions.Models;
 using MotionControl.Device.Abstractions.Results;
+using MotionControl.Diagnostics.Services;
 using MotionControl.Domain.Entities;
 using MotionControl.Domain.Enums;
 
@@ -11,7 +12,8 @@ namespace MotionControl.Control.Services;
 public sealed class AxisControlService(
     IAxisMotionController motionController,
     CommandFeedbackRuntimeState commandFeedbackRuntimeState,
-    AxisStateMachine axisStateMachine) : IAxisControlService
+    AxisStateMachine axisStateMachine,
+    SafetyInterlockService safetyInterlock) : IAxisControlService
 {
     public async Task<bool> IsServoOnAsync(Axis axis, CancellationToken cancellationToken = default)
     {
@@ -21,6 +23,9 @@ public sealed class AxisControlService(
 
     public async Task<DeviceResult> EnableAxisAsync(Axis axis, CancellationToken cancellationToken = default)
     {
+        if (!safetyInterlock.CanEnableAxis(axis))
+            return DeviceResult.Fail($"轴 {axis.Name} 有报警，无法使能");
+
         commandFeedbackRuntimeState.AddStarted("Enable", axis.ControllerAxisNo, "Axis enable requested");
         var result = await motionController.EnableAxisAsync(axis.ControllerAxisNo, cancellationToken);
         if (!result.Success)
@@ -51,6 +56,11 @@ public sealed class AxisControlService(
 
     public async Task<DeviceResult> MoveAbsoluteAsync(Axis axis, double position, double velocity, double acceleration, double deceleration, CancellationToken cancellationToken = default)
     {
+        if (!safetyInterlock.CanStartMove(axis))
+            return DeviceResult.Fail(axis.HasAlarm
+                ? $"轴 {axis.Name} 有报警，无法定位"
+                : $"轴 {axis.Name} 未完成回零，无法定位");
+
         var command = new AxisMoveCommand(position, velocity, acceleration, deceleration);
         commandFeedbackRuntimeState.AddStarted("Move", axis.ControllerAxisNo, $"Target {position}");
         var result = await motionController.MoveAbsoluteAsync(axis.ControllerAxisNo, command, cancellationToken);
@@ -68,6 +78,11 @@ public sealed class AxisControlService(
 
     public async Task<DeviceResult> JogAsync(Axis axis, double velocity, bool positiveDirection, CancellationToken cancellationToken = default)
     {
+        if (!safetyInterlock.CanStartMove(axis))
+            return DeviceResult.Fail(axis.HasAlarm
+                ? $"轴 {axis.Name} 有报警，无法点动"
+                : $"轴 {axis.Name} 未完成回零，无法点动");
+
         commandFeedbackRuntimeState.AddStarted("Jog", axis.ControllerAxisNo, positiveDirection ? "Jog positive requested" : "Jog negative requested");
         var result = await motionController.JogAxisAsync(axis.ControllerAxisNo, velocity, positiveDirection, cancellationToken);
         if (!result.Success)

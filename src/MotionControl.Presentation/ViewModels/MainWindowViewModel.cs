@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using MotionControl.Domain.Enums;
 using MotionControl.Application.Interfaces;
@@ -109,7 +110,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _magazineEventRuntimeState = magazineEventRuntimeState;
         _workHeadEventRuntimeState = workHeadEventRuntimeState;
         _positionSetupEventRuntimeState = positionSetupEventRuntimeState;
-        _commandFeedbackRuntimeState.FeedbackChanged += () => RefreshViewModels(force: true);
+        _commandFeedbackRuntimeState.FeedbackChanged += () =>
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher is null || dispatcher.CheckAccess())
+            {
+                RefreshViewModels(force: true);
+            }
+            else
+            {
+                _ = dispatcher.BeginInvoke(() => RefreshViewModels(force: true));
+            }
+        };
         _systemAppService = systemAppService;
         _dialogService = dialogService;
         _controllerRuntimeState = controllerRuntimeState;

@@ -55,7 +55,15 @@ public static class HostBuilderFactory
                 services.AddSingleton(zmcControllerOptions);
                 services.AddSingleton<ZmcStatusTranslator>();
                 services.AddSingleton<ZmcAxisNativeFacade>();
-                services.AddSingleton<IEtherCatStatusProvider, ZmcPlaceholderEtherCatStatusProvider>();
+                var etherCatSimulation = zmcControllerOptions.EtherCatSimulation;
+                if (etherCatSimulation)
+                {
+                    services.AddSingleton<IEtherCatStatusProvider, ZmcPlaceholderEtherCatStatusProvider>();
+                }
+                else
+                {
+                    services.AddSingleton<IEtherCatStatusProvider, ZmcEtherCatStatusProvider>();
+                }
 
                 services.AddSingleton<ZmcMotionController>();
                 services.AddSingleton<IAxisMotionController>(sp => sp.GetRequiredService<ZmcMotionController>());

@@ -2,29 +2,53 @@ namespace MotionControl.Control.Services;
 
 public sealed class CommandFeedbackRuntimeState
 {
+    private readonly object _syncLock = new();
+    private CommandFeedback[] _recentFeedback = Array.Empty<CommandFeedback>();
+
     public event Action? FeedbackChanged;
 
-    public IReadOnlyList<CommandFeedback> RecentFeedback { get; private set; } = Array.Empty<CommandFeedback>();
+    public IReadOnlyList<CommandFeedback> RecentFeedback
+    {
+        get
+        {
+            lock (_syncLock)
+            {
+                return _recentFeedback;
+            }
+        }
+    }
 
     public void Add(CommandFeedback feedback)
     {
-        var lastFeedback = RecentFeedback.LastOrDefault();
-        var isDuplicateAxisStateChange = lastFeedback is not null
-            && feedback.CommandName == "AxisState"
-            && lastFeedback.CommandName == feedback.CommandName
-            && lastFeedback.AxisNo == feedback.AxisNo
-            && lastFeedback.Status == feedback.Status
-            && lastFeedback.Message == feedback.Message;
-
-        if (isDuplicateAxisStateChange)
+        lock (_syncLock)
         {
-            return;
+            var lastFeedback = _recentFeedback.Length > 0 ? _recentFeedback[^1] : null;
+            var isDuplicateAxisStateChange = lastFeedback is not null
+                && feedback.CommandName == "AxisState"
+                && lastFeedback.CommandName == feedback.CommandName
+                && lastFeedback.AxisNo == feedback.AxisNo
+                && lastFeedback.Status == feedback.Status
+                && lastFeedback.Message == feedback.Message;
+
+            if (isDuplicateAxisStateChange)
+            {
+                return;
+            }
+
+            var newList = new CommandFeedback[Math.Min(_recentFeedback.Length + 1, 100)];
+            var startIndex = _recentFeedback.Length >= 100 ? 1 : 0;
+            if (_recentFeedback.Length >= 100)
+            {
+                Array.Copy(_recentFeedback, 1, newList, 0, 99);
+            }
+            else
+            {
+                Array.Copy(_recentFeedback, 0, newList, 0, _recentFeedback.Length);
+            }
+            newList[Math.Min(_recentFeedback.Length, 99)] = feedback;
+            _recentFeedback = newList;
         }
 
-        RecentFeedback = RecentFeedback
-            .Concat(new[] { feedback })
-            .TakeLast(100)
-            .ToArray();
         FeedbackChanged?.Invoke();
     }
 

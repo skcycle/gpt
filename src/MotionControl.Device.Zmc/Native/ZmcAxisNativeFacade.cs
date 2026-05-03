@@ -326,6 +326,35 @@ public sealed class ZmcAxisNativeFacade
         }
     }
 
+    // ── EtherCAT 总线操作（单步，无锁 volatile 快照） ──
+
+    /// <summary>获取总线扫描到的节点数量。</summary>
+    public int GetBusNodeCount(ref int count)
+    {
+        var handle = _handle;
+        if (handle == IntPtr.Zero) return -1;
+        try { return ZmcNativeApi.BusCmdGetNodeNum(handle, 0, ref count); }
+        catch { return -1; }
+    }
+
+    /// <summary>读取总线节点信息（sel: 0-厂商ID 1-设备ID 2-版本 10-IN数 11-OUT数）。</summary>
+    public int GetBusNodeInfo(uint node, uint sel, ref int value)
+    {
+        var handle = _handle;
+        if (handle == IntPtr.Zero) return -1;
+        try { return ZmcNativeApi.BusCmdGetNodeInfo(handle, 0, node, sel, ref value); }
+        catch { return -1; }
+    }
+
+    /// <summary>读取总线节点通讯状态。</summary>
+    public int GetBusNodeStatus(uint node, ref uint status)
+    {
+        var handle = _handle;
+        if (handle == IntPtr.Zero) return -1;
+        try { return ZmcNativeApi.BusCmdGetNodeStatus(handle, 0, node, ref status); }
+        catch { return -1; }
+    }
+
     // ── 内部工具方法 ──
 
     private static int ExecuteNativeCommand(IntPtr handle, string command)

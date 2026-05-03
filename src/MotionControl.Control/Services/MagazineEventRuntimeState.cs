@@ -2,16 +2,32 @@ namespace MotionControl.Control.Services;
 
 public sealed class MagazineEventRuntimeState
 {
+    private readonly object _syncLock = new();
+    private MagazineEventRecord[] _recentEvents = Array.Empty<MagazineEventRecord>();
+
     public event Action? EventsChanged;
 
-    public IReadOnlyList<MagazineEventRecord> RecentEvents { get; private set; } = Array.Empty<MagazineEventRecord>();
+    public IReadOnlyList<MagazineEventRecord> RecentEvents
+    {
+        get
+        {
+            lock (_syncLock) { return _recentEvents; }
+        }
+    }
 
     public void Add(MagazineEventRecord record)
     {
-        RecentEvents = RecentEvents
-            .Concat(new[] { record })
-            .TakeLast(200)
-            .ToArray();
+        lock (_syncLock)
+        {
+            var newList = new MagazineEventRecord[Math.Min(_recentEvents.Length + 1, 200)];
+            var startIndex = _recentEvents.Length >= 200 ? 1 : 0;
+            if (_recentEvents.Length >= 200)
+                Array.Copy(_recentEvents, 1, newList, 0, 199);
+            else
+                Array.Copy(_recentEvents, 0, newList, 0, _recentEvents.Length);
+            newList[Math.Min(_recentEvents.Length, 199)] = record;
+            _recentEvents = newList;
+        }
         EventsChanged?.Invoke();
     }
 }

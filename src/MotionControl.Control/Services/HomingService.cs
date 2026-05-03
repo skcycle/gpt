@@ -3,6 +3,7 @@ using MotionControl.Control.Interfaces;
 using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Device.Abstractions.Results;
+using MotionControl.Diagnostics.Services;
 using MotionControl.Domain.Entities;
 
 namespace MotionControl.Control.Services;
@@ -12,10 +13,14 @@ public sealed class HomingService(
     IEnumerable<IHomeStrategy> homeStrategies,
     HomePlanRuntimeState homePlanRuntimeState,
     CommandFeedbackRuntimeState commandFeedbackRuntimeState,
-    AxisStateMachine axisStateMachine) : IHomingService
+    AxisStateMachine axisStateMachine,
+    SafetyInterlockService safetyInterlock) : IHomingService
 {
     public async Task<DeviceResult> HomeAxisAsync(Axis axis, CancellationToken cancellationToken = default)
     {
+        if (!safetyInterlock.CanStartHome(axis))
+            return DeviceResult.Fail($"轴 {axis.Name} 有报警，无法回零");
+
         var strategy = homeStrategies.FirstOrDefault(item => item.HomeMode == axis.HomeMode)
             ?? homeStrategies.First(item => item.HomeMode == MotionControl.Domain.Enums.HomeMode.Default);
 

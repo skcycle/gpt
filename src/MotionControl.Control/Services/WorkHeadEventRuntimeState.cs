@@ -2,16 +2,32 @@ namespace MotionControl.Control.Services;
 
 public sealed class WorkHeadEventRuntimeState
 {
+    private readonly object _syncLock = new();
+    private WorkHeadEventRecord[] _recentEvents = Array.Empty<WorkHeadEventRecord>();
+
     public event Action? EventsChanged;
 
-    public IReadOnlyList<WorkHeadEventRecord> RecentEvents { get; private set; } = Array.Empty<WorkHeadEventRecord>();
+    public IReadOnlyList<WorkHeadEventRecord> RecentEvents
+    {
+        get
+        {
+            lock (_syncLock) { return _recentEvents; }
+        }
+    }
 
     public void Add(WorkHeadEventRecord record)
     {
-        RecentEvents = RecentEvents
-            .Concat(new[] { record })
-            .TakeLast(200)
-            .ToArray();
+        lock (_syncLock)
+        {
+            var newList = new WorkHeadEventRecord[Math.Min(_recentEvents.Length + 1, 200)];
+            var startIndex = _recentEvents.Length >= 200 ? 1 : 0;
+            if (_recentEvents.Length >= 200)
+                Array.Copy(_recentEvents, 1, newList, 0, 199);
+            else
+                Array.Copy(_recentEvents, 0, newList, 0, _recentEvents.Length);
+            newList[Math.Min(_recentEvents.Length, 199)] = record;
+            _recentEvents = newList;
+        }
         EventsChanged?.Invoke();
     }
 }
@@ -26,16 +42,32 @@ public sealed class WorkHeadEventRecord
 
 public sealed class PositionSetupEventRuntimeState
 {
+    private readonly object _syncLock = new();
+    private PositionSetupEventRecord[] _recentEvents = Array.Empty<PositionSetupEventRecord>();
+
     public event Action? EventsChanged;
 
-    public IReadOnlyList<PositionSetupEventRecord> RecentEvents { get; private set; } = Array.Empty<PositionSetupEventRecord>();
+    public IReadOnlyList<PositionSetupEventRecord> RecentEvents
+    {
+        get
+        {
+            lock (_syncLock) { return _recentEvents; }
+        }
+    }
 
     public void Add(PositionSetupEventRecord record)
     {
-        RecentEvents = RecentEvents
-            .Concat(new[] { record })
-            .TakeLast(200)
-            .ToArray();
+        lock (_syncLock)
+        {
+            var newList = new PositionSetupEventRecord[Math.Min(_recentEvents.Length + 1, 200)];
+            var startIndex = _recentEvents.Length >= 200 ? 1 : 0;
+            if (_recentEvents.Length >= 200)
+                Array.Copy(_recentEvents, 1, newList, 0, 199);
+            else
+                Array.Copy(_recentEvents, 0, newList, 0, _recentEvents.Length);
+            newList[Math.Min(_recentEvents.Length, 199)] = record;
+            _recentEvents = newList;
+        }
         EventsChanged?.Invoke();
     }
 }
