@@ -46,9 +46,10 @@ public sealed class ZmcMotionController(
             var homeStatus = 0;
             var busEnableStatus = 0;
 
-            axisNativeFacade.GetAxisDpos(axisNo, ref dpos);
-            axisNativeFacade.GetAxisMpos(axisNo, ref mpos);
-            axisNativeFacade.GetAxisSpeed(axisNo, ref speed);
+            // 逐项检查返回值：任何关键读取失败 → 整个反馈标记无效
+            var dposOk = axisNativeFacade.GetAxisDpos(axisNo, ref dpos) == 0;
+            var mposOk = axisNativeFacade.GetAxisMpos(axisNo, ref mpos) == 0;
+            var speedOk = axisNativeFacade.GetAxisSpeed(axisNo, ref speed) == 0;
 
             var status2Result = axisNativeFacade.GetAxisStatus2(axisNo, -1, ref axisStatus, ref idle, ref homeStatus, ref busEnableStatus);
             if (status2Result != 0)
@@ -58,9 +59,13 @@ public sealed class ZmcMotionController(
             }
 
             var axisEnable = 0;
-            axisNativeFacade.GetAxisEnable(axisNo, ref axisEnable);
+            var enableOk = axisNativeFacade.GetAxisEnable(axisNo, ref axisEnable) == 0;
 
-            return statusTranslator.Translate(axisNo, dpos, mpos, speed, idle, axisStatus, homeStatus, axisEnable);
+            // dpos/mpos/speed 是核心反馈数据，任一个失败都标记无效
+            if (!dposOk || !mposOk)
+                return AxisFeedback.Invalid(axisNo);
+
+            return statusTranslator.Translate(axisNo, dpos, mpos, speed, idle, axisStatus, homeStatus, enableOk ? axisEnable : busEnableStatus);
         }, cancellationToken);
     }
 
@@ -124,20 +129,26 @@ public sealed class ZmcMotionController(
         }, cancellationToken);
     }
 
+    /// <summary>
+    /// 读取 IO 点位值。读取失败时抛异常（不再静默返回 false），
+    /// 让调用方（轮询服务）通过 catch 处理，避免将"读失败"与"OFF"混淆。
+    /// </summary>
     public async Task<bool> GetIoPointValueAsync(int address, bool isOutput, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         return await Task.Run(() =>
         {
             uint value = 0;
+            int result;
             if (isOutput)
-            {
-                axisNativeFacade.GetOutput(address, ref value);
-            }
+                result = axisNativeFacade.GetOutput(address, ref value);
             else
-            {
-                axisNativeFacade.GetInput(address, ref value);
-            }
+                result = axisNativeFacade.GetInput(address, ref value);
+
+            if (result != 0)
+                throw new InvalidOperationException(
+                    $"IO read failed: {(isOutput ? "output" : "input")} addr={address} result={result}");
+
             return value != 0;
         }, cancellationToken);
     }

@@ -12,8 +12,20 @@ public sealed class IoPollingService(
     {
         foreach (var ioPoint in machine.IoPoints)
         {
+            bool currentValue;
+            try
+            {
+                // GetIoPointValueAsync 失败时会抛异常（不再静默返回 false）
+                // 单个 IO 点读取失败不影响其他点的轮询
+                currentValue = await motionController.GetIoPointValueAsync(ioPoint.Address, ioPoint.IsOutput, cancellationToken);
+            }
+            catch
+            {
+                // 本 IO 点读取失败，跳过本轮更新
+                continue;
+            }
+
             var previousValue = ioPoint.Value;
-            var currentValue = await motionController.GetIoPointValueAsync(ioPoint.Address, ioPoint.IsOutput, cancellationToken);
             if (previousValue != currentValue)
             {
                 ioPoint.Update(currentValue);
@@ -23,7 +35,7 @@ public sealed class IoPollingService(
                     Address = ioPoint.Address,
                     IsOutput = ioPoint.IsOutput,
                     Value = currentValue,
-                    Message = $"{ioPoint.Name} -> {(currentValue ? "ON" : "OFF")}"
+                    Message = $"{ioPoint.Name} -> {(currentValue ? "ON" : "OFF")}",
                 });
             }
         }

@@ -20,6 +20,7 @@ public sealed class ControllerPollingService(
     private readonly object _startStopLock = new();
     private static readonly TimeSpan[] ReconnectBackoff = { TimeSpan.Zero, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(10) };
     private int _consecutiveFailures;
+    private int _reconnectInProgress; // 0 = idle, 1 = in progress
     private bool _isRunning;
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -61,6 +62,7 @@ public sealed class ControllerPollingService(
             machine.SetConnected(true);
             _isRunning = true;
             _consecutiveFailures = 0;
+            _reconnectInProgress = 0;
         }
 
         var syncingState = systemStateMachine.OnSyncingRequested();
@@ -121,8 +123,8 @@ public sealed class ControllerPollingService(
                 machine.SetSystemState(nextSystemState);
             }
 
-            // 正常轮询成功，重置连续失败计数
             _consecutiveFailures = 0;
+            _reconnectInProgress = 0;
         }
         catch
         {
@@ -136,16 +138,27 @@ public sealed class ControllerPollingService(
                 Slaves = Array.Empty<MotionControl.Device.Abstractions.Models.EtherCatSlaveStatus>(),
             });
 
-            // 连续失败达到阈值时尝试重连（带退避）
-            if (ShouldAttemptReconnect(failures))
+            // 防止排队多个重连任务：仅当没有重连进行中时才启动
+            if (ShouldAttemptReconnect(failures)
+                && Interlocked.CompareExchange(ref _reconnectInProgress, 1, 0) == 0)
             {
                 var delayIndex = Math.Min(failures - 1, ReconnectBackoff.Length - 1);
                 var delay = ReconnectBackoff[delayIndex];
                 _ = Task.Run(async () =>
                 {
-                    await Task.Delay(delay);
-                    try { await ReconnectAsync(CancellationToken.None); }
-                    catch { /* 重连失败交给下一轮轮询处理 */ }
+                    try
+                    {
+                        await Task.Delay(delay);
+                        await ReconnectAsync(CancellationToken.None);
+                    }
+                    catch
+                    {
+                        // 重连失败留给下一轮轮询处理
+                    }
+                    finally
+                    {
+                        Interlocked.Exchange(ref _reconnectInProgress, 0);
+                    }
                 });
             }
         }

@@ -16,6 +16,11 @@ public sealed class AxisPollingService(
         foreach (var axis in machine.Axes)
         {
             var feedback = await motionController.GetAxisFeedbackAsync(axis.ControllerAxisNo, cancellationToken);
+
+            // 底层读取失败 → 本轮不更新，保留上轮有效值
+            if (!feedback.IsValid)
+                continue;
+
             axis.UpdateFeedback(
                 feedback.CommandPosition,
                 feedback.EncoderPosition,
