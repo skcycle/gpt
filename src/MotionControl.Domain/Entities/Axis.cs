@@ -22,7 +22,7 @@ public sealed class Axis
         get { lock (_stateLock) return _name; }
         private set { lock (_stateLock) _name = value; }
     }
-    private string _name;
+    private string _name = string.Empty;
 
     public AxisState State
     {
