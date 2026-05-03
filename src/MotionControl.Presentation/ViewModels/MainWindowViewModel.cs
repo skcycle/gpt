@@ -112,7 +112,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _positionSetupEventRuntimeState = positionSetupEventRuntimeState;
         _commandFeedbackRuntimeState.FeedbackChanged += () =>
         {
-            var dispatcher = Application.Current?.Dispatcher;
+            var dispatcher = System.Windows.Application.Current?.Dispatcher;
             if (dispatcher is null || dispatcher.CheckAccess())
             {
                 RefreshViewModels(force: true);
