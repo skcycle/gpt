@@ -583,78 +583,78 @@
                             </Border>
                         </Grid>
 
-                        <!-- Axis Data Capture: Motion Curve Recording & Plotting -->
-                        <Border Grid.Row="3" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="14" Padding="16" Margin="0,4,0,0">
+                        <!-- Axis Data Capture: Compact motion curve recording & plotting -->
+                        <Border Grid.Row="3" Background="{StaticResource PanelBackgroundBrush}" CornerRadius="14" Padding="12" Margin="0,4,0,0">
                             <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="6" />
+                                    <RowDefinition Height="180" />
+                                </Grid.RowDefinitions>
 
-                                <!-- Left: Controls -->
-                                <Border Grid.Column="0" Width="260" Padding="0,0,16,0">
-                                    <StackPanel>
-                                        <TextBlock Text="Motion Curve Capture" Style="{StaticResource SectionTitleTextStyle}" />
-                                        <TextBlock Text="High-speed 1ms data acquisition &amp; plotting" Style="{StaticResource SectionHintTextStyle}" Margin="0,2,0,12" />
+                                <!-- Row 0: Compact toolbar -->
+                                <Border Grid.Row="0" Background="#16212C" CornerRadius="8" Padding="8,6">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="12" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
 
-                                        <!-- Signal selection -->
-                                        <TextBlock Text="Monitored Signals" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6" />
-                                        <CheckBox Content="Speed (VEL)" IsChecked="{Binding AxisDataCapture.ShowSpeed}" Foreground="#F0C040" FontSize="12" Margin="0,0,0,4" />
-                                        <CheckBox Content="Cmd Position (DPOS)" IsChecked="{Binding AxisDataCapture.ShowCmdPosition}" Foreground="#4FC3F7" FontSize="12" Margin="0,0,0,4" />
-                                        <CheckBox Content="Enc Position (MPOS)" IsChecked="{Binding AxisDataCapture.ShowEncPosition}" Foreground="#81C784" FontSize="12" Margin="0,0,0,12" />
+                                        <!-- Signal checkboxes in one row -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <CheckBox Content="Speed" IsChecked="{Binding AxisDataCapture.ShowSpeed}" Foreground="#F0C040" FontSize="11" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                            <CheckBox Content="Cmd Pos" IsChecked="{Binding AxisDataCapture.ShowCmdPosition}" Foreground="#4FC3F7" FontSize="11" Margin="0,0,10,0" VerticalAlignment="Center" />
+                                            <CheckBox Content="Enc Pos" IsChecked="{Binding AxisDataCapture.ShowEncPosition}" Foreground="#81C784" FontSize="11" VerticalAlignment="Center" />
+                                        </StackPanel>
 
-                                        <!-- Duration -->
-                                        <TextBlock Text="Capture Duration" Foreground="{StaticResource SecondaryTextBrush}" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6" />
-                                        <ComboBox ItemsSource="{Binding AxisDataCapture.CaptureDurations}"
-                                                  SelectedItem="{Binding AxisDataCapture.CaptureDurationMs}"
-                                                  FontSize="12" Margin="0,0,0,12">
-                                            <ComboBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding StringFormat={}{0} ms}" FontSize="12" />
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>
-                                        </ComboBox>
-
-                                        <!-- Action buttons -->
-                                        <UniformGrid Columns="3" Margin="0,0,0,8">
+                                        <!-- Duration + buttons -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="Dur:" Foreground="{StaticResource SecondaryTextBrush}" FontSize="11" VerticalAlignment="Center" Margin="0,0,4,0" />
+                                            <ComboBox ItemsSource="{Binding AxisDataCapture.CaptureDurations}"
+                                                      SelectedItem="{Binding AxisDataCapture.CaptureDurationMs}"
+                                                      FontSize="11" Width="80" VerticalAlignment="Center" Margin="0,0,8,0">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding StringFormat={}{0} ms}" FontSize="11" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                             <Button Content="Start" Command="{Binding AxisDataCapture.StartCaptureCommand}"
                                                     Style="{StaticResource SuccessButtonStyle}"
-                                                    FontSize="12" Padding="8,6" Margin="0,0,6,0" />
+                                                    FontSize="11" Padding="10,4" Margin="0,0,4,0" />
                                             <Button Content="Stop" Command="{Binding AxisDataCapture.StopCaptureCommand}"
                                                     Style="{StaticResource DangerButtonStyle}"
-                                                    FontSize="12" Padding="8,6" Margin="0,0,6,0" />
+                                                    FontSize="11" Padding="10,4" Margin="0,0,4,0" />
                                             <Button Content="Clear" Command="{Binding AxisDataCapture.ClearCommand}"
                                                     Style="{StaticResource SecondaryButtonStyle}"
-                                                    FontSize="12" Padding="8,6" />
-                                        </UniformGrid>
+                                                    FontSize="11" Padding="10,4" />
+                                        </StackPanel>
 
-                                        <!-- Status -->
-                                        <Border Background="#1A2530" CornerRadius="8" Padding="10,8" Margin="0,4,0,0">
-                                            <TextBlock Text="{Binding AxisDataCapture.StatusText}"
-                                                       Foreground="{StaticResource SecondaryTextBrush}"
-                                                       FontSize="12" TextWrapping="Wrap" />
-                                        </Border>
-                                    </StackPanel>
+                                        <!-- Status (right-aligned) -->
+                                        <TextBlock Grid.Column="4" Text="{Binding AxisDataCapture.StatusText}"
+                                                   Foreground="{StaticResource SecondaryTextBrush}"
+                                                   FontSize="11" VerticalAlignment="Center"
+                                                   TextWrapping="NoWrap" />
+                                    </Grid>
                                 </Border>
 
-                                <!-- Right: Chart Canvas -->
-                                <Border Grid.Column="1" Background="#0D1620" CornerRadius="10" Padding="4">
+                                <!-- Row 2: Chart -->
+                                <Border Grid.Row="2" Background="#0D1620" CornerRadius="10" Padding="2">
                                     <Canvas x:Name="MotionCurveCanvas"
                                             ClipToBounds="True"
                                             Background="Transparent"
                                             SizeChanged="MotionCurveCanvas_SizeChanged">
-                                        <!-- Grid lines & axes drawn in code-behind on SizeChanged -->
-                                        <!-- Speed curve (yellow) -->
                                         <Polyline x:Name="SpeedCurvePolyline"
                                                   Stroke="#F0C040" StrokeThickness="1.5"
                                                   Points="{Binding AxisDataCapture.SpeedLinePoints}"
                                                   Visibility="{Binding AxisDataCapture.ShowSpeed, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                        <!-- Cmd Position curve (cyan) -->
                                         <Polyline x:Name="CmdCurvePolyline"
                                                   Stroke="#4FC3F7" StrokeThickness="1.5"
                                                   Points="{Binding AxisDataCapture.CmdLinePoints}"
                                                   Visibility="{Binding AxisDataCapture.ShowCmdPosition, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                        <!-- Enc Position curve (green) -->
                                         <Polyline x:Name="EncCurvePolyline"
                                                   Stroke="#81C784" StrokeThickness="1.5"
                                                   Points="{Binding AxisDataCapture.EncLinePoints}"
