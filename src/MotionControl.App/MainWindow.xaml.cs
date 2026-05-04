@@ -1,6 +1,9 @@
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 using MotionControl.Presentation.ViewModels;
 
@@ -37,6 +40,25 @@ public partial class MainWindow : Window
         }
 
         _initialized = true;
+
+        // Redraw chart grid when axis data capture properties change
+        _viewModel.AxisDataCapture.PropertyChanged += (s, args) =>
+        {
+            if (args.PropertyName is nameof(AxisDataCaptureViewModel.ShowSpeed)
+                or nameof(AxisDataCaptureViewModel.ShowCmdPosition)
+                or nameof(AxisDataCaptureViewModel.ShowEncPosition)
+                or nameof(AxisDataCaptureViewModel.SpeedMax)
+                or nameof(AxisDataCaptureViewModel.PositionMax)
+                or nameof(AxisDataCaptureViewModel.TimeMax))
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    if (FindName("MotionCurveCanvas") is Canvas canvas)
+                        DrawChartGrid(canvas);
+                });
+            }
+        };
+
         await _viewModel.InitializeAsync();
     }
 
@@ -150,6 +172,183 @@ public partial class MainWindow : Window
         {
             scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - e.Delta / 3.0);
             e.Handled = true;
+        }
+    }
+
+    private void MotionCurveCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (sender is Canvas canvas && _viewModel?.AxisDataCapture != null)
+        {
+            _viewModel.AxisDataCapture.UpdateCanvasSize(canvas.ActualWidth, canvas.ActualHeight);
+            DrawChartGrid(canvas);
+        }
+    }
+
+    private void DrawChartGrid(Canvas canvas)
+    {
+        var vm = _viewModel?.AxisDataCapture;
+        if (vm == null) return;
+
+        // Remove old grid/label elements (keep data polylines)
+        var toRemove = canvas.Children.OfType<UIElement>()
+            .Where(c => c is not Polyline && c is FrameworkElement fe && fe.Tag?.ToString() == "chart-label")
+            .ToList();
+        foreach (var item in toRemove)
+            canvas.Children.Remove(item);
+
+        const double marginLeft = 50, marginRight = 20, marginTop = 20, marginBottom = 32;
+        var width = canvas.ActualWidth;
+        var height = canvas.ActualHeight;
+        var plotWidth = width - marginLeft - marginRight;
+        var plotHeight = height - marginTop - marginBottom;
+        if (plotWidth <= 0 || plotHeight <= 0) return;
+
+        // Horizontal grid lines (5 lines = 4 segments)
+        var gridBrush = new SolidColorBrush(Color.FromRgb(0x1E, 0x2E, 0x3D));
+        for (int i = 0; i <= 4; i++)
+        {
+            double y = marginTop + (plotHeight * i / 4.0);
+            canvas.Children.Add(new Line
+            {
+                X1 = marginLeft, Y1 = y, X2 = width - marginRight, Y2 = y,
+                Stroke = gridBrush, StrokeThickness = 0.5,
+                Tag = "chart-label"
+            });
+        }
+
+        // Vertical grid lines (6 lines = 5 segments)
+        for (int i = 0; i <= 5; i++)
+        {
+            double x = marginLeft + (plotWidth * i / 5.0);
+            canvas.Children.Add(new Line
+            {
+                X1 = x, Y1 = marginTop, X2 = x, Y2 = height - marginBottom,
+                Stroke = gridBrush, StrokeThickness = 0.5,
+                Tag = "chart-label"
+            });
+        }
+
+        // Axes
+        var axisBrush = new SolidColorBrush(Color.FromRgb(0x44, 0x5A, 0x6C));
+        canvas.Children.Add(new Line
+        {
+            X1 = marginLeft, Y1 = marginTop, X2 = marginLeft, Y2 = height - marginBottom,
+            Stroke = axisBrush, StrokeThickness = 1,
+            Tag = "chart-label"
+        });
+        canvas.Children.Add(new Line
+        {
+            X1 = marginLeft, Y1 = height - marginBottom, X2 = width - marginRight, Y2 = height - marginBottom,
+            Stroke = axisBrush, StrokeThickness = 1,
+            Tag = "chart-label"
+        });
+
+        var labelBrush = new SolidColorBrush(Color.FromRgb(0x7A, 0x8E, 0x9E));
+        var labelFontSize = 9.0;
+
+        // Speed labels (left Y axis)
+        var speedMax = vm.SpeedMax > 0 ? vm.SpeedMax : 10;
+        for (int i = 0; i <= 4; i++)
+        {
+            double val = speedMax * (4 - i) / 4.0;
+            double y = marginTop + (plotHeight * i / 4.0);
+            var tb = new TextBlock
+            {
+                Text = val.ToString("F0"),
+                Foreground = labelBrush,
+                FontSize = labelFontSize,
+                Tag = "chart-label"
+            };
+            Canvas.SetLeft(tb, 3);
+            Canvas.SetTop(tb, y - 7);
+            canvas.Children.Add(tb);
+        }
+
+        // Position labels (right Y axis) — only if position signal visible
+        if (vm.ShowCmdPosition || vm.ShowEncPosition)
+        {
+            var posMax = vm.PositionMax > 0 ? vm.PositionMax : 10;
+            for (int i = 0; i <= 4; i++)
+            {
+                double val = posMax * (4 - i) / 4.0;
+                double y = marginTop + (plotHeight * i / 4.0);
+                var tb = new TextBlock
+                {
+                    Text = val.ToString("F1"),
+                    Foreground = labelBrush,
+                    FontSize = labelFontSize,
+                    Tag = "chart-label"
+                };
+                Canvas.SetLeft(tb, width - marginRight + 4);
+                Canvas.SetTop(tb, y - 7);
+                canvas.Children.Add(tb);
+            }
+        }
+
+        // Time labels (X axis)
+        var timeMax = vm.TimeMax > 0 ? vm.TimeMax : 1000;
+        for (int i = 0; i <= 5; i++)
+        {
+            double val = timeMax * i / 5.0;
+            double x = marginLeft + (plotWidth * i / 5.0);
+            var tb = new TextBlock
+            {
+                Text = val.ToString("F0"),
+                Foreground = labelBrush,
+                FontSize = labelFontSize,
+                Tag = "chart-label"
+            };
+            Canvas.SetLeft(tb, x - 12);
+            Canvas.SetTop(tb, height - marginBottom + 5);
+            canvas.Children.Add(tb);
+        }
+
+        // X axis unit label
+        var xUnitTb = new TextBlock
+        {
+            Text = "ms",
+            Foreground = labelBrush,
+            FontSize = labelFontSize,
+            Tag = "chart-label"
+        };
+        Canvas.SetLeft(xUnitTb, width - marginRight - 16);
+        Canvas.SetTop(xUnitTb, height - marginBottom + 5);
+        canvas.Children.Add(xUnitTb);
+
+        // Legend
+        double legendX = marginLeft + 8;
+        double legendY = marginTop + 4;
+        var legendItems = new[]
+        {
+            (Text: "Speed", Color: Color.FromRgb(0xF0, 0xC0, 0x40), Show: vm.ShowSpeed),
+            (Text: "Cmd Pos", Color: Color.FromRgb(0x4F, 0xC3, 0xF7), Show: vm.ShowCmdPosition),
+            (Text: "Enc Pos", Color: Color.FromRgb(0x81, 0xC7, 0x84), Show: vm.ShowEncPosition),
+        };
+        foreach (var (text, color, show) in legendItems)
+        {
+            if (!show) continue;
+            var dot = new Ellipse
+            {
+                Width = 7, Height = 7,
+                Fill = new SolidColorBrush(color),
+                Stroke = new SolidColorBrush(Color.FromRgb(0x44, 0x5A, 0x6C)),
+                StrokeThickness = 0.5,
+                Tag = "chart-label"
+            };
+            Canvas.SetLeft(dot, legendX);
+            Canvas.SetTop(dot, legendY + 3);
+            canvas.Children.Add(dot);
+            var tb = new TextBlock
+            {
+                Text = text,
+                Foreground = new SolidColorBrush(color),
+                FontSize = 11,
+                Tag = "chart-label"
+            };
+            Canvas.SetLeft(tb, legendX + 11);
+            Canvas.SetTop(tb, legendY);
+            canvas.Children.Add(tb);
+            legendX += 72;
         }
     }
 

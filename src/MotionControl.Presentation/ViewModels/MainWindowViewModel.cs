@@ -206,6 +206,8 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             this,
             dialogService,
             commandFeedbackRuntimeState);
+        AxisDataCapture = new AxisDataCaptureViewModel(machine, CanControlAxisCommands);
+        AxisDebug.SelectedAxisChanged += axisNo => AxisDataCapture.SetSelectedAxisNo(axisNo);
         Alarm = new AlarmViewModel(machine);
         EmergencyStopCommand = new RelayCommand(
             async () =>
@@ -428,6 +430,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     public WorkHeadEventLogViewModel WorkHeadEventLog { get; }
     public PositionSetupEventLogViewModel PositionSetupEventLog { get; }
     public AxisParameterEditorViewModel AxisParameterEditor { get; }
+    public AxisDataCaptureViewModel AxisDataCapture { get; }
     public AlarmViewModel Alarm { get; }
 
     public ICommand EmergencyStopCommand { get; }
