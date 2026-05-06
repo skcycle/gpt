@@ -169,29 +169,20 @@
         </Grid>
 
         <!-- ── Event Log ───────────────────────────────────────────── -->
-        <Border Grid.Row="4" Style="{StaticResource SectionCardStyle}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock Text="Work Head Event Log" Style="{StaticResource SectionTitleTextStyle}" />
-                <TextBlock Grid.Row="1" Text="Runtime actions, vacuum events and motion feedback" Style="{StaticResource SectionHintTextStyle}" />
-                <DataGrid Grid.Row="2"
-                          ItemsSource="{Binding WorkHeadEventLog.Events}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Time"    Binding="{Binding Time}"         Width="110" />
-                        <DataGridTextColumn Header="Object" Binding="{Binding ObjectName}"   Width="120" />
-                        <DataGridTextColumn Header="Event"  Binding="{Binding EventName}"    Width="120" />
-                        <DataGridTextColumn Header="Message" Binding="{Binding Message}"     Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
-        </Border>
+        <controls:EventLogPanel Grid.Row="4"
+                                Title="Work Head Event Log"
+                                Hint="Runtime actions, vacuum events and motion feedback">
+            <DataGrid ItemsSource="{Binding WorkHeadEventLog.Events}"
+                      Style="{StaticResource SectionDataGridStyle}"
+                      PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Time"    Binding="{Binding Time}"         Width="110" />
+                    <DataGridTextColumn Header="Object" Binding="{Binding ObjectName}"   Width="120" />
+                    <DataGridTextColumn Header="Event"  Binding="{Binding EventName}"    Width="120" />
+                    <DataGridTextColumn Header="Message" Binding="{Binding Message}"     Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </controls:EventLogPanel>
 
     </Grid>
 </UserControl>
