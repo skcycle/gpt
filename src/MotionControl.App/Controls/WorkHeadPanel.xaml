@@ -55,7 +55,7 @@
                              AutoGenerateColumns="False"
                              CanUserAddRows="False"
                              IsReadOnly="False"
-                             Style="{StaticResource EventLogDataGridStyle}"
+                             Style="{StaticResource SectionDataGridStyle}"
                               PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
