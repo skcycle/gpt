@@ -307,6 +307,52 @@ public sealed class ZmcAxisNativeFacade
         finally { _handleLock.ExitReadLock(); }
     }
 
+    /// <summary>
+    /// 读取 MSEEP 寄存器（编码器位置，脉冲数）。
+    /// </summary>
+    public int GetAxisMseep(int axisNo, ref float value)
+    {
+        _handleLock.EnterReadLock();
+        try
+        {
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetMseep");
+            try
+            {
+                var buffer = new StringBuilder(64);
+                var r = ZmcNativeApi.Execute(_handle, $"?MSEEP({axisNo})", buffer, 64);
+                if (r == 0 && float.TryParse(buffer.ToString(), out var parsed))
+                {
+                    value = parsed;
+                    return 0;
+                }
+                _logger.LogWarning("ZMC GetMseep failed: result={Result} axis={AxisNo} buffer={Buffer}", r, axisNo, buffer);
+                return r != 0 ? r : -1;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetMseep exception: axis={AxisNo}", axisNo); return -1; }
+        }
+        finally { _handleLock.ExitReadLock(); }
+    }
+
+    /// <summary>
+    /// 读取 MSPEED（电机当前速度，直接接口）。
+    /// </summary>
+    public int GetAxisMspeed(int axisNo, ref float value)
+    {
+        _handleLock.EnterReadLock();
+        try
+        {
+            if (_handle == IntPtr.Zero) return LogNotConnected("GetMspeed");
+            try
+            {
+                var r = ZmcNativeApi.DirectGetMspeed(_handle, axisNo, ref value);
+                if (r != 0) _logger.LogWarning("ZMC GetMspeed failed: result={Result} axis={AxisNo}", r, axisNo);
+                return r;
+            }
+            catch (Exception ex) { _logger.LogError(ex, "ZMC GetMspeed exception: axis={AxisNo}", axisNo); return -1; }
+        }
+        finally { _handleLock.ExitReadLock(); }
+    }
+
     public int GetAxisIdle(int axisNo, ref int value)
     {
         _handleLock.EnterReadLock();

@@ -9,6 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using MotionControl.Device.Abstractions.Controllers;
+using MotionControl.Device.Abstractions.Models;
 using MotionControl.Domain.Entities;
 using MotionControl.Presentation.Commands;
 
@@ -34,10 +36,11 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
         public double EncPositionMm { get; init; }
     }
 
-    public AxisDataCaptureViewModel(Machine machine, Func<bool> canControlAxis)
+    public AxisDataCaptureViewModel(Machine machine, Func<bool> canControlAxis, IAxisMotionController motionController)
     {
         _machine = machine;
         _canControlAxis = canControlAxis;
+        _motionController = motionController;
 
         StartCaptureCommand = new RelayCommand(async () => await StartCaptureAsync(), () => !IsCapturing && CanControl());
         StopCaptureCommand = new RelayCommand(StopCapture, () => IsCapturing);
@@ -86,7 +89,6 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
             if (_isCapturing == value) return;
             _isCapturing = value;
             OnPropertyChanged();
-            OnPropertyChanged(nameof(StatusText));
             StartCaptureCommand.RaiseCanExecuteChanged();
             StopCaptureCommand.RaiseCanExecuteChanged();
             ClearCommand.RaiseCanExecuteChanged();
@@ -97,19 +99,14 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
     public int DataPointCount
     {
         get => _dataPointCount;
-        private set { if (_dataPointCount == value) return; _dataPointCount = value; OnPropertyChanged(); OnPropertyChanged(nameof(StatusText)); ClearCommand.RaiseCanExecuteChanged(); }
+        private set { if (_dataPointCount == value) return; _dataPointCount = value; OnPropertyChanged(); ClearCommand.RaiseCanExecuteChanged(); }
     }
-
-    public string StatusText => IsCapturing
-        ? $"Capturing... {DataPointCount} pts"
-        : DataPointCount > 0
-            ? $"Idle — {DataPointCount} points ({_lastTimeMs:F0} ms)"
-            : "Idle — no data";
 
     private double _lastTimeMs;
 
     // Internal list for fast capture; converted to chart data on update
     private readonly List<CapturePoint> _captureBuffer = new();
+    private readonly IAxisMotionController _motionController;
 
     // --- 图表数据 (绑定到 Polyline) ---
     private PointCollection? _speedLinePoints;
@@ -118,6 +115,16 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
         get => _speedLinePoints;
         private set { _speedLinePoints = value; OnPropertyChanged(); }
     }
+
+    // Speed 使用右 Y 轴（mm/s）
+    private PointCollection? _speedLinePointsRight;
+    public PointCollection? SpeedLinePointsRight
+    {
+        get => _speedLinePointsRight;
+        private set { _speedLinePointsRight = value; OnPropertyChanged(); }
+    }
+
+    public string SpeedUnitLabelRightY => "mm/s";
 
     private PointCollection? _cmdLinePoints;
     public PointCollection? CmdLinePoints
@@ -146,7 +153,7 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
         UpdateChart();
     }
 
-    // --- 轴范围 (双Y轴，供 code-behind 绘制标尺) ---
+    // --- 轴范围 ---
     private double _speedMax;
     public double SpeedMax
     {
@@ -159,6 +166,13 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
     {
         get => _positionMax;
         set { if (Math.Abs(_positionMax - value) < 0.01) return; _positionMax = value; OnPropertyChanged(); }
+    }
+
+    private double _valueMax;
+    public double ValueMax
+    {
+        get => _valueMax;
+        set { if (Math.Abs(_valueMax - value) < 0.01) return; _valueMax = value; OnPropertyChanged(); }
     }
 
     private double _timeMax;
@@ -180,6 +194,16 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    /// <summary>
+    /// 强制刷新所有命令的 CanExecute 状态（供外部调用）。
+    /// </summary>
+    public void RefreshCommandStates()
+    {
+        StartCaptureCommand.RaiseCanExecuteChanged();
+        StopCaptureCommand.RaiseCanExecuteChanged();
+        ClearCommand.RaiseCanExecuteChanged();
+    }
+
     private bool CanControl() => _canControlAxis();
 
     private int _selectedAxisNo;
@@ -200,50 +224,61 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
 
         _captureCts = new CancellationTokenSource();
         var token = _captureCts.Token;
-        var stopwatch = Stopwatch.StartNew();
         var durationMs = CaptureDurationMs;
         var axisNo = _selectedAxisNo;
+        var pulseEq = 1000.0;
+        var axis = _machine.Axes.FirstOrDefault(a => a.Id.Value == axisNo);
+        if (axis != null && axis.PulseEquivalent > 0)
+            pulseEq = axis.PulseEquivalent;
 
-        try
+        // 整个采集循环跑在一个后台 Task.Run 内，同步读 DLL 避免反复线程池调度
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        await Task.Run(() =>
         {
-            while (stopwatch.ElapsedMilliseconds < durationMs && !token.IsCancellationRequested)
+            var sw = Stopwatch.StartNew();
+            var sampleIndex = 0;
+
+            while (sw.ElapsedMilliseconds < durationMs && !token.IsCancellationRequested)
             {
-                var axis = _machine.Axes.FirstOrDefault(a => a.Id.Value == axisNo);
-                if (axis != null)
+                var t0 = sw.ElapsedMilliseconds;
+                var snap = GetCaptureSnapshotSync(axisNo);
+                if (snap.IsValid)
                 {
-                    var pulseEq = axis.PulseEquivalent > 0 ? axis.PulseEquivalent : 1000;
                     _captureBuffer.Add(new CapturePoint
                     {
-                        TimeMs = stopwatch.ElapsedMilliseconds,
-                        Speed = axis.CurrentVelocity,
-                        CmdPositionMm = axis.CurrentPosition / pulseEq,
-                        EncPositionMm = axis.EncoderPosition / pulseEq
+                        TimeMs = t0,
+                        Speed = snap.MotorSpeed / pulseEq,
+                        CmdPositionMm = snap.CommandPosition / pulseEq,
+                        EncPositionMm = snap.EncoderPosition / pulseEq
                     });
                 }
 
-                DataPointCount = _captureBuffer.Count;
-
-                // 1ms 间隔（尽力而为，实际精度受系统定时器限制）
-                var elapsed = stopwatch.Elapsed;
-                var nextTick = TimeSpan.FromMilliseconds(_captureBuffer.Count);
-                var delay = nextTick - elapsed;
-                if (delay > TimeSpan.Zero)
-                {
-                    try { await Task.Delay(delay, token); }
-                    catch (OperationCanceledException) { break; }
-                }
+                // 目标 1ms 间隔，保证 ≥1ms 防止刷爆 DLL
+                sampleIndex++;
+                var targetMs = sampleIndex; // 1ms per sample
+                var remainMs = (int)(targetMs - sw.ElapsedMilliseconds);
+                if (remainMs < 1) remainMs = 1;
+                if (token.IsCancellationRequested) break;
+                try { System.Threading.Thread.Sleep(remainMs); }
+                catch { break; }
             }
-        }
-        catch (OperationCanceledException) { }
-        finally
-        {
-            stopwatch.Stop();
-            _lastTimeMs = _captureBuffer.Count > 0 ? _captureBuffer[^1].TimeMs : 0;
-            IsCapturing = false;
-            OnPropertyChanged(nameof(StatusText));
-            // UpdateChart must run on UI thread (creates PointCollection / Freezable)
-            UpdateChart();
-        }
+
+            dispatcher?.Invoke(() =>
+            {
+                IsCapturing = false;
+                _lastTimeMs = _captureBuffer.Count > 0 ? _captureBuffer[^1].TimeMs : 0;
+                DataPointCount = _captureBuffer.Count;
+                UpdateChart();
+            });
+        }, token);
+
+        _captureCts?.Dispose();
+        _captureCts = null;
+    }
+
+    private AxisCaptureSnapshot GetCaptureSnapshotSync(int axisNo)
+    {
+        return _motionController.GetAxisCaptureSnapshot(axisNo);
     }
 
     private void StopCapture()
@@ -257,17 +292,18 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
         DataPointCount = 0;
         _lastTimeMs = 0;
         SpeedLinePoints = null;
+        SpeedLinePointsRight = null;
         CmdLinePoints = null;
         EncLinePoints = null;
         SpeedMax = 0;
         PositionMax = 0;
         TimeMax = 0;
-        OnPropertyChanged(nameof(StatusText));
+        TimeMax = 0;
     }
 
     /// <summary>
     /// 将捕捉缓冲区的数据点映射到 Canvas 坐标系并构建 Polyline。
-    /// 双 Y 轴方案：左轴 = Speed，右轴 = Position (Cmd/Enc 共用)。
+    /// X 轴 = 数据值（Speed/Cmd/Enc 共用），Y 轴 = 时间（0 在底部）。
     /// 坐标轴随数据最大值自动缩放（含 15% 上边距）。
     /// </summary>
     public void UpdateChart()
@@ -279,6 +315,7 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
             EncLinePoints = null;
             SpeedMax = 0;
             PositionMax = 0;
+            ValueMax = 0;
             TimeMax = 0;
             return;
         }
@@ -291,13 +328,29 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
         if (timeRange <= 0) timeRange = 1;
         TimeMax = timeRange;
 
-        // 自动计算 Y 轴范围
-        var speedRange = 1.0;
+        // 自动计算 Y 轴范围（数据值，完整正负范围）
         var posRange = 1.0;
-        if (ShowSpeed)
+        if (ShowCmdPosition || ShowEncPosition)
         {
-            var maxV = _captureBuffer.Max(p => Math.Abs(p.Speed));
-            speedRange = maxV > 0 ? maxV * 1.15 : 1.0;
+            var pmax = 0.0;
+            if (ShowCmdPosition) pmax = _captureBuffer.Max(p => Math.Abs(p.CmdPositionMm));
+            if (ShowEncPosition) pmax = Math.Max(pmax, _captureBuffer.Max(p => Math.Abs(p.EncPositionMm)));
+            posRange = pmax > 0 ? pmax * 1.15 : 1.0;
+        }
+
+        // 右 Y 轴（Speed mm/s）：完整范围 [min, max]，包含正负
+        double speedMin = 0, speedMax = 0;
+        if (ShowSpeed && _captureBuffer.Count > 0)
+        {
+            speedMin = _captureBuffer.Min(p => p.Speed);
+            speedMax = _captureBuffer.Max(p => p.Speed);
+            // 确保范围至少有一点空间
+            if (Math.Abs(speedMax - speedMin) < 0.01)
+            {
+                if (speedMax > 0) { speedMin = 0; }
+                else if (speedMax < 0) { speedMax = 0; }
+                else { speedMax = 1; speedMin = -1; }
+            }
         }
         if (ShowCmdPosition || ShowEncPosition)
         {
@@ -307,23 +360,31 @@ public sealed class AxisDataCaptureViewModel : INotifyPropertyChanged
             posRange = pmax > 0 ? pmax * 1.15 : 1.0;
         }
 
-        SpeedMax = Math.Ceiling(speedRange);
         PositionMax = Math.Ceiling(posRange);
 
-        double MapX(double t) => MarginLeft + t / timeRange * canvasW;
-        double MapSpeedY(double v) => MarginTop + canvasH - v / speedRange * canvasH;
-        double MapPosY(double p) => MarginTop + canvasH - p / posRange * canvasH;
+        // SpeedMax/Min 供 XAML.cs 轴标签使用
+        SpeedMax = Math.Ceiling(Math.Max(Math.Abs(speedMin), Math.Abs(speedMax)));
 
-        SpeedLinePoints = ShowSpeed
-            ? new PointCollection(_captureBuffer.Select(p => new Point(MapX(p.TimeMs), MapSpeedY(p.Speed))))
-            : null;
+        // X = 时间（从左到右），Y = 数据值（0 在底部，向上增长）
+        // 左 Y 轴 = 位置（mm, Cmd/Enc），右 Y 轴 = 速度（mm/s, Speed）
+        double MapXTime(double t) => MarginLeft + t / timeRange * canvasW;
+        double MapYLeft(double v) => MarginTop + canvasH - v / posRange * canvasH;  // 位置 mm
+        // 右 Y 轴：speedMin→底部(speedMin在下方)，speedMax→顶部(speedMax在上方)
+        double MapYRight(double v) => MarginTop + canvasH - (v - speedMin) / (speedMax - speedMin) * (canvasH - MarginTop - MarginBottom);
 
+        // Cmd/Enc → 左 Y 轴（mm）
         CmdLinePoints = ShowCmdPosition
-            ? new PointCollection(_captureBuffer.Select(p => new Point(MapX(p.TimeMs), MapPosY(p.CmdPositionMm))))
+            ? new PointCollection(_captureBuffer.Select(p => new Point(MapXTime(p.TimeMs), MapYLeft(p.CmdPositionMm))))
             : null;
 
         EncLinePoints = ShowEncPosition
-            ? new PointCollection(_captureBuffer.Select(p => new Point(MapX(p.TimeMs), MapPosY(p.EncPositionMm))))
+            ? new PointCollection(_captureBuffer.Select(p => new Point(MapXTime(p.TimeMs), MapYLeft(p.EncPositionMm))))
+            : null;
+
+        // Speed → 右 Y 轴（mm/s）
+        SpeedLinePoints = null; // 占用左 Y 轴的旧数据废弃
+        SpeedLinePointsRight = ShowSpeed
+            ? new PointCollection(_captureBuffer.Select(p => new Point(MapXTime(p.TimeMs), MapYRight(p.Speed))))
             : null;
     }
 

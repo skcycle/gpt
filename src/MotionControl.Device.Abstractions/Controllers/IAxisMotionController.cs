@@ -11,6 +11,12 @@ namespace MotionControl.Device.Abstractions.Controllers;
 public interface IAxisMotionController
 {
     Task<AxisFeedback> GetAxisFeedbackAsync(int axisNo, CancellationToken cancellationToken = default);
+    Task<float> GetAxisMseepAsync(int axisNo, CancellationToken cancellationToken = default);
+    Task<float> GetAxisMspeedAsync(int axisNo, CancellationToken cancellationToken = default);
+    Task<AxisCaptureSnapshot> GetAxisCaptureSnapshotAsync(int axisNo, CancellationToken cancellationToken = default);
+    AxisCaptureSnapshot GetAxisCaptureSnapshot(int axisNo);
+    /// <summary>批量读取轴反馈（一个 Task.Run 内完成所有 native 调用）</summary>
+    Task<AxisFeedback[]> GetAxisFeedbacksBatchAsync(int[] axisNos, CancellationToken cancellationToken = default);
     Task<DeviceResult> EnableAxisAsync(int axisNo, CancellationToken cancellationToken = default);
     Task<DeviceResult> DisableAxisAsync(int axisNo, CancellationToken cancellationToken = default);
     Task<DeviceResult> HomeAxisAsync(int axisNo, CancellationToken cancellationToken = default);

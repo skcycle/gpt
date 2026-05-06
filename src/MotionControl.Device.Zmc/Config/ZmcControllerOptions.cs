@@ -4,7 +4,7 @@ public sealed class ZmcControllerOptions
 {
     public string IpAddress { get; set; } = "127.0.0.1";
     public int AxisCount { get; set; } = 32;
-    public int PollingIntervalMs { get; set; } = 200;
+    public int PollingIntervalMs { get; set; } = 100;
 
     /// <summary>
     /// 启用 EtherCAT 仿真模式。

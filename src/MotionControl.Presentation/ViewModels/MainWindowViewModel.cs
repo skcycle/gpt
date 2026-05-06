@@ -51,6 +51,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     private readonly PositionSetupEventRuntimeState _positionSetupEventRuntimeState;
     private readonly WorkHeadEventRuntimeState _workHeadEventRuntimeState;
     private readonly ControllerRuntimeState _controllerRuntimeState;
+    private readonly Device.Abstractions.Controllers.IAxisMotionController _motionController;
     private readonly Timer _clockTimer;
     private DateTime _lastDashboardRefreshUtc = DateTime.MinValue;
     private DateTime _lastAxisRefreshUtc = DateTime.MinValue;
@@ -88,6 +89,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         IWorkHeadManagementAppService workHeadManagementAppService,
         IPositionSetupManagementAppService positionSetupManagementAppService,
         ControllerRuntimeState controllerRuntimeState,
+        Device.Abstractions.Controllers.IAxisMotionController motionController,
         HomePlanRuntimeState homePlanRuntimeState,
         CommandFeedbackRuntimeState commandFeedbackRuntimeState,
         IoEventRuntimeState ioEventRuntimeState,
@@ -125,6 +127,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _systemAppService = systemAppService;
         _dialogService = dialogService;
         _controllerRuntimeState = controllerRuntimeState;
+        _motionController = motionController;
         Dashboard = new DashboardViewModel(machine, commandFeedbackRuntimeState);
         EtherCatMonitor = new EtherCatMonitorViewModel(Dashboard);
         AxisMonitor = new AxisMonitorViewModel(machine, axisControlService, dialogService, commandFeedbackRuntimeState);
@@ -206,8 +209,9 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
             this,
             dialogService,
             commandFeedbackRuntimeState);
-        AxisDataCapture = new AxisDataCaptureViewModel(machine, CanControlAxisCommands);
+        AxisDataCapture = new AxisDataCaptureViewModel(machine, CanControlAxisCommands, motionController);
         AxisDebug.SelectedAxisChanged += axisNo => AxisDataCapture.SetSelectedAxisNo(axisNo);
+        AxisDataCapture.RefreshCommandStates(); // ensure buttons are correct at startup
         Alarm = new AlarmViewModel(machine);
         EmergencyStopCommand = new RelayCommand(
             async () =>
@@ -256,6 +260,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
                     if (_controllerRuntimeState.IsConnected)
                     {
                         _commandFeedbackRuntimeState.AddSucceeded("Reconnect", message: "Controller reconnect completed");
+                        AxisDataCapture.RefreshCommandStates();
                     }
                     else
                     {
@@ -504,6 +509,7 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
     {
         AxisDebug.RefreshCommandStates();
         AxisParameterEditor.RefreshCommandStates();
+        AxisDataCapture.RefreshCommandStates();
         RaiseAxisDeleteCanExecuteChanged();
         (AddInputCommand as RelayCommand)?.RaiseCanExecuteChanged();
         (AddOutputCommand as RelayCommand)?.RaiseCanExecuteChanged();

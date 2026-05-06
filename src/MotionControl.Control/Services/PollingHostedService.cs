@@ -11,8 +11,8 @@ public sealed class PollingHostedService(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var interval = TimeSpan.FromMilliseconds(Math.Max(500, zmcOptions.PollingIntervalMs <= 0 ? 200 : zmcOptions.PollingIntervalMs));
-        var refreshInterval = TimeSpan.FromMilliseconds(Math.Max(800, zmcOptions.PollingIntervalMs));
+        var interval = TimeSpan.FromMilliseconds(Math.Max(30, zmcOptions.PollingIntervalMs <= 0 ? 200 : zmcOptions.PollingIntervalMs));
+        var refreshInterval = TimeSpan.FromMilliseconds(Math.Max(50, zmcOptions.PollingIntervalMs));
         var lastRefreshUtc = DateTime.MinValue;
 
         while (!stoppingToken.IsCancellationRequested)

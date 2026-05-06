@@ -70,6 +70,49 @@ public sealed class ZmcMotionController(
         }, cancellationToken);
     }
 
+    public async Task<float> GetAxisMseepAsync(int axisNo, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return await Task.Run(() =>
+        {
+            float value = 0;
+            var r = axisNativeFacade.GetAxisMseep(axisNo, ref value);
+            return r == 0 ? value : float.NaN;
+        }, cancellationToken);
+    }
+
+    public async Task<float> GetAxisMspeedAsync(int axisNo, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return await Task.Run(() =>
+        {
+            float value = 0;
+            var r = axisNativeFacade.GetAxisMspeed(axisNo, ref value);
+            return r == 0 ? value : float.NaN;
+        }, cancellationToken);
+    }
+
+    public async Task<AxisCaptureSnapshot> GetAxisCaptureSnapshotAsync(int axisNo, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return await Task.Run(() => GetAxisCaptureSnapshot(axisNo), cancellationToken);
+    }
+
+    public AxisCaptureSnapshot GetAxisCaptureSnapshot(int axisNo)
+    {
+        float dpos = 0;
+        float mpos = 0;
+        float mspeed = 0;
+
+        var dposOk = axisNativeFacade.GetAxisDpos(axisNo, ref dpos) == 0;
+        var mposOk = axisNativeFacade.GetAxisMpos(axisNo, ref mpos) == 0;
+        var mspeedOk = axisNativeFacade.GetAxisMspeed(axisNo, ref mspeed) == 0;
+
+        return dposOk && mposOk && mspeedOk
+            ? new AxisCaptureSnapshot(true, dpos, mpos, mspeed)
+            : AxisCaptureSnapshot.Invalid;
+    }
+
     public async Task<DeviceResult> EnableAxisAsync(int axisNo, CancellationToken cancellationToken = default)
         => await RunAsync(() => axisNativeFacade.EnableAxis(axisNo),
             ok: DeviceResult.Ok(),
@@ -155,6 +198,69 @@ public sealed class ZmcMotionController(
             ok: DeviceResult.Ok(),
             fail: r => DeviceResult.Fail($"DO {address} 输出失败 (native={r})"),
             cancellationToken);
+
+    public async Task<IoPointValue[]> GetIoPointValuesBatchAsync((int address, bool isOutput)[] points, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return await Task.Run(() =>
+        {
+            var results = new IoPointValue[points.Length];
+            for (int i = 0; i < points.Length; i++)
+            {
+                var (addr, isOutput) = points[i];
+                if (cancellationToken.IsCancellationRequested) break;
+                uint value = 0;
+                var result = isOutput
+                    ? axisNativeFacade.GetOutput(addr, ref value)
+                    : axisNativeFacade.GetInput(addr, ref value);
+                results[i] = new IoPointValue(addr, isOutput, result == 0 && value != 0);
+            }
+            return results;
+        }, cancellationToken);
+    }
+
+    public async Task<AxisFeedback[]> GetAxisFeedbacksBatchAsync(int[] axisNos, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return await Task.Run(() =>
+        {
+            var results = new AxisFeedback[axisNos.Length];
+            for (int i = 0; i < axisNos.Length; i++)
+            {
+                if (cancellationToken.IsCancellationRequested) break;
+                var axisNo = axisNos[i];
+
+                float dpos = 0, mpos = 0, speed = 0;
+                var idle = 1;
+                var axisStatus = 0;
+                var homeStatus = 0;
+                var busEnableStatus = 0;
+
+                var dposOk = axisNativeFacade.GetAxisDpos(axisNo, ref dpos) == 0;
+                var mposOk = axisNativeFacade.GetAxisMpos(axisNo, ref mpos) == 0;
+                axisNativeFacade.GetAxisSpeed(axisNo, ref speed);
+
+                var status2Result = axisNativeFacade.GetAxisStatus2(axisNo, -1, ref axisStatus, ref idle, ref homeStatus, ref busEnableStatus);
+                if (status2Result != 0)
+                {
+                    axisNativeFacade.GetAxisIdle(axisNo, ref idle);
+                    axisNativeFacade.GetAxisStatus(axisNo, ref axisStatus);
+                }
+
+                var axisEnable = 0;
+                var enableOk = axisNativeFacade.GetAxisEnable(axisNo, ref axisEnable) == 0;
+
+                if (!dposOk || !mposOk)
+                {
+                    results[i] = AxisFeedback.Invalid(axisNo);
+                    continue;
+                }
+
+                results[i] = statusTranslator.Translate(axisNo, dpos, mpos, speed, idle, axisStatus, homeStatus, enableOk ? axisEnable : busEnableStatus);
+            }
+            return results;
+        }, cancellationToken);
+    }
 
     public async Task<EtherCatControllerStatus> GetControllerStatusAsync(CancellationToken cancellationToken = default)
     {

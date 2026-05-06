@@ -1,7 +1,9 @@
+using System.Linq;
 using MotionControl.Control.StateMachines;
 using MotionControl.Device.Abstractions.Controllers;
 using MotionControl.Domain.Entities;
 using MotionControl.Domain.Enums;
+using MotionControl.Device.Abstractions.Models;
 
 namespace MotionControl.Control.Services;
 
@@ -13,11 +15,26 @@ public sealed class AxisPollingService(
 {
     public async Task PollAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var axis in machine.Axes)
-        {
-            var feedback = await motionController.GetAxisFeedbackAsync(axis.ControllerAxisNo, cancellationToken);
+        var axisNos = machine.Axes.Select(a => a.ControllerAxisNo).ToArray();
+        if (axisNos.Length == 0) return;
 
-            // 底层读取失败 → 本轮不更新，保留上轮有效值
+        // 一次批量读所有轴反馈（单个 Task.Run，同步循环内完成）
+        AxisFeedback[] feedbacks;
+        try
+        {
+            feedbacks = await motionController.GetAxisFeedbacksBatchAsync(axisNos, cancellationToken);
+        }
+        catch
+        {
+            return; // 批量读取失败，本轮跳过
+        }
+
+        var axesList = machine.Axes.ToList();
+        for (int i = 0; i < axesList.Count && i < feedbacks.Length; i++)
+        {
+            var axis = axesList[i];
+            var feedback = feedbacks[i];
+
             if (!feedback.IsValid)
                 continue;
 

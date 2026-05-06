@@ -35,6 +35,9 @@ public static class ZmcNativeApi
     [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetSpeed", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int DirectGetSpeed(IntPtr handle, int axisNo, ref float value);
 
+    [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetMspeed", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    public static extern int DirectGetMspeed(IntPtr handle, int axisNo, ref float value);
+
     [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetIfIdle", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int DirectGetIfIdle(IntPtr handle, int axisNo, ref int value);
 
