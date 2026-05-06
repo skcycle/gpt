@@ -97,15 +97,15 @@
                             <StackPanel>
                                 <TextBlock Text="Axis Mapping" FontWeight="SemiBold" Margin="0,0,0,10" />
                                 <UniformGrid Columns="4">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Xx Axis" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding PositionSetupMonitor.SelectedItem.XxAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="X Axis"  Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding PositionSetupMonitor.SelectedItem.XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Y Axis"  Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding PositionSetupMonitor.SelectedItem.YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Z Axis"  Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding PositionSetupMonitor.SelectedItem.ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <controls:LabeledTextBox Label="Xx Axis" Text="{Binding PositionSetupMonitor.SelectedItem.XxAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="X Axis"  Text="{Binding PositionSetupMonitor.SelectedItem.XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="Y Axis"  Text="{Binding PositionSetupMonitor.SelectedItem.YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="Z Axis"  Text="{Binding PositionSetupMonitor.SelectedItem.ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </UniformGrid>
                                 <UniformGrid Columns="3">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="U Axis"  Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding PositionSetupMonitor.SelectedItem.UAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="V Axis"  Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding PositionSetupMonitor.SelectedItem.VAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="W Axis"  Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding PositionSetupMonitor.SelectedItem.WAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <controls:LabeledTextBox Label="U Axis"  Text="{Binding PositionSetupMonitor.SelectedItem.UAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="V Axis"  Text="{Binding PositionSetupMonitor.SelectedItem.VAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="W Axis"  Text="{Binding PositionSetupMonitor.SelectedItem.WAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </UniformGrid>
                             </StackPanel>
                         </Border>
@@ -157,30 +157,20 @@
         </Grid>
 
         <!-- ── Event Log ───────────────────────────────────────────── -->
-        <Border Grid.Row="4" Style="{StaticResource SectionCardStyle}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock Text="Position Setup Event Log" Style="{StaticResource SectionTitleTextStyle}" />
-                <TextBlock Grid.Row="1" Text="Teach, move and configuration activity history" Style="{StaticResource SectionHintTextStyle}" />
-                <DataGrid Grid.Row="2"
-                          ItemsSource="{Binding PositionSetupEventLog.Events}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          Style="{StaticResource EventLogDataGridStyle}"
-                          PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Time"     Binding="{Binding Time}"          Width="110" />
-                        <DataGridTextColumn Header="Position" Binding="{Binding PositionName}"  Width="180" />
-                        <DataGridTextColumn Header="Event"    Binding="{Binding EventType}"     Width="120" />
-                        <DataGridTextColumn Header="Message"  Binding="{Binding Message}"      Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
-        </Border>
+        <controls:EventLogPanel Grid.Row="4"
+                                Title="Position Setup Event Log"
+                                Hint="Teach, move and configuration activity history">
+            <DataGrid ItemsSource="{Binding PositionSetupEventLog.Events}"
+                      Style="{StaticResource SectionDataGridStyle}"
+                      PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Time"     Binding="{Binding Time}"          Width="110" />
+                    <DataGridTextColumn Header="Position" Binding="{Binding PositionName}"  Width="180" />
+                    <DataGridTextColumn Header="Event"    Binding="{Binding EventType}"    Width="120" />
+                    <DataGridTextColumn Header="Message"  Binding="{Binding Message}"      Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </controls:EventLogPanel>
 
     </Grid>
 </UserControl>

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:MotionControl.App.Controls"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Margin="0">
@@ -20,30 +21,17 @@
         </Grid.RowDefinitions>
 
         <!-- ═══ Row 0: Header ═══ -->
-        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel>
-                    <TextBlock Text="Axis Console" Style="{StaticResource SectionTitleTextStyle}" />
-                    <TextBlock Text="Axis control, jog operation and controller parameters" Style="{StaticResource SectionHintTextStyle}" />
-                </StackPanel>
-
-                <StackPanel Grid.Column="1" VerticalAlignment="Top">
-                    <TextBlock Text="Page Commands" Foreground="{StaticResource SecondaryTextBrush}" HorizontalAlignment="Right" Margin="0,0,0,8" />
-                    <WrapPanel HorizontalAlignment="Right">
-                        <Button Content="Add Axis" Command="{Binding AddAxisCommand}" MinWidth="104" />
-                        <Button Content="Delete Axis" Command="{Binding DeleteAxisCommand}" MinWidth="104" Style="{StaticResource DangerButtonStyle}" />
-                        <Button Content="Save" Command="{Binding SaveAxisConsoleConfigCommand}" Width="124" Style="{StaticResource SuccessButtonStyle}" />
-                        <Button Content="Load" Command="{Binding LoadAxisConsoleConfigCommand}" Width="124" Style="{StaticResource SecondaryButtonStyle}" />
-                        <Button Content="Read Ctrl" Command="{Binding AxisParameterEditor.ReadControllerCommand}" Width="124" Style="{StaticResource SecondaryButtonStyle}" />
-                    </WrapPanel>
-                </StackPanel>
-            </Grid>
-        </Border>
+        <controls:PageHeader Grid.Row="0">
+            <controls:PageHeader.Commands>
+                <WrapPanel>
+                    <Button Content="Add Axis"    Command="{Binding AddAxisCommand}"    MinWidth="104" />
+                    <Button Content="Delete Axis" Command="{Binding DeleteAxisCommand}" MinWidth="104" Style="{StaticResource DangerButtonStyle}" />
+                    <Button Content="Save"       Command="{Binding SaveAxisConsoleConfigCommand}" MinWidth="124" Style="{StaticResource SuccessButtonStyle}" />
+                    <Button Content="Load"       Command="{Binding LoadAxisConsoleConfigCommand}" MinWidth="124" Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button Content="Read Ctrl"  Command="{Binding AxisParameterEditor.ReadControllerCommand}" MinWidth="124" Style="{StaticResource SecondaryButtonStyle}" />
+                </WrapPanel>
+            </controls:PageHeader.Commands>
+        </controls:PageHeader>
 
         <!-- ═══ Row 2: 3-panel columns ═══ -->
         <Grid Grid.Row="2">
@@ -357,19 +345,23 @@
         </Border>
 
         <!-- ═══ Row 6: Runtime Event Log ═══ -->
-        <Border Grid.Row="6" Style="{StaticResource SectionCardStyle}">
-            <StackPanel>
-                <TextBlock Text="Runtime Event Log" Style="{StaticResource SectionTitleTextStyle}" />
-                <TextBlock Text="Axis runtime feedback, move results and jog activity" Style="{StaticResource SectionHintTextStyle}" />
-                <DataGrid ItemsSource="{Binding Dashboard.RecentCommandFeedback}" AutoGenerateColumns="False" IsReadOnly="True" Height="180" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="110" />
-                        <DataGridTextColumn Header="Axis" Binding="{Binding Axis}" Width="80" />
-                        <DataGridTextColumn Header="Event" Binding="{Binding Event}" Width="160" />
-                        <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </StackPanel>
-        </Border>
+        <controls:EventLogPanel Grid.Row="6"
+                                Title="Runtime Event Log"
+                                Hint="Axis runtime feedback, move results and jog activity">
+            <DataGrid ItemsSource="{Binding Dashboard.RecentCommandFeedback}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      Height="180"
+                      Style="{StaticResource SectionDataGridStyle}"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      ScrollViewer.CanContentScroll="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Time"    Binding="{Binding Time}"    Width="110" />
+                    <DataGridTextColumn Header="Axis"   Binding="{Binding Axis}"   Width="80" />
+                    <DataGridTextColumn Header="Event"  Binding="{Binding Event}" Width="160" />
+                    <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </controls:EventLogPanel>
     </Grid>
 </UserControl>

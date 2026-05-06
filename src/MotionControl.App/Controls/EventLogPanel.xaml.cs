@@ -8,7 +8,7 @@ namespace MotionControl.App.Controls;
 /// Wraps a Border with title + hint + injected DataGrid content.
 /// Usage:
 ///   &lt;controls:EventLogPanel Title="Work Head Event Log" Hint="..."&gt;
-///       &lt;DataGrid ItemsSource="{Binding WorkHeadEventLog.Events}" Style="{StaticResource EventLogDataGridStyle}"&gt;
+///       &lt;DataGrid ItemsSource="{Binding WorkHeadEventLog.Events}" Style="{StaticResource SectionDataGridStyle}"&gt;
 ///           &lt;DataGrid.Columns&gt;
 ///               &lt;DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="110" /&gt;
 ///               ...

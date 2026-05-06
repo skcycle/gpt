@@ -98,10 +98,10 @@
                             <StackPanel>
                                 <TextBlock Text="Axis Mapping" FontWeight="SemiBold" Margin="0,0,0,10" />
                                 <UniformGrid Columns="4">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="X Axis" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Y Axis" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Z Axis" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="R Axis" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <controls:LabeledTextBox Label="X Axis" Text="{Binding WorkHeadMonitor.SelectedWorkHead.XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="Y Axis" Text="{Binding WorkHeadMonitor.SelectedWorkHead.YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="Z Axis" Text="{Binding WorkHeadMonitor.SelectedWorkHead.ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="R Axis" Text="{Binding WorkHeadMonitor.SelectedWorkHead.RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </UniformGrid>
                             </StackPanel>
                         </Border>
@@ -141,16 +141,16 @@
                             <StackPanel>
                                 <TextBlock Text="Vacuum and IO" FontWeight="SemiBold" Margin="0,0,0,10" />
                                 <UniformGrid Columns="4">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Vacuum DO"       Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Blow DO"         Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.BlowOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Vacuum DI"       Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DO 1"    Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <controls:LabeledTextBox Label="Vacuum DO"       Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="Blow DO"         Text="{Binding WorkHeadMonitor.SelectedWorkHead.BlowOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="Vacuum DI"       Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="General DO 1"    Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </UniformGrid>
                                 <UniformGrid Columns="4">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DO 2"    Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DI 1"    Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DI 2"    Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Vacuum Timeout(ms)" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <controls:LabeledTextBox Label="General DO 2"    Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="General DI 1"    Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="General DI 2"    Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                    <controls:LabeledTextBox Label="Vacuum Timeout(ms)" Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </UniformGrid>
                             </StackPanel>
                         </Border>

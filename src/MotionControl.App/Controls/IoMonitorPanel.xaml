@@ -52,7 +52,7 @@
                              SelectedItem="{Binding IoMonitor.SelectedInput, Mode=TwoWay}"
                              AutoGenerateColumns="False"
                              IsReadOnly="False"
-                             Style="{StaticResource EventLogDataGridStyle}"
+                             Style="{StaticResource SectionDataGridStyle}"
                               PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel"
                              VerticalAlignment="Stretch">
                         <DataGrid.Columns>
@@ -119,30 +119,21 @@
         </Grid>
 
         <!-- ── Event Log ───────────────────────────────────────────── -->
-        <Border Grid.Row="4" Style="{StaticResource SectionCardStyle}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock Text="IO Event Log" Style="{StaticResource SectionTitleTextStyle}" />
-                <TextBlock Grid.Row="1" Text="Recent IO changes and runtime event records" Style="{StaticResource SectionHintTextStyle}" />
-                <DataGrid Grid.Row="2"
-                          ItemsSource="{Binding IoEventLog.Events}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Time"     Binding="{Binding Time}"          Width="110" />
-                        <DataGridTextColumn Header="Point"   Binding="{Binding Direction}"     Width="120" />
-                        <DataGridTextColumn Header="Address" Binding="{Binding Address}"       Width="120" />
-                        <DataGridTextColumn Header="State"   Binding="{Binding State}"        Width="120" />
-                        <DataGridTextColumn Header="Message" Binding="{Binding Description}"   Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
-        </Border>
+        <controls:EventLogPanel Grid.Row="4"
+                                Title="IO Event Log"
+                                Hint="Recent IO changes and runtime event records">
+            <DataGrid ItemsSource="{Binding IoEventLog.Events}"
+                      Style="{StaticResource SectionDataGridStyle}"
+                      PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Time"     Binding="{Binding Time}"          Width="110" />
+                    <DataGridTextColumn Header="Point"   Binding="{Binding Direction}"     Width="120" />
+                    <DataGridTextColumn Header="Address" Binding="{Binding Address}"       Width="120" />
+                    <DataGridTextColumn Header="State"   Binding="{Binding State}"        Width="120" />
+                    <DataGridTextColumn Header="Message" Binding="{Binding Description}"   Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </controls:EventLogPanel>
 
     </Grid>
 </UserControl>

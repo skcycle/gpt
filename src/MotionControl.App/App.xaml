@@ -119,8 +119,8 @@
             </Setter>
         </Style>
 
-        <!-- Event log DataGrid: consistent appearance for all event log sections -->
-        <Style x:Key="EventLogDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
+        <!-- Section DataGrid: standard DataGrid style used in list panels and event log sections -->
+        <Style x:Key="SectionDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
             <Setter Property="AutoGenerateColumns" Value="False" />
             <Setter Property="IsReadOnly" Value="True" />
             <Setter Property="AlternatingRowBackground" Value="#223240" />

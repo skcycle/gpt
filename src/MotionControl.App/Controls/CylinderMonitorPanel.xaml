@@ -44,7 +44,7 @@
                           CanUserAddRows="False"
                           IsReadOnly="False"
                           VerticalContentAlignment="Center"
-                          Style="{StaticResource EventLogDataGridStyle}"
+                          Style="{StaticResource SectionDataGridStyle}"
                               PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Name"     Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="160" />
@@ -52,40 +52,32 @@
                         <DataGridTemplateColumn Header="Extend DI" Width="108">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Ellipse Width="12" Height="12" Fill="{Binding ExtendDiBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,6,0" />
-                                        <TextBox Text="{Binding ExtendSensorInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="52" HorizontalContentAlignment="Center" />
-                                    </StackPanel>
+                                    <controls:StatusLightTextBox StatusBrush="{Binding ExtendDiBrush}"
+                                                                Text="{Binding ExtendSensorInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="Retract DI" Width="112">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Ellipse Width="12" Height="12" Fill="{Binding RetractDiBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,6,0" />
-                                        <TextBox Text="{Binding RetractSensorInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="52" HorizontalContentAlignment="Center" />
-                                    </StackPanel>
+                                    <controls:StatusLightTextBox StatusBrush="{Binding RetractDiBrush}"
+                                                                Text="{Binding RetractSensorInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="Extend DO" Width="110">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Ellipse Width="12" Height="12" Fill="{Binding ExtendDoBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,6,0" />
-                                        <TextBox Text="{Binding ExtendOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="52" HorizontalContentAlignment="Center" />
-                                    </StackPanel>
+                                    <controls:StatusLightTextBox StatusBrush="{Binding ExtendDoBrush}"
+                                                                Text="{Binding ExtendOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                         <DataGridTemplateColumn Header="Retract DO" Width="114">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                        <Ellipse Width="12" Height="12" Fill="{Binding RetractDoBrush}" Stroke="#404040" StrokeThickness="1" Margin="0,0,6,0" />
-                                        <TextBox Text="{Binding RetractOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="52" HorizontalContentAlignment="Center" />
-                                    </StackPanel>
+                                    <controls:StatusLightTextBox StatusBrush="{Binding RetractDoBrush}"
+                                                                Text="{Binding RetractOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -119,29 +111,20 @@
         </Border>
 
         <!-- ── Event Log ───────────────────────────────────────────── -->
-        <Border Grid.Row="4" Style="{StaticResource SectionCardStyle}">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <TextBlock Text="Cylinder Event Log" Style="{StaticResource SectionTitleTextStyle}" />
-                <TextBlock Grid.Row="1" Text="Extend, retract and timeout runtime events" Style="{StaticResource SectionHintTextStyle}" />
-                <DataGrid Grid.Row="2"
-                          ItemsSource="{Binding CylinderEventLog.Events}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Time"     Binding="{Binding Time}"           Width="110" />
-                        <DataGridTextColumn Header="Cylinder" Binding="{Binding CylinderName}"  Width="180" />
-                        <DataGridTextColumn Header="Event"    Binding="{Binding EventType}"   Width="120" />
-                        <DataGridTextColumn Header="Message"  Binding="{Binding Description}"  Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
-        </Border>
+        <controls:EventLogPanel Grid.Row="4"
+                                Title="Cylinder Event Log"
+                                Hint="Extend, retract and timeout runtime events">
+            <DataGrid ItemsSource="{Binding CylinderEventLog.Events}"
+                      Style="{StaticResource SectionDataGridStyle}"
+                      PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Time"     Binding="{Binding Time}"           Width="110" />
+                    <DataGridTextColumn Header="Cylinder" Binding="{Binding CylinderName}"  Width="180" />
+                    <DataGridTextColumn Header="Event"    Binding="{Binding EventType}"   Width="120" />
+                    <DataGridTextColumn Header="Message"  Binding="{Binding Description}"  Width="*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </controls:EventLogPanel>
 
     </Grid>
 </UserControl>

@@ -24,10 +24,10 @@
 
             <!--
                 Content injection: each page puts its DataGrid (with columns) here.
-                The DataGrid should use Style="{StaticResource EventLogDataGridStyle}".
+                The DataGrid should use Style="{StaticResource SectionDataGridStyle}".
                 Usage:
                     <controls:EventLogPanel ...>
-                        <DataGrid ItemsSource="{Binding MyEvents}" Style="{StaticResource EventLogDataGridStyle}">
+                        <DataGrid ItemsSource="{Binding MyEvents}" Style="{StaticResource SectionDataGridStyle}">
                             <DataGrid.Columns>...</DataGrid.Columns>
                         </DataGrid>
                     </controls:EventLogPanel>
