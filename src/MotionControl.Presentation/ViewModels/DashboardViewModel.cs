@@ -43,6 +43,7 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
     public int EtherCatOnlineSlaveCount => _controllerStatus?.OnlineSlaveCount ?? 0;
     public IReadOnlyList<EtherCatSlaveViewModel> EtherCatSlaves { get; private set; } = Array.Empty<EtherCatSlaveViewModel>();
     public IReadOnlyList<RuntimeEventLogItem> RecentCommandFeedback { get; private set; } = Array.Empty<RuntimeEventLogItem>();
+    public IReadOnlyList<RuntimeEventLogItem> RecentAxisCommandFeedback { get; private set; } = Array.Empty<RuntimeEventLogItem>();
     public IReadOnlyList<string> AlarmLog { get; private set; } = Array.Empty<string>();
     public IReadOnlyList<string> ActiveAlarmSummary { get; private set; } = Array.Empty<string>();
 
@@ -87,6 +88,22 @@ public sealed class DashboardViewModel : INotifyPropertyChanged
             RecentCommandFeedback = latestFeedback;
             _lastRecentCommandFeedback = latestFeedback;
             OnPropertyChanged(nameof(RecentCommandFeedback));
+        }
+
+        var latestAxisFeedback = _commandFeedbackRuntimeState.RecentFeedback
+            .Where(item => item.AxisNo.HasValue)
+            .Reverse()
+            .Take(100)
+            .Select(item => new RuntimeEventLogItem(
+                item.Timestamp.ToLocalTime().ToString("HH:mm:ss"),
+                item.AxisNo?.ToString() ?? "-",
+                $"{item.Status} / {item.CommandName}",
+                item.Message))
+            .ToArray();
+        if (!RecentAxisCommandFeedback.SequenceEqual(latestAxisFeedback))
+        {
+            RecentAxisCommandFeedback = latestAxisFeedback;
+            OnPropertyChanged(nameof(RecentAxisCommandFeedback));
         }
 
         var latestAlarmSummary = _machine.Alarms

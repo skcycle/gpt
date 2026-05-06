@@ -35,6 +35,9 @@ public static class ZmcNativeApi
     [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetSpeed", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int DirectGetSpeed(IntPtr handle, int axisNo, ref float value);
 
+    [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetMspeed", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    public static extern int DirectGetMspeed(IntPtr handle, int axisNo, ref float value);
+
     [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetIfIdle", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int DirectGetIfIdle(IntPtr handle, int axisNo, ref int value);
 
@@ -58,4 +61,18 @@ public static class ZmcNativeApi
 
     [DllImport("zauxdll.dll", EntryPoint = "ZAux_Direct_GetAxisEnable", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     public static extern int DirectGetAxisEnable(IntPtr handle, int axisNo, ref int value);
+
+    // ── EtherCAT Bus API ──
+
+    /// <summary>获取总线扫描到的节点数量</summary>
+    [DllImport("zauxdll.dll", EntryPoint = "ZAux_BusCmd_GetNodeNum", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    public static extern int BusCmdGetNodeNum(IntPtr handle, int slot, ref int value);
+
+    /// <summary>读取总线节点信息（sel: 0-厂商ID 1-设备ID 2-版本 10-IN数 11-OUT数）</summary>
+    [DllImport("zauxdll.dll", EntryPoint = "ZAux_BusCmd_GetNodeInfo", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    public static extern int BusCmdGetNodeInfo(IntPtr handle, uint slot, uint node, uint sel, ref int value);
+
+    /// <summary>读取总线节点通讯状态</summary>
+    [DllImport("zauxdll.dll", EntryPoint = "ZAux_BusCmd_GetNodeStatus", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    public static extern int BusCmdGetNodeStatus(IntPtr handle, uint slot, uint node, ref uint status);
 }
