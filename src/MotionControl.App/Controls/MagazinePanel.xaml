@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:MotionControl.App.Controls"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Margin="0">
@@ -15,26 +16,18 @@
         </Grid.RowDefinitions>
 
         <!-- ── Page Header ─────────────────────────────────────────── -->
-        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="Magazine" Style="{StaticResource SectionTitleTextStyle}" />
-                    <TextBlock Text="Magazine objects, XYZ mapping, layer parameters and sensor IO setup" Style="{StaticResource SectionHintTextStyle}" />
-                </StackPanel>
-                <WrapPanel Grid.Column="1" VerticalAlignment="Top">
-                    <Button Content="Add Object"    Command="{Binding AddMagazineCommand}"              Margin="0,0,8,0" MinWidth="100" />
-                    <Button Content="Delete Object" Command="{Binding DeleteMagazineCommand}"          Margin="0,0,8,0" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
-                    <Button Content="Add Position"  Command="{Binding AddMagazinePositionCommand}"    Margin="0,0,8,0" MinWidth="108" />
+        <controls:PageHeader Grid.Row="0">
+            <controls:PageHeader.Commands>
+                <WrapPanel>
+                    <Button Content="Add Object"      Command="{Binding AddMagazineCommand}"              Margin="0,0,8,0" MinWidth="100" />
+                    <Button Content="Delete Object"   Command="{Binding DeleteMagazineCommand}"          Margin="0,0,8,0" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
+                    <Button Content="Add Position"    Command="{Binding AddMagazinePositionCommand}"    Margin="0,0,8,0" MinWidth="108" />
                     <Button Content="Delete Position" Command="{Binding DeleteMagazinePositionCommand}" Margin="0,0,8,0" MinWidth="120" Style="{StaticResource DangerButtonStyle}" />
-                    <Button Content="Save"          Command="{Binding SaveMagazineConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SuccessButtonStyle}" />
-                    <Button Content="Load"          Command="{Binding LoadMagazineConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button Content="Save"           Command="{Binding SaveMagazineConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SuccessButtonStyle}" />
+                    <Button Content="Load"           Command="{Binding LoadMagazineConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SecondaryButtonStyle}" />
                 </WrapPanel>
-            </Grid>
-        </Border>
+            </controls:PageHeader.Commands>
+        </controls:PageHeader>
 
         <!-- ── Three-Column Editor ─────────────────────────────────── -->
         <Grid Grid.Row="2">
@@ -99,7 +92,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
 
-                        <!-- Axis Mapping + Current Layer Status side by side -->
+                        <!-- Axis Mapping + Layer Status side by side -->
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -131,7 +124,7 @@
                                 </Border>
                             </StackPanel>
 
-                            <!-- Current Layer Status — compact strip on right -->
+                            <!-- Layer Status — compact strip on right -->
                             <Border Grid.Column="2" Style="{StaticResource SubSectionCardStyle}">
                                 <StackPanel>
                                     <TextBlock Text="Layer Status" FontWeight="SemiBold" Margin="0,0,0,10" />
@@ -154,9 +147,9 @@
                             <StackPanel>
                                 <TextBlock Text="Layer Parameters" FontWeight="SemiBold" Margin="0,0,0,10" />
                                 <UniformGrid Columns="5">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Description"      Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Layer Count"     Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.LayerCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Layer Height"    Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.LayerHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Description"       Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Layer Count"      Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.LayerCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Layer Height"     Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.LayerHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
                                     <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Pick Lift Height" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.PickLiftHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
                                     <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Scan Settling(ms)" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.ScanSettlingMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
                                 </UniformGrid>
@@ -168,9 +161,9 @@
                             <StackPanel>
                                 <TextBlock Text="IO Inputs" FontWeight="SemiBold" Margin="0,0,0,10" />
                                 <UniformGrid Columns="3">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="料仓有无 IN"            Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.MaterialPresentInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="当前层有料 IN"          Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.CurrentLayerHasMaterialInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="料盘防呆 IN"           Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.TrayKeyingInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="料仓有无 IN"           Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.MaterialPresentInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="当前层有料 IN"         Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.CurrentLayerHasMaterialInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="料盘防呆 IN"            Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding MagazineMonitor.SelectedMagazine.TrayKeyingInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
                                 </UniformGrid>
                             </StackPanel>
                         </Border>
@@ -201,12 +194,13 @@
                           ItemsSource="{Binding MagazineEventLog.Events}"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
+                          Style="{StaticResource EventLogDataGridStyle}"
                           PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Time"     Binding="{Binding Timestamp}"     Width="110" />
-                        <DataGridTextColumn Header="Magazine" Binding="{Binding MagazineName}" Width="180" />
+                        <DataGridTextColumn Header="Magazine" Binding="{Binding MagazineName}"  Width="180" />
                         <DataGridTextColumn Header="Event"    Binding="{Binding EventType}"    Width="120" />
-                        <DataGridTextColumn Header="Message"  Binding="{Binding Message}"     Width="*" />
+                        <DataGridTextColumn Header="Message"  Binding="{Binding Message}"      Width="*" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

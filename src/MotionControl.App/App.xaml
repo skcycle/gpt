@@ -119,6 +119,14 @@
             </Setter>
         </Style>
 
+        <!-- Event log DataGrid: consistent appearance for all event log sections -->
+        <Style x:Key="EventLogDataGridStyle" TargetType="DataGrid" BasedOn="{StaticResource {x:Type DataGrid}}">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="AlternatingRowBackground" Value="#223240" />
+            <Setter Property="MinRowHeight" Value="34" />
+        </Style>
+
         <!-- ── Spacer style: replaces empty Grid rows ─────────────── -->
         <Style x:Key="VerticalSpacerStyle" TargetType="FrameworkElement">
             <Setter Property="Height" Value="10" />

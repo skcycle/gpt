@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:MotionControl.App.Controls"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Margin="0">
@@ -15,26 +16,18 @@
         </Grid.RowDefinitions>
 
         <!-- ── Page Header ─────────────────────────────────────────── -->
-        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="Position Setup" Style="{StaticResource SectionTitleTextStyle}" />
-                    <TextBlock Text="Reusable position objects, axis mapping and target values" Style="{StaticResource SectionHintTextStyle}" />
-                </StackPanel>
-                <WrapPanel Grid.Column="1" VerticalAlignment="Top">
-                    <Button Content="Add Object"    Command="{Binding AddPositionSetupCommand}"              Margin="0,0,8,0" MinWidth="100" />
-                    <Button Content="Delete Object" Command="{Binding DeletePositionSetupCommand}"          Margin="0,0,8,0" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
-                    <Button Content="Add Position"  Command="{Binding AddPositionSetupPositionCommand}"   Margin="0,0,8,0" MinWidth="108" />
+        <controls:PageHeader Grid.Row="0">
+            <controls:PageHeader.Commands>
+                <WrapPanel>
+                    <Button Content="Add Object"      Command="{Binding AddPositionSetupCommand}"              Margin="0,0,8,0" MinWidth="100" />
+                    <Button Content="Delete Object"   Command="{Binding DeletePositionSetupCommand}"          Margin="0,0,8,0" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
+                    <Button Content="Add Position"    Command="{Binding AddPositionSetupPositionCommand}"   Margin="0,0,8,0" MinWidth="108" />
                     <Button Content="Delete Position" Command="{Binding DeletePositionSetupPositionCommand}" Margin="0,0,8,0" MinWidth="120" Style="{StaticResource DangerButtonStyle}" />
-                    <Button Content="Save"          Command="{Binding SavePositionSetupConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SuccessButtonStyle}" />
-                    <Button Content="Load"          Command="{Binding LoadPositionSetupConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button Content="Save"           Command="{Binding SavePositionSetupConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SuccessButtonStyle}" />
+                    <Button Content="Load"           Command="{Binding LoadPositionSetupConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SecondaryButtonStyle}" />
                 </WrapPanel>
-            </Grid>
-        </Border>
+            </controls:PageHeader.Commands>
+        </controls:PageHeader>
 
         <!-- ── Three-Column Editor ─────────────────────────────────── -->
         <Grid Grid.Row="2">
@@ -99,7 +92,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
 
-                        <!-- Axis Mapping (7 axes → split into 2 rows of 4+3) -->
+                        <!-- Axis Mapping (7 axes → 4 + 3 rows) -->
                         <Border Style="{StaticResource SubSectionCardStyle}">
                             <StackPanel>
                                 <TextBlock Text="Axis Mapping" FontWeight="SemiBold" Margin="0,0,0,10" />
@@ -117,7 +110,7 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- Position Values (7 axes → split into 2 rows of 4+3) -->
+                        <!-- Position Values (7 axes → 4 + 3 rows) -->
                         <Border Style="{StaticResource SubSectionCardStyle}">
                             <StackPanel>
                                 <TextBlock Text="Position Values" FontWeight="SemiBold" Margin="0,0,0,10" />
@@ -177,6 +170,7 @@
                           ItemsSource="{Binding PositionSetupEventLog.Events}"
                           AutoGenerateColumns="False"
                           IsReadOnly="True"
+                          Style="{StaticResource EventLogDataGridStyle}"
                           PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Time"     Binding="{Binding Time}"          Width="110" />

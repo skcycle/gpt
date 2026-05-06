@@ -1,0 +1,18 @@
+<UserControl x:Class="MotionControl.App.Controls.LabeledTextBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:MotionControl.App.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="60" d:DesignWidth="140">
+    <StackPanel Style="{StaticResource FieldContainerStyle}">
+        <TextBlock Text="{Binding Label, RelativeSource={RelativeSource AncestorType=controls:LabeledTextBox}}"
+                   Style="{StaticResource FieldLabelStyle}" />
+        <TextBox Text="{Binding Text, RelativeSource={RelativeSource AncestorType=controls:LabeledTextBox},
+                                Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Style="{StaticResource DisabledAxisPositionTextBoxStyle}"
+                 IsEnabled="{Binding IsEnabled, RelativeSource={RelativeSource AncestorType=controls:LabeledTextBox}}"
+                 IsReadOnly="{Binding IsReadOnly, RelativeSource={RelativeSource AncestorType=controls:LabeledTextBox}}" />
+    </StackPanel>
+</UserControl>

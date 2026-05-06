@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:MotionControl.App.Controls"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Margin="0">
@@ -15,30 +16,20 @@
         </Grid.RowDefinitions>
 
         <!-- ── Page Header ─────────────────────────────────────────── -->
-        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel>
-                    <TextBlock Text="Work Head" Style="{StaticResource SectionTitleTextStyle}" />
-                    <TextBlock Text="Work head objects, positions and vacuum IO setup" Style="{StaticResource SectionHintTextStyle}" />
-                </StackPanel>
-
-                <WrapPanel Grid.Column="1" VerticalAlignment="Top">
-                    <Button Content="Add Object"    Command="{Binding AddWorkHeadCommand}"             Margin="0,0,8,0" MinWidth="100" />
-                    <Button Content="Delete Object" Command="{Binding DeleteWorkHeadCommand}"         Margin="0,0,8,0" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
-                    <Button Content="Add Position"  Command="{Binding AddWorkHeadPositionCommand}"   Margin="0,0,8,0" MinWidth="108" />
+        <controls:PageHeader Grid.Row="0">
+            <controls:PageHeader.Commands>
+                <WrapPanel>
+                    <Button Content="Add Object"     Command="{Binding AddWorkHeadCommand}"              Margin="0,0,8,0" MinWidth="100" />
+                    <Button Content="Delete Object"  Command="{Binding DeleteWorkHeadCommand}"          Margin="0,0,8,0" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
+                    <Button Content="Add Position"   Command="{Binding AddWorkHeadPositionCommand}"    Margin="0,0,8,0" MinWidth="108" />
                     <Button Content="Delete Position" Command="{Binding DeleteWorkHeadPositionCommand}" Margin="0,0,8,0" MinWidth="120" Style="{StaticResource DangerButtonStyle}" />
-                    <Button Content="Save"          Command="{Binding SaveWorkHeadConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SuccessButtonStyle}" />
-                    <Button Content="Load"          Command="{Binding LoadWorkHeadConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button Content="Save"           Command="{Binding SaveWorkHeadConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SuccessButtonStyle}" />
+                    <Button Content="Load"           Command="{Binding LoadWorkHeadConfigCommand}"     Margin="0,0,8,0" MinWidth="90"  Style="{StaticResource SecondaryButtonStyle}" />
                 </WrapPanel>
-            </Grid>
-        </Border>
+            </controls:PageHeader.Commands>
+        </controls:PageHeader>
 
-        <!-- ── Three-Column Editor ────────────────────────────────── -->
+        <!-- ── Three-Column Editor ─────────────────────────────────── -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="220" MinWidth="160" />
@@ -64,7 +55,8 @@
                              AutoGenerateColumns="False"
                              CanUserAddRows="False"
                              IsReadOnly="False"
-                             PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
+                             Style="{StaticResource EventLogDataGridStyle}"
+                              PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="*" />
                         </DataGrid.Columns>
@@ -96,7 +88,7 @@
                 </Grid>
             </Border>
 
-            <!-- Detail editor — outer card only, inner sub-sections use SubSectionCardStyle -->
+            <!-- Detail editor — outer card, inner sub-sections use SubSectionCardStyle -->
             <Border Grid.Column="4" Style="{StaticResource SectionCardStyle}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel>
@@ -106,22 +98,10 @@
                             <StackPanel>
                                 <TextBlock Text="Axis Mapping" FontWeight="SemiBold" Margin="0,0,0,10" />
                                 <UniformGrid Columns="4">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}">
-                                        <TextBlock Text="X Axis" Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}">
-                                        <TextBlock Text="Y Axis" Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}">
-                                        <TextBlock Text="Z Axis" Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}">
-                                        <TextBlock Text="R Axis" Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                    </StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="X Axis" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.XAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Y Axis" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.YAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Z Axis" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.ZAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="R Axis" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.RAxisNo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
                                 </UniformGrid>
                             </StackPanel>
                         </Border>
@@ -131,27 +111,15 @@
                             <StackPanel>
                                 <TextBlock Text="Target Position" FontWeight="SemiBold" Margin="0,0,0,10" />
                                 <UniformGrid Columns="4">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}">
-                                        <TextBlock Text="X Pos" Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}" IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsXAxisConfigured}" />
-                                    </StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}">
-                                        <TextBlock Text="Y Pos" Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}" IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsYAxisConfigured}" />
-                                    </StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}">
-                                        <TextBlock Text="Z Pos" Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}" IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsZAxisConfigured}" />
-                                    </StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}">
-                                        <TextBlock Text="R Pos" Style="{StaticResource FieldLabelStyle}" />
-                                        <TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}" IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsRAxisConfigured}" />
-                                    </StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="X Pos" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionX, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}" IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsXAxisConfigured}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Y Pos" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionY, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}" IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsYAxisConfigured}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Z Pos" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}" IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsZAxisConfigured}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="R Pos" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.PositionR, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DisabledAxisPositionTextBoxStyle}" IsEnabled="{Binding WorkHeadMonitor.SelectedWorkHead.IsRAxisConfigured}" /></StackPanel>
                                 </UniformGrid>
                             </StackPanel>
                         </Border>
 
-                        <!-- Safe Z + Description (single-row grid, not a card) -->
+                        <!-- Safe Z + Description -->
                         <Border Style="{StaticResource SubSectionCardStyle}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -161,10 +129,10 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Safe Z" Style="{StaticResource FieldLabelStyle}" VerticalAlignment="Center" Margin="0" />
-                                <TextBox Grid.Column="1" Margin="10,0,0,0" Text="{Binding WorkHeadMonitor.SelectedWorkHead.SafeZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Safe Z"        Style="{StaticResource FieldLabelStyle}" VerticalAlignment="Center" Margin="0" />
+                                <TextBox   Grid.Column="1" Margin="10,0,0,0" Text="{Binding WorkHeadMonitor.SelectedWorkHead.SafeZ, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 <TextBlock Grid.Column="3" Text="Description" Style="{StaticResource FieldLabelStyle}" VerticalAlignment="Center" Margin="0" />
-                                <TextBox Grid.Column="4" Margin="10,0,0,0" Text="{Binding WorkHeadMonitor.SelectedWorkHead.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox   Grid.Column="4" Margin="10,0,0,0" Text="{Binding WorkHeadMonitor.SelectedWorkHead.Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                             </Grid>
                         </Border>
 
@@ -173,15 +141,15 @@
                             <StackPanel>
                                 <TextBlock Text="Vacuum and IO" FontWeight="SemiBold" Margin="0,0,0,10" />
                                 <UniformGrid Columns="4">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Vacuum DO" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Blow DO"   Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.BlowOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Vacuum DI" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DO 1" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Vacuum DO"       Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Blow DO"         Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.BlowOutputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Vacuum DI"       Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumInputAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DO 1"    Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
                                 </UniformGrid>
                                 <UniformGrid Columns="4">
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DO 2" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DI 1" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
-                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DI 2" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DO 2"    Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralOutputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DI 1"    Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress1, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
+                                    <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="General DI 2"    Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.GeneralInputAddress2, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
                                     <StackPanel Style="{StaticResource FieldContainerStyle}"><TextBlock Text="Vacuum Timeout(ms)" Style="{StaticResource FieldLabelStyle}" /><TextBox Text="{Binding WorkHeadMonitor.SelectedWorkHead.VacuumTimeoutMs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" /></StackPanel>
                                 </UniformGrid>
                             </StackPanel>
@@ -216,10 +184,10 @@
                           IsReadOnly="True"
                           PreviewMouseWheel="SectionDataGrid_PreviewMouseWheel">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Time"    Binding="{Binding Time}"    Width="110" />
-                        <DataGridTextColumn Header="Object" Binding="{Binding ObjectName}" Width="120" />
-                        <DataGridTextColumn Header="Event"  Binding="{Binding EventName}" Width="120" />
-                        <DataGridTextColumn Header="Message" Binding="{Binding Message}" Width="*" />
+                        <DataGridTextColumn Header="Time"    Binding="{Binding Time}"         Width="110" />
+                        <DataGridTextColumn Header="Object" Binding="{Binding ObjectName}"   Width="120" />
+                        <DataGridTextColumn Header="Event"  Binding="{Binding EventName}"    Width="120" />
+                        <DataGridTextColumn Header="Message" Binding="{Binding Message}"     Width="*" />
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
