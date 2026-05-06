@@ -27,12 +27,12 @@
                                 </StackPanel>
 
                                 <WrapPanel Grid.Column="1" VerticalAlignment="Top">
-                                    <Button Content="Add Object" Command="{Binding AddMagazineCommand}" MinWidth="100" />
-                                    <Button Content="Delete Object" Command="{Binding DeleteMagazineCommand}" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
-                                    <Button Content="Add Position" Command="{Binding AddMagazinePositionCommand}" MinWidth="108" />
-                                    <Button Content="Delete Position" Command="{Binding DeleteMagazinePositionCommand}" MinWidth="120" Style="{StaticResource DangerButtonStyle}" />
-                                    <Button Content="Save" Command="{Binding SaveMagazineConfigCommand}" MinWidth="90" Style="{StaticResource SuccessButtonStyle}" />
-                                    <Button Content="Load" Command="{Binding LoadMagazineConfigCommand}" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
+                                    <Button Content="Add Object" Command="{Binding AddMagazineCommand}" Margin="0,0,8,0" MinWidth="100" />
+                                    <Button Content="Delete Object" Command="{Binding DeleteMagazineCommand}" Margin="0,0,8,0" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
+                                    <Button Content="Add Position" Command="{Binding AddMagazinePositionCommand}" Margin="0,0,8,0" MinWidth="108" />
+                                    <Button Content="Delete Position" Command="{Binding DeleteMagazinePositionCommand}" Margin="0,0,8,0" MinWidth="120" Style="{StaticResource DangerButtonStyle}" />
+                                    <Button Content="Save" Command="{Binding SaveMagazineConfigCommand}" Margin="0,0,8,0" MinWidth="90" Style="{StaticResource SuccessButtonStyle}" />
+                                    <Button Content="Load" Command="{Binding LoadMagazineConfigCommand}" Margin="0,0,8,0" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
                                 </WrapPanel>
                             </Grid>
                         </Border>
@@ -182,9 +182,9 @@
                                         </Border>
 
                                         <WrapPanel Grid.Row="8" Orientation="Horizontal" Margin="4,4,4,4">
-                                            <Button Content="Teach" Command="{Binding TeachMagazinePositionCommand}" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
-                                            <Button Content="Move" Command="{Binding MoveMagazinePositionCommand}" MinWidth="90" />
-                                            <Button Content="Scan" Command="{Binding ScanMagazineCommand}" MinWidth="90" Style="{StaticResource SuccessButtonStyle}" />
+                                            <Button Content="Teach" Command="{Binding TeachMagazinePositionCommand}" Margin="0,0,8,0" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
+                                            <Button Content="Move" Command="{Binding MoveMagazinePositionCommand}" Margin="0,0,8,0" MinWidth="90" />
+                                            <Button Content="Scan" Command="{Binding ScanMagazineCommand}" Margin="0,0,8,0" MinWidth="90" Style="{StaticResource SuccessButtonStyle}" />
                                         </WrapPanel>
 
                                     </Grid>

@@ -27,11 +27,11 @@
                                 </StackPanel>
 
                                 <WrapPanel Grid.Column="1" VerticalAlignment="Top">
-                                    <Button Content="Add DI" Command="{Binding AddInputCommand}" Style="{StaticResource SecondaryButtonStyle}" />
-                                    <Button Content="Delete DI" Command="{Binding DeleteInputCommand}" Style="{StaticResource DangerButtonStyle}" />
-                                    <Button Content="Add DO" Command="{Binding AddOutputCommand}" Style="{StaticResource SecondaryButtonStyle}" />
-                                    <Button Content="Delete DO" Command="{Binding DeleteOutputCommand}" Style="{StaticResource DangerButtonStyle}" />
-                                    <Button Content="Save" Command="{Binding SaveIoConfigCommand}" Style="{StaticResource SuccessButtonStyle}" />
+                                    <Button Content="Add DI" Command="{Binding AddInputCommand}" Margin="0,0,8,0" Style="{StaticResource SecondaryButtonStyle}" />
+                                    <Button Content="Delete DI" Command="{Binding DeleteInputCommand}" Margin="0,0,8,0" Style="{StaticResource DangerButtonStyle}" />
+                                    <Button Content="Add DO" Command="{Binding AddOutputCommand}" Margin="0,0,8,0" Style="{StaticResource SecondaryButtonStyle}" />
+                                    <Button Content="Delete DO" Command="{Binding DeleteOutputCommand}" Margin="0,0,8,0" Style="{StaticResource DangerButtonStyle}" />
+                                    <Button Content="Save" Command="{Binding SaveIoConfigCommand}" Margin="0,0,8,0" Style="{StaticResource SuccessButtonStyle}" />
                                     <Button Content="Load" Command="{Binding LoadIoConfigCommand}" Style="{StaticResource SecondaryButtonStyle}" />
                                 </WrapPanel>
                             </Grid>

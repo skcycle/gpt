@@ -27,12 +27,12 @@
                                 </StackPanel>
 
                                 <WrapPanel Grid.Column="1" VerticalAlignment="Top">
-                                    <Button Content="Add Object" Command="{Binding AddPositionSetupCommand}" MinWidth="100" />
-                                    <Button Content="Delete Object" Command="{Binding DeletePositionSetupCommand}" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
-                                    <Button Content="Add Position" Command="{Binding AddPositionSetupPositionCommand}" MinWidth="108" />
-                                    <Button Content="Delete Position" Command="{Binding DeletePositionSetupPositionCommand}" MinWidth="120" Style="{StaticResource DangerButtonStyle}" />
-                                    <Button Content="Save" Command="{Binding SavePositionSetupConfigCommand}" MinWidth="90" Style="{StaticResource SuccessButtonStyle}" />
-                                    <Button Content="Load" Command="{Binding LoadPositionSetupConfigCommand}" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
+                                    <Button Content="Add Object" Command="{Binding AddPositionSetupCommand}" Margin="0,0,8,0" MinWidth="100" />
+                                    <Button Content="Delete Object" Command="{Binding DeletePositionSetupCommand}" Margin="0,0,8,0" MinWidth="112" Style="{StaticResource DangerButtonStyle}" />
+                                    <Button Content="Add Position" Command="{Binding AddPositionSetupPositionCommand}" Margin="0,0,8,0" MinWidth="108" />
+                                    <Button Content="Delete Position" Command="{Binding DeletePositionSetupPositionCommand}" Margin="0,0,8,0" MinWidth="120" Style="{StaticResource DangerButtonStyle}" />
+                                    <Button Content="Save" Command="{Binding SavePositionSetupConfigCommand}" Margin="0,0,8,0" MinWidth="90" Style="{StaticResource SuccessButtonStyle}" />
+                                    <Button Content="Load" Command="{Binding LoadPositionSetupConfigCommand}" Margin="0,0,8,0" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
                                 </WrapPanel>
                             </Grid>
                         </Border>
@@ -150,8 +150,8 @@
                                         </Border>
 
                                         <WrapPanel Grid.Row="6" Orientation="Horizontal" Margin="4,4,4,4">
-                                            <Button Content="Teach" Command="{Binding TeachPositionSetupCommand}" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
-                                            <Button Content="Move" Command="{Binding MovePositionSetupCommand}" MinWidth="90" />
+                                            <Button Content="Teach" Command="{Binding TeachPositionSetupCommand}" Margin="0,0,8,0" MinWidth="90" Style="{StaticResource SecondaryButtonStyle}" />
+                                            <Button Content="Move" Command="{Binding MovePositionSetupCommand}" Margin="0,0,8,0" MinWidth="90" />
                                         </WrapPanel>
                                     </Grid>
                                 </ScrollViewer>

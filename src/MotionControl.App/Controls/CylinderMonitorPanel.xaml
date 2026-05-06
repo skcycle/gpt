@@ -27,9 +27,9 @@
                                 </StackPanel>
 
                                 <WrapPanel Grid.Column="1" VerticalAlignment="Top">
-                                    <Button Content="Add Cylinder" Command="{Binding AddCylinderCommand}" MinWidth="124" />
-                                    <Button Content="Delete Cylinder" Command="{Binding DeleteCylinderCommand}" MinWidth="124" Style="{StaticResource DangerButtonStyle}" />
-                                    <Button Content="Save" Command="{Binding SaveCylinderConfigCommand}" MinWidth="124" Style="{StaticResource SuccessButtonStyle}" />
+                                    <Button Content="Add Cylinder" Command="{Binding AddCylinderCommand}" Margin="0,0,8,0" MinWidth="124" />
+                                    <Button Content="Delete Cylinder" Command="{Binding DeleteCylinderCommand}" Margin="0,0,8,0" MinWidth="124" Style="{StaticResource DangerButtonStyle}" />
+                                    <Button Content="Save" Command="{Binding SaveCylinderConfigCommand}" Margin="0,0,8,0" MinWidth="124" Style="{StaticResource SuccessButtonStyle}" />
                                     <Button Content="Load" Command="{Binding LoadCylinderConfigCommand}" MinWidth="124" Style="{StaticResource SecondaryButtonStyle}" />
                                 </WrapPanel>
                             </Grid>
