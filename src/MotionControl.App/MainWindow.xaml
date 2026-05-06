@@ -181,39 +181,39 @@
 
 
                 <TabItem Header="Dashboard">
-                    <controls:DashboardPanel DataContext="{Binding}" />
+                    <controls:DashboardPanel />
                 </TabItem>
 
                 <TabItem Header="EtherCAT Monitor">
-                    <controls:EtherCatMonitorPanel DataContext="{Binding}" />
+                    <controls:EtherCatMonitorPanel />
                 </TabItem>
 
                 <TabItem Header="Axis Console">
-                    <controls:AxisConsolePanel DataContext="{Binding}" />
+                    <controls:AxisConsolePanel />
                 </TabItem>
 
                 <TabItem Header="IO Monitor">
-                    <controls:IoMonitorPanel DataContext="{Binding}" />
+                    <controls:IoMonitorPanel />
                 </TabItem>
 
                 <TabItem Header="Cylinder Monitor">
-                    <controls:CylinderMonitorPanel DataContext="{Binding}" />
+                    <controls:CylinderMonitorPanel />
                 </TabItem>
 
                 <TabItem Header="Magazine">
-                    <controls:MagazinePanel DataContext="{Binding}" />
+                    <controls:MagazinePanel />
                 </TabItem>
 
                 <TabItem Header="Work Head">
-                    <controls:WorkHeadPanel DataContext="{Binding}" />
+                    <controls:WorkHeadPanel />
                 </TabItem>
 
                 <TabItem Header="Position Setup">
-                    <controls:PositionSetupPanel DataContext="{Binding}" />
+                    <controls:PositionSetupPanel />
                 </TabItem>
 
                 <TabItem Header="Alarm">
-                    <controls:AlarmPanel DataContext="{Binding}" />
+                    <controls:AlarmPanel />
                 </TabItem>
 
             </TabControl>

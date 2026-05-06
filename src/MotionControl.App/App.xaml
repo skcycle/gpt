@@ -47,6 +47,84 @@
             <Setter Property="TextWrapping" Value="Wrap" />
         </Style>
 
+        <!-- ── Card styles: outer vs inner ─────────────────────────── -->
+        <!-- Page-level card: rounded, full padding                     -->
+        <Style x:Key="SectionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#223240" />
+            <Setter Property="BorderBrush" Value="#445A6C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+
+        <!-- Light card for sub-sections inside a detail panel:        -->
+        <!-- thinner border, no corner radius, compact padding         -->
+        <Style x:Key="SubSectionCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#1E2D3A" />
+            <Setter Property="BorderBrush" Value="#3A5060" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <!-- ── Field control styles ────────────────────────────────── -->
+        <!-- Label above field: compact label style for form fields    -->
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Margin" Value="0,0,0,2" />
+        </Style>
+
+        <!-- Field container: standard margin for label+input pairs    -->
+        <Style x:Key="FieldContainerStyle" TargetType="StackPanel">
+            <Setter Property="Margin" Value="4" />
+        </Style>
+
+        <!-- ── DataGrid shared element styles ──────────────────────── -->
+        <!-- Centered CheckBox in DataGrid cells (via ElementStyle)   -->
+        <Style x:Key="DataGridCenteredCheckBoxStyle" TargetType="CheckBox">
+            <Setter Property="IsEnabled" Value="False" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- Status light Ellipse in DataGrid cells                   -->
+        <Style x:Key="DataGridStatusLightStyle" TargetType="Ellipse">
+            <Setter Property="Width" Value="10" />
+            <Setter Property="Height" Value="10" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <!-- Small icon button in DataGrid command column             -->
+        <Style x:Key="DataGridSmallButtonStyle" TargetType="Button">
+            <Setter Property="MinWidth" Value="60" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="Padding" Value="8,4" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+
+        <!-- Standard DataGrid text column: left-aligned, full width -->
+        <Style x:Key="DataGridTextColumnStyle" TargetType="DataGridTextColumn">
+            <Setter Property="ElementStyle">
+                <Setter.Value>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <Setter Property="Padding" Value="6,0" />
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ── Spacer style: replaces empty Grid rows ─────────────── -->
+        <Style x:Key="VerticalSpacerStyle" TargetType="FrameworkElement">
+            <Setter Property="Height" Value="10" />
+            <Setter Property="Margin" Value="0" />
+        </Style>
+
         <Style TargetType="Border">
             <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}" />
         </Style>
@@ -98,15 +176,6 @@
             <Setter Property="Background" Value="{StaticResource WarningBrush}" />
             <Setter Property="BorderBrush" Value="#C6A366" />
             <Setter Property="Foreground" Value="#0A1218" />
-        </Style>
-
-        <Style x:Key="SectionCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="#223240" />
-            <Setter Property="BorderBrush" Value="#445A6C" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="14" />
-            <Setter Property="Padding" Value="16" />
-            <Setter Property="Margin" Value="0,0,0,2" />
         </Style>
 
         <Style x:Key="NavItemButtonStyle" TargetType="ToggleButton">
