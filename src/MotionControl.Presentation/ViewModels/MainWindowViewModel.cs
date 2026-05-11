@@ -115,13 +115,18 @@ public sealed class MainWindowViewModel : INotifyPropertyChanged, IOperationStat
         _commandFeedbackRuntimeState.FeedbackChanged += () =>
         {
             var dispatcher = System.Windows.Application.Current?.Dispatcher;
+            void refreshFeedbackViews()
+            {
+                Dashboard.Refresh(_controllerRuntimeState.LastControllerStatus);
+            }
+
             if (dispatcher is null || dispatcher.CheckAccess())
             {
-                RefreshViewModels(force: true);
+                refreshFeedbackViews();
             }
             else
             {
-                _ = dispatcher.BeginInvoke(() => RefreshViewModels(force: true));
+                _ = dispatcher.BeginInvoke((Action)refreshFeedbackViews, System.Windows.Threading.DispatcherPriority.Render);
             }
         };
         _systemAppService = systemAppService;
