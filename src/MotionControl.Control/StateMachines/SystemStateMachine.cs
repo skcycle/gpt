@@ -18,12 +18,16 @@ public sealed class SystemStateMachine
 
     public SystemState OnEmergencyStopCleared(Machine machine, EtherCatControllerStatus? controllerStatus)
     {
+        // 直接返回目标状态，不再调用 GetNextState。
+        // GetNextState 的 guard (CurrentState == EmergencyStop -> return EmergencyStop)
+        // 会阻止从 EmergencyStop 出去的转换，导致 CLR-ESTOP 无效。
         if (controllerStatus is null || !controllerStatus.IsConnected)
         {
             return SystemState.FaultRecovering;
         }
 
-        return GetNextState(machine, controllerStatus);
+        // controller 已连接时，转换到 Standby（由 OnPolling 的下一次调用进一步评估）
+        return SystemState.Standby;
     }
 
     public SystemState OnRecoveryCompleted(Machine machine, EtherCatControllerStatus? controllerStatus)
